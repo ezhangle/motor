@@ -1,0 +1,81 @@
+#!/usr/bin/python
+
+import http.server
+import sys
+import os
+import shutil
+import subprocess
+import glob
+
+motor_dir = os.path.dirname(sys.argv[0])
+
+search_path = [motor_dir, motor_dir + "/build"]
+
+
+emroot = subprocess.Popen("em-config EMSCRIPTEN_ROOT", shell=True, stdout=subprocess.PIPE).communicate()[0].decode("ascii")[:-1]
+
+file_packager = emroot + "/tools/file_packager.py"
+
+if not os.path.exists(file_packager):
+  print("emscripten file_packager not found")
+
+
+def findNewestDataFile(directory):
+  newest = 0
+  for name in os.listdir(directory):
+    if directory == '.' and name.startswith('_'):
+      continue
+
+    entry = os.path.join(directory, name)
+    if os.path.isdir(entry):
+      newest = max(newest, findNewestDataFile(entry))
+    elif os.path.isfile(entry):
+      newest = max(newest, os.path.getmtime(entry))
+
+  return newest
+
+
+def repackage():
+  datafilemtime = min(os.path.getmtime('_build/package.data'), os.path.getmtime('_build/package.data.js'))
+  if datafilemtime < findNewestDataFile('.'):
+    print("Rebuilding package")
+
+    exclude = " ".join(map(lambda x: "--exclude " + x, glob.iglob("_*")))
+    cmd = "python2 {packager} _build/package.data --preload . {exclude} --js-output=_build/package.data.js".format(packager=file_packager, exclude=exclude)
+    os.system(cmd)
+
+local_motor_path = os.getcwd() + "/_motor"
+if os.path.exists(local_motor_path):
+  search_path = [local_motor_path] + search_path
+
+def findFile(name):
+  for i in search_path:
+    if of.path.exists(i + "/" + name):
+      return i + "/" + name
+
+if sys.argv[1] == "serve":
+  class RequestHandler(http.server.SimpleHTTPRequestHandler):
+    def translate_path(self, path):
+      p = super(RequestHandler, self).translate_path(path)
+
+      bn = os.path.relpath(p)
+
+      for i in search_path:
+        if os.path.exists(os.path.join(i, bn)):
+          p = os.path.join(i, bn)
+
+      return p
+
+    def do_GET(self):
+      if self.path == '/_build/package.data' or self.path == '/_build/package.data.js':
+        repackage()
+
+      super(RequestHandler, self).do_GET()
+
+  server = http.server.HTTPServer(('', 8000), RequestHandler)
+
+  server.serve_forever()
+
+elif sys.argv[1] == "pack":
+  pass
+  
