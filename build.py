@@ -6,7 +6,10 @@ import re
 import shutil
 
 sources = [
+  'lua_boot.c',
+  'lua_motor.c',
   'main.c',
+  'motor.c',
   'lua/src/lapi.c',
   'lua/src/lauxlib.c',
   'lua/src/lbaselib.c',
@@ -43,12 +46,13 @@ sources = [
 
 output = 'motor2d.js'
 
-CFLAGS = '-Wall -std=c99 -s USE_SDL=2 -s ASYNCIFY=1'
+
+SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
+
+CFLAGS = '-Wall -std=c99 -s USE_SDL=2 -s ASYNCIFY=1 -I{srcdir}/lua/src'.format(srcdir = os.path.relpath(SRCDIR))
 CC = 'emcc'
 LD = 'emcc'
 LDFLAGS = '-s USE_SDL=2 -s ASYNCIFY=1'
-
-SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 if SRCDIR == '.' or SRCDIR == '':
   print("Please build out-of-source")
