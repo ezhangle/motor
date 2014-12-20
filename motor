@@ -9,7 +9,7 @@ import glob
 
 motor_dir = os.path.dirname(sys.argv[0])
 
-search_path = [motor_dir, motor_dir + "/build"]
+search_path = [motor_dir + "/build", motor_dir + "/html"]
 
 
 emroot = subprocess.Popen("em-config EMSCRIPTEN_ROOT", shell=True, stdout=subprocess.PIPE).communicate()[0].decode("ascii")[:-1]

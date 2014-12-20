@@ -42,14 +42,13 @@ sources = [
 ]
 
 output = 'motor2d.js'
-extra_output = 'motor2d.html'
 
 CFLAGS = '-Wall -std=c99 -s USE_SDL=2 -s ASYNCIFY=1'
 CC = 'emcc'
 LD = 'emcc'
 LDFLAGS = '-s USE_SDL=2 -s ASYNCIFY=1'
 
-SRCDIR = os.path.dirname(sys.argv[0])
+SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 if SRCDIR == '.' or SRCDIR == '':
   print("Please build out-of-source")
@@ -109,8 +108,6 @@ def build():
     cmd = "{LD} {LDFLAGS} -o {outfile} {infiles}".format(LD=LD, LDFLAGS=LDFLAGS, outfile=output, infiles=" ".join(map(getObjFilename, sources)))
     if os.system(cmd) != 0:
       print("Failed")
-
-  shutil.copyfile(SRCDIR + "/" + extra_output, extra_output)
 
 def remove(f):
   if os.path.exists(f):
