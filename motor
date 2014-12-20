@@ -40,13 +40,18 @@ def repackage():
   if datafilemtime < findNewestDataFile('.'):
     print("Rebuilding package")
 
-    exclude = " ".join(map(lambda x: "--exclude " + x, glob.iglob("_*")))
-    cmd = "python2 {packager} _build/package.data --preload . {exclude} --js-output=_build/package.data.js".format(packager=file_packager, exclude=exclude)
+    exclude = " ".join(map(lambda x: "--exclude " + x, map(os.path.realpath, glob.iglob("_*"))))
+    cmd = "python2 {packager} _build/package.data --preload {datadir}@/ {exclude} --js-output=_build/package.data.js".format(packager=file_packager, exclude=exclude, datadir=os.path.realpath(os.curdir))
+    print(cmd)
     os.system(cmd)
 
 local_motor_path = os.getcwd() + "/_motor"
 if os.path.exists(local_motor_path):
   search_path = [local_motor_path] + search_path
+
+local_build_path = os.getcwd() + "/_build"
+if os.path.exists(local_build_path):
+  search_path = [local_build_path] + search_path
 
 def findFile(name):
   for i in search_path:
@@ -67,7 +72,7 @@ if sys.argv[1] == "serve":
       return p
 
     def do_GET(self):
-      if self.path == '/_build/package.data' or self.path == '/_build/package.data.js':
+      if self.path == '/package.data' or self.path == '/package.data.js':
         repackage()
 
       super(RequestHandler, self).do_GET()

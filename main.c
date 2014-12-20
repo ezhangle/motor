@@ -40,6 +40,10 @@ int main()
   lua_pushcfunction(lua, &lua_curtime);
   lua_setglobal(lua, "gettime");
 
-  luaL_dostring(lua, "local r = 0\nlocal start = gettime()\nfor i = 1, 10000000 do r = r + i end\nlocal stop = gettime()\nprint(stop - start)");
+//  luaL_dostring(lua, "local r = 0\nlocal start = gettime()\nfor i = 1, 10000000 do r = r + i end\nlocal stop = gettime()\nprint(stop - start)");
+  if(luaL_dofile(lua, "/main.lua")) {
+    printf("Error :-(\n");
+    printf("%s\n", lua_tostring(lua, -1));
+  }
 
 }
