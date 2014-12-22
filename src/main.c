@@ -1,4 +1,3 @@
-#include <SDL.h>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #else
@@ -9,8 +8,12 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "lua_motor_graphics.h"
+#include "lua_motor_image.h"
 #include "lua_motor.h"
 #include "lua_boot.h"
+
+#include "graphics.h"
 
 double curtime() {
 #ifdef EMSCRIPTEN
@@ -53,10 +56,12 @@ void main_loop(void *data) {
 
   // TODO use pcall, add error handling
   lua_call(loopData->luaState, 0, 0);
+  motor_graphics_swap();
 
   lua_pop(loopData->luaState, 1);
 
   loopData->lastTime = newTime;
+
 }
 
 int main()
@@ -66,20 +71,27 @@ int main()
 
 
   motor_lua_motor_register(lua);
+  motor_lua_motor_graphics_register(lua);
+  motor_lua_motor_image_register(lua);
 
   lua_pushcfunction(lua, &lua_curtime);
   lua_setglobal(lua, "gettime");
 
-  motor_lua_boot(lua);
+  motor_Config config;
 
-  SDL_Window *window;
-  SDL_Renderer *renderer;
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-  SDL_CreateWindowAndRenderer(600, 600, SDL_WINDOW_OPENGL, &window, &renderer);
+  motor_lua_boot(lua, &config);
+
+  motor_graphics_init(config.window.width, config.window.height);
 
   if(luaL_dofile(lua, "/main.lua")) {
     printf("Error: %s\n", lua_tostring(lua, -1));
   }
+
+  lua_getglobal(lua, "motor");
+  lua_pushstring(lua, "load");
+  lua_rawget(lua, -2);
+  lua_call(lua, 0, 0);
+  lua_pop(lua, 1);
 
   motor_MainLoopData mainLoopData = {
     .lastTime = curtime(),
