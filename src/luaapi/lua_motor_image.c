@@ -1,7 +1,7 @@
 #include <lauxlib.h>
 #include "lua_motor_image.h"
 #include "lua_tools.h"
-#include "image_imagedata.h"
+#include "../image/imagedata.h"
 
 static int motor_lua_motor_image_newImageData(lua_State* state) {
   motor_image_ImageData* imageData = (motor_image_ImageData*)lua_newuserdata(state, sizeof(motor_image_ImageData));

@@ -1,5 +1,5 @@
 #include "lua_motor.h"
-#include "motor.h"
+#include "../motor.h"
 
 int motor_lua_motor_getVersion(lua_State* state) {
   motor_Version const * version = motor_getVersion();

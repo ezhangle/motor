@@ -1,7 +1,7 @@
 #include <lauxlib.h>
 #include "lua_motor_graphics.h"
 #include "lua_tools.h"
-#include "graphics.h"
+#include "../graphics/graphics.h"
 
 static int motor_lua_motor_graphics_setBackgroundColor(lua_State* state) {
   int red   = lua_tointeger(state, 1);

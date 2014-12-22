@@ -1,6 +1,6 @@
 #include <SDL_image.h>
 #include <stdio.h>
-#include "image_imagedata.h"
+#include "imagedata.h"
 
 
 void motor_image_imagedata_new_with_filename(motor_image_ImageData *dst, char const* filename) {

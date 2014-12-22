@@ -8,12 +8,12 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "lua_motor_graphics.h"
-#include "lua_motor_image.h"
-#include "lua_motor.h"
-#include "lua_boot.h"
+#include "luaapi/lua_motor_graphics.h"
+#include "luaapi/lua_motor_image.h"
+#include "luaapi/lua_motor.h"
+#include "luaapi/lua_boot.h"
 
-#include "graphics.h"
+#include "graphics/graphics.h"
 
 double curtime() {
 #ifdef EMSCRIPTEN

@@ -6,47 +6,47 @@ import re
 import shutil
 
 sources = [
-  'graphics.c',
-  'image_imagedata.c',
-  'lua_boot.c',
-  'lua_motor.c',
-  'lua_motor_graphics.c',
-  'lua_motor_image.c',
-  'lua_tools.c',
+  'graphics/graphics.c',
+  'image/imagedata.c',
+  'luaapi/lua_boot.c',
+  'luaapi/lua_motor.c',
+  'luaapi/lua_motor_graphics.c',
+  'luaapi/lua_motor_image.c',
+  'luaapi/lua_tools.c',
   'main.c',
   'motor.c',
-  'lua/src/lapi.c',
-  'lua/src/lauxlib.c',
-  'lua/src/lbaselib.c',
-  'lua/src/lbitlib.c',
-  'lua/src/lcode.c',
-  'lua/src/lcorolib.c',
-  'lua/src/lctype.c',
-  'lua/src/ldblib.c',
-  'lua/src/ldebug.c',
-  'lua/src/ldo.c',
-  'lua/src/ldump.c',
-  'lua/src/lfunc.c',
-  'lua/src/lgc.c',
-  'lua/src/linit.c',
-  'lua/src/liolib.c',
-  'lua/src/llex.c',
-  'lua/src/lmathlib.c',
-  'lua/src/lmem.c',
-  'lua/src/loadlib.c',
-  'lua/src/lobject.c',
-  'lua/src/lopcodes.c',
-  'lua/src/loslib.c',
-  'lua/src/lparser.c',
-  'lua/src/lstate.c',
-  'lua/src/lstring.c',
-  'lua/src/lstrlib.c',
-  'lua/src/ltable.c',
-  'lua/src/ltablib.c',
-  'lua/src/ltm.c',
-  'lua/src/lundump.c',
-  'lua/src/lvm.c',
-  'lua/src/lzio.c',
+  '3rdparty/lua/src/lapi.c',
+  '3rdparty/lua/src/lauxlib.c',
+  '3rdparty/lua/src/lbaselib.c',
+  '3rdparty/lua/src/lbitlib.c',
+  '3rdparty/lua/src/lcode.c',
+  '3rdparty/lua/src/lcorolib.c',
+  '3rdparty/lua/src/lctype.c',
+  '3rdparty/lua/src/ldblib.c',
+  '3rdparty/lua/src/ldebug.c',
+  '3rdparty/lua/src/ldo.c',
+  '3rdparty/lua/src/ldump.c',
+  '3rdparty/lua/src/lfunc.c',
+  '3rdparty/lua/src/lgc.c',
+  '3rdparty/lua/src/linit.c',
+  '3rdparty/lua/src/liolib.c',
+  '3rdparty/lua/src/llex.c',
+  '3rdparty/lua/src/lmathlib.c',
+  '3rdparty/lua/src/lmem.c',
+  '3rdparty/lua/src/loadlib.c',
+  '3rdparty/lua/src/lobject.c',
+  '3rdparty/lua/src/lopcodes.c',
+  '3rdparty/lua/src/loslib.c',
+  '3rdparty/lua/src/lparser.c',
+  '3rdparty/lua/src/lstate.c',
+  '3rdparty/lua/src/lstring.c',
+  '3rdparty/lua/src/lstrlib.c',
+  '3rdparty/lua/src/ltable.c',
+  '3rdparty/lua/src/ltablib.c',
+  '3rdparty/lua/src/ltm.c',
+  '3rdparty/lua/src/lundump.c',
+  '3rdparty/lua/src/lvm.c',
+  '3rdparty/lua/src/lzio.c',
 ]
 
 output = 'motor2d.js'
@@ -54,7 +54,7 @@ output = 'motor2d.js'
 
 SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
-CFLAGS = '-Wall -std=c99 -I{srcdir}/lua/src'.format(srcdir = os.path.relpath(SRCDIR))
+CFLAGS = '-Wall -std=c99 -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR))
 CC = 'emcc'
 LD = 'emcc'
 LDFLAGS = ''
@@ -66,13 +66,14 @@ if SRCDIR == '.' or SRCDIR == '':
 includeregex = re.compile('^\s*#\s*include\s*"([^"]+)"\s*$')
 
 def newestDependency(filename):
-  newest = 0
+  newest = os.path.getmtime(sys.argv[0])
   with open(filename) as f:
     for line in f:
       res = includeregex.match(line)
       if res:
         dep = os.path.dirname(filename) + "/" + res.group(1)
-        newest = max(newest, os.path.getmtime(dep), newestDependency(dep))
+        if os.path.exists(dep):
+          newest = max(newest, os.path.getmtime(dep), newestDependency(dep))
 
   return newest
 
@@ -81,7 +82,7 @@ def newestDependency(filename):
 def needsRebuild(filename):
   return not os.path.exists(getObjFilename(filename)) or \
     os.path.getmtime(SRCDIR + "/" + filename) > os.path.getmtime(getObjFilename(filename)) or \
-    os.path.getmtime(sys.argv[0]) > os.path.getmtime(output) or newestDependency(SRCDIR + "/" + filename) > os.path.getmtime(getObjFilename(filename))
+    newestDependency(SRCDIR + "/" + filename) > os.path.getmtime(getObjFilename(filename))
 
 
 def getObjFilename(filename):
