@@ -3,6 +3,10 @@
 #include "lua_tools.h"
 #include "../image/imagedata.h"
 
+static struct {
+  int imageDataMetatable;
+} moduleData ;
+
 static int motor_lua_motor_image_newImageData(lua_State* state) {
   motor_image_ImageData* imageData = (motor_image_ImageData*)lua_newuserdata(state, sizeof(motor_image_ImageData));
   int s1type = lua_type(state, 1);
@@ -15,7 +19,16 @@ static int motor_lua_motor_image_newImageData(lua_State* state) {
     return lua_error(state);
   }
 
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.imageDataMetatable);
+  lua_setmetatable(state, -2);
+
   return 1;
+}
+
+static int motor_lua_motor_image_gc(lua_State* state) {
+  motor_image_ImageData* imagedata = (motor_image_ImageData*)lua_touserdata(state, 1);
+  motor_image_imagedata_free(imagedata);
+  return 0;
 }
 
 static luaL_Reg const regFuncs[] = {
@@ -25,6 +38,13 @@ static luaL_Reg const regFuncs[] = {
 
 int motor_lua_motor_image_register(lua_State* state) {
   motor_lua_tools_register_module(state, "image", regFuncs);
+
+  lua_newtable(state);
+  lua_pushstring(state, "__gc");
+  lua_pushcfunction(state, motor_lua_motor_image_gc);
+  lua_rawset(state, -3);
+  moduleData.imageDataMetatable = luaL_ref(state, LUA_REGISTRYINDEX);
+  
   
   return 0;
 }

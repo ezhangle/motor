@@ -14,5 +14,6 @@ void motor_image_imagedata_new_with_size(motor_image_ImageData *dst, int width, 
 }
 
 void motor_image_imagedata_free(motor_image_ImageData *data) {
+  printf("Freeing imagedata\n");
   SDL_FreeSurface(data->surface);
 }
