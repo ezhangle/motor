@@ -9,23 +9,22 @@ typedef struct {
   unsigned green;
   unsigned blue;
   unsigned alpha;
-} motor_graphics_Color;
+} graphics_Color;
 
-typedef struct {
+static struct {
   SDL_Surface* surface;
-  motor_graphics_Color backgroundColor;
-  motor_graphics_Color foregroundColor;
-} motor_graphics_ModuleData;
+  graphics_Color backgroundColor;
+  graphics_Color foregroundColor;
+} moduleData;
 
-static motor_graphics_ModuleData moduleData;
 
-void motor_graphics_init(int width, int height) {
+void graphics_init(int width, int height) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   moduleData.surface = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
   glViewport(0,0,width,height);
 }
 
-void motor_graphics_setBackgroundColor(int red, int green, int blue, int alpha) {
+void graphics_setBackgroundColor(int red, int green, int blue, int alpha) {
   moduleData.backgroundColor.red   = red;
   moduleData.backgroundColor.green = green;
   moduleData.backgroundColor.blue  = blue;
@@ -34,17 +33,17 @@ void motor_graphics_setBackgroundColor(int red, int green, int blue, int alpha) 
   glClearColor(red * scale, green * scale, blue * scale, alpha * scale);
 }
 
-void motor_graphics_setColor(int red, int green, int blue, int alpha) {
+void graphics_setColor(int red, int green, int blue, int alpha) {
   moduleData.foregroundColor.red   = red;
   moduleData.foregroundColor.green = green;
   moduleData.foregroundColor.blue  = blue;
   moduleData.foregroundColor.alpha = alpha;
 }
 
-void motor_graphics_clear() {
+void graphics_clear() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void motor_graphics_swap() {
+void graphics_swap() {
   SDL_GL_SwapBuffers();
 }

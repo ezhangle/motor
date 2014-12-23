@@ -8,10 +8,10 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "luaapi/lua_motor_graphics.h"
-#include "luaapi/lua_motor_image.h"
-#include "luaapi/lua_motor.h"
-#include "luaapi/lua_boot.h"
+#include "luaapi/graphics.h"
+#include "luaapi/image.h"
+#include "luaapi/motor.h"
+#include "luaapi/boot.h"
 
 #include "graphics/graphics.h"
 
@@ -35,10 +35,10 @@ int lua_curtime(lua_State *state) {
 typedef struct {
   double lastTime;
   lua_State *luaState;
-} motor_MainLoopData;
+} MainLoopData;
 
 void main_loop(void *data) {
-  motor_MainLoopData* loopData = (motor_MainLoopData*)data;
+  MainLoopData* loopData = (MainLoopData*)data;
 
   double newTime = curtime();
   double deltaTime = newTime - loopData->lastTime;
@@ -56,7 +56,7 @@ void main_loop(void *data) {
 
   // TODO use pcall, add error handling
   lua_call(loopData->luaState, 0, 0);
-  motor_graphics_swap();
+  graphics_swap();
 
   lua_pop(loopData->luaState, 1);
 
@@ -70,18 +70,18 @@ int main()
   luaL_openlibs(lua);
 
 
-  motor_lua_motor_register(lua);
-  motor_lua_motor_graphics_register(lua);
-  motor_lua_motor_image_register(lua);
+  l_motor_register(lua);
+  l_graphics_register(lua);
+  l_image_register(lua);
 
   lua_pushcfunction(lua, &lua_curtime);
   lua_setglobal(lua, "gettime");
 
   motor_Config config;
 
-  motor_lua_boot(lua, &config);
+  l_boot(lua, &config);
 
-  motor_graphics_init(config.window.width, config.window.height);
+  graphics_init(config.window.width, config.window.height);
 
   if(luaL_dofile(lua, "/main.lua")) {
     printf("Error: %s\n", lua_tostring(lua, -1));
@@ -93,7 +93,7 @@ int main()
   lua_call(lua, 0, 0);
   lua_pop(lua, 1);
 
-  motor_MainLoopData mainLoopData = {
+  MainLoopData mainLoopData = {
     .lastTime = curtime(),
     .luaState = lua
   };

@@ -1,5 +1,5 @@
 #include <lauxlib.h>
-#include "lua_boot.h"
+#include "boot.h"
 
 static char const bootScript[] =
   "motor.update = function(dt) end\n"
@@ -19,7 +19,7 @@ static char const bootScript[] =
   "return conf\n"
 ;
 
-int motor_lua_boot(lua_State* state, motor_Config *config) {
+int l_boot(lua_State* state, motor_Config *config) {
   if(luaL_dostring(state, bootScript)) {
     return 1;
   }
