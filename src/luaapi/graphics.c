@@ -40,26 +40,24 @@ typedef struct {
 } l_graphics_Image;
 
 static int l_graphics_newImage(lua_State* state) {
-  int s1type = lua_type(state, 1);
-
-  l_graphics_Image* image = (l_graphics_Image*)lua_newuserdata(state, sizeof(l_graphics_Image));
-
-  if(s1type == LUA_TSTRING) {
-    graphics_Image_new_with_filename(&image->image, lua_tostring(state, 1));
-  } else if(s1type == LUA_TUSERDATA) {
-    lua_getmetatable(state, 1);
-    if(!l_image_isImageData(state, 1)) {
-      lua_pushstring(state, "expected ImageData");
-      return lua_error(state);
-    }
-    image_ImageData * imageData = (image_ImageData*)lua_touserdata(state, 1);
-    graphics_Image_new_with_ImageData(&image->image, imageData);
-  } else {
+  if(lua_type(state, 1) == LUA_TSTRING) {
+    l_image_newImageData(state);
+    lua_remove(state, 1);
+  } 
+  
+  if(!l_image_isImageData(state, 1)) {
     lua_pushstring(state, "expected ImageData");
     return lua_error(state);
   }
 
-//  lua_rawgeti(state, LUA_REGISTRYINDEX, 
+  image_ImageData * imageData = (image_ImageData*)lua_touserdata(state, 1);
+
+  l_graphics_Image *image = (l_graphics_Image*)lua_newuserdata(state, sizeof(l_graphics_Image));
+
+  graphics_Image_new_with_ImageData(&image->image, imageData);
+  image->imageDataRef = luaL_ref(state, LUA_REGISTRYINDEX);
+
+  return 1;
 }
 
 static luaL_Reg const regFuncs[] = {
@@ -72,6 +70,16 @@ static luaL_Reg const regFuncs[] = {
 
 int l_graphics_register(lua_State* state) {
   l_tools_register_module(state, "graphics", regFuncs);
+
+  lua_newtable(state);
+
+  lua_pushvalue(state, -1);
+  moduleData.imageMT = luaL_ref(state, LUA_REGISTRYINDEX);
+  lua_pushstring(state, "type");
+  lua_pushinteger(state, moduleData.imageMT);
+  lua_rawset(state, -3);
+
+  lua_pop(state, 1);
 
   return 0;
 }

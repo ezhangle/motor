@@ -8,7 +8,7 @@ static struct {
 } moduleData;
 
 
-static int l_image_newImageData(lua_State* state) {
+int l_image_newImageData(lua_State* state) {
   image_ImageData* imageData = (image_ImageData*)lua_newuserdata(state, sizeof(image_ImageData));
   int s1type = lua_type(state, 1);
   if(s1type == LUA_TSTRING) {
@@ -62,6 +62,8 @@ int l_image_register(lua_State* state) {
   lua_pushstring(state, "type");
   lua_pushinteger(state, moduleData.imageDataMT);
   lua_rawset(state, -3);
+
+  lua_pop(state, 1);
   
   return 0;
 }
