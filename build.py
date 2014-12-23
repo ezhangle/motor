@@ -7,6 +7,7 @@ import shutil
 
 sources = [
   'graphics/graphics.c',
+  'graphics/image.c',
   'image/imagedata.c',
   'luaapi/lua_boot.c',
   'luaapi/lua_motor.c',

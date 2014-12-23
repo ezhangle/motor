@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "image.h"
+#include "../image/imagedata.h"
 
-void motor_graphics_image_new_with_imagedata(motor_graphics_Image *dst, motor_graphics_ImageData const *data) {
+void motor_graphics_image_new_with_imagedata(motor_graphics_Image *dst, motor_image_ImageData const *data) {
   printf("New image with imagedata: %p\n", data);
 }
 
