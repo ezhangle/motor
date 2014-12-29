@@ -26,7 +26,8 @@ int l_image_newImageData(lua_State* state) {
   return 1;
 }
 
-static int l_ImageData_gc(lua_State* state) {
+static int l_image_gcImageData(lua_State* state) {
+  printf("freeing image data\n");
   image_ImageData* imagedata = (image_ImageData*)lua_touserdata(state, 1);
   image_ImageData_free(imagedata);
   return 0;
@@ -37,26 +38,18 @@ static luaL_Reg const regFuncs[] = {
   {NULL, NULL}
 };
 
-bool l_image_isImageData(lua_State* state, int index) {
-  if(lua_type(state, index) != LUA_TUSERDATA) {
-    return false;
-  }
+l_check_type_fn(l_image_isImageData, moduleData.imageDataMT)
+l_to_type_fn(l_image_toImageData, image_ImageData)
 
-  lua_getmetatable(state, index);
-  lua_pushstring(state, "type");
-  lua_rawget(state, -2);
-  bool matching = lua_tointeger(state, -1);
-  lua_pop(state, 2);
-  return matching;
-}
+static luaL_Reg const imageDataMetatableFuncs[] = {
+  {"__gc", l_image_gcImageData},
+  {NULL, NULL}
+};
 
 int l_image_register(lua_State* state) {
   l_tools_register_module(state, "image", regFuncs);
 
-  lua_newtable(state);
-  lua_pushstring(state, "__gc");
-  lua_pushcfunction(state, l_ImageData_gc);
-  lua_rawset(state, -3);
+  luaL_newlib(state, imageDataMetatableFuncs);
   lua_pushvalue(state, -1);
   moduleData.imageDataMT = luaL_ref(state, LUA_REGISTRYINDEX);
   lua_pushstring(state, "type");

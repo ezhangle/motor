@@ -51,13 +51,47 @@ static int l_graphics_newImage(lua_State* state) {
   }
 
   image_ImageData * imageData = (image_ImageData*)lua_touserdata(state, 1);
+  int ref = luaL_ref(state, LUA_REGISTRYINDEX);
 
   l_graphics_Image *image = (l_graphics_Image*)lua_newuserdata(state, sizeof(l_graphics_Image));
 
   graphics_Image_new_with_ImageData(&image->image, imageData);
-  image->imageDataRef = luaL_ref(state, LUA_REGISTRYINDEX);
+  image->imageDataRef = ref;
+  printf("ref: %d\n", image->imageDataRef);
+
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.imageMT);
+  lua_setmetatable(state, -2);
 
   return 1;
+}
+
+
+l_check_type_fn(l_graphics_isImage, moduleData.imageMT)
+l_to_type_fn(l_graphics_toImage, l_graphics_Image)
+
+static int l_graphics_gcImage(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "Expected Image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+
+  graphics_Image_free(&img->image);
+  printf("ref: %d\n", img->imageDataRef);
+  luaL_unref(state, LUA_REGISTRYINDEX, img->imageDataRef);
+  return 0;
+}
+
+
+static int l_graphics_draw(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "Expected Image");
+    return lua_error(state);
+  }
+
+  graphics_draw_Image(&l_graphics_toImage(state, 1)->image);
+  return 0;
 }
 
 static luaL_Reg const regFuncs[] = {
@@ -65,13 +99,19 @@ static luaL_Reg const regFuncs[] = {
   {"setColor",           l_graphics_setColor},
   {"clear",              l_graphics_clear},
   {"newImage",           l_graphics_newImage},
+  {"draw",               l_graphics_draw},
+  {NULL, NULL}
+};
+
+static luaL_Reg const imageMetatableFuncs[] = {
+  {"__gc",               l_graphics_gcImage},
   {NULL, NULL}
 };
 
 int l_graphics_register(lua_State* state) {
   l_tools_register_module(state, "graphics", regFuncs);
 
-  lua_newtable(state);
+  luaL_newlib(state, imageMetatableFuncs);
 
   lua_pushvalue(state, -1);
   moduleData.imageMT = luaL_ref(state, LUA_REGISTRYINDEX);
