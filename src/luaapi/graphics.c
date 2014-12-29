@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "tools.h"
 #include "../graphics/graphics.h"
+#include "../graphics/matrixstack.h"
 #include "../graphics/image.h"
 #include "image.h"
 
@@ -94,12 +95,68 @@ static int l_graphics_draw(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_push(lua_State* state) {
+  if(matrixstack_push()) {
+    lua_pushstring(state, "Matrix stack overflow");
+    return lua_error(state);
+  }
+  return 0;
+}
+
+static int l_graphics_pop(lua_State* state) {
+  if(matrixstack_pop()) {
+    lua_pushstring(state, "Matrix stack underrun");
+    return lua_error(state);
+  }
+  return 0;
+}
+
+static int l_graphics_translate(lua_State* state) {
+  float x = l_tools_tonumber_or_err(state, 1);
+  float y = l_tools_tonumber_or_err(state, 2);
+
+  matrixstack_translate(x, y);
+  return 0;
+}
+
+static int l_graphics_scale(lua_State* state) {
+  float x = l_tools_tonumber_or_err(state, 1);
+  float y = l_tools_tonumber_or_err(state, 2);
+
+  matrixstack_scale(x, y);
+  return 0;
+}
+
+static int l_graphics_origin(lua_State* state) {
+  matrixstack_origin();
+  return 0;
+}
+
+static int l_graphics_shear(lua_State* state) {
+
+  return 0;
+}
+
+static int l_graphics_rotate(lua_State* state) {
+  float a = l_tools_tonumber_or_err(state, 1);
+
+  matrixstack_rotate(a);
+  return 0;
+}
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
   {"clear",              l_graphics_clear},
   {"newImage",           l_graphics_newImage},
   {"draw",               l_graphics_draw},
+  {"push",               l_graphics_push},
+  {"pop",                l_graphics_pop},
+  {"origin",             l_graphics_origin},
+  {"rotate",             l_graphics_rotate},
+  {"scale",              l_graphics_scale},
+  {"shear",              l_graphics_shear},
+  {"translate",          l_graphics_translate},
   {NULL, NULL}
 };
 

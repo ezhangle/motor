@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include "graphics.h"
 #include <SDL_opengl.h>
+#include "../math/vector.h"
+#include "matrixstack.h"
 
 
 typedef struct {
@@ -18,6 +20,7 @@ typedef struct {
   float v;
 } graphics_Vertex;
 
+
 static struct {
   SDL_Surface* surface;
   graphics_Color backgroundColor;
@@ -26,6 +29,8 @@ static struct {
   GLuint imageIBO;
   GLuint imageProgram;
   GLuint imageVAO;
+  mat4x4 matrixStack[32];
+  mat4x4 projectionMatrix;
 
 } moduleData;
 
@@ -35,14 +40,21 @@ void graphics_init(int width, int height) {
   moduleData.surface = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
   glViewport(0,0,width,height);
 
+  matrixstack_init();
+
+  m4x4_new_translation(&moduleData.projectionMatrix, -1.0f, 1.0f, 0.0f);
+  m4x4_scale(&moduleData.projectionMatrix, 2.0f / width, -2.0f / height, 0.0f);
+
   moduleData.imageProgram = glCreateProgram();
   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-  GLchar const *vsrc = "attribute vec2 vPos;\n"
+  GLchar const *vsrc = "uniform   mat4 transform;\n"  
+                       "uniform   mat4 projection;\n"
+                       "attribute vec2 vPos;\n"
                        "attribute vec2 vUV;\n"
                        "varying   vec2 fUV;\n"
                        "void main() {\n"
-                       "  gl_Position = vec4(vPos, 1.0, 1.0);\n"
+                       "  gl_Position = projection * transform * vec4(vPos, 1.0, 1.0);\n"
                        "  fUV = vUV;\n"
                        "}\n";
 
@@ -51,6 +63,7 @@ void graphics_init(int width, int height) {
                        "void main() {\n"
                        "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
                        "}\n";
+
 
   glShaderSource(vertexShader, 1, &vsrc, 0);
   glCompileShader(vertexShader);
@@ -98,8 +111,6 @@ void graphics_init(int width, int height) {
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, 0);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, (GLvoid const*)8);
-
-
 }
 
 void graphics_setBackgroundColor(int red, int green, int blue, int alpha) {
@@ -128,9 +139,13 @@ void graphics_swap() {
 
 void graphics_draw_Image(graphics_Image* image) {
   glUseProgram(moduleData.imageProgram);
+
+
+  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, &moduleData.projectionMatrix);
+  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  matrixstack_head());
+
   glBindVertexArray(moduleData.imageVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, moduleData.imageIBO);
   glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, 0);
 
-  printf("Err: %08x\n", glGetError());
 }
