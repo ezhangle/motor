@@ -49,14 +49,7 @@ static luaL_Reg const imageDataMetatableFuncs[] = {
 int l_image_register(lua_State* state) {
   l_tools_register_module(state, "image", regFuncs);
 
-  luaL_newlib(state, imageDataMetatableFuncs);
-  lua_pushvalue(state, -1);
-  moduleData.imageDataMT = luaL_ref(state, LUA_REGISTRYINDEX);
-  lua_pushstring(state, "type");
-  lua_pushinteger(state, moduleData.imageDataMT);
-  lua_rawset(state, -3);
-
-  lua_pop(state, 1);
+  moduleData.imageDataMT = l_tools_make_type_mt(state, imageDataMetatableFuncs);
   
   return 0;
 }

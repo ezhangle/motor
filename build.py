@@ -9,6 +9,7 @@ sources = [
   'graphics/graphics.c',
   'graphics/image.c',
   'graphics/matrixstack.c',
+  'graphics/quad.c',
   'image/imagedata.c',
   'luaapi/boot.c',
   'luaapi/motor.c',

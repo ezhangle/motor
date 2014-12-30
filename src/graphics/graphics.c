@@ -60,8 +60,9 @@ void graphics_init(int width, int height) {
 
   GLchar const *fsrc = "precision mediump float;\n"
                        "varying vec2 fUV;\n"
+                       "uniform sampler2D tex\n;"
                        "void main() {\n"
-                       "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                       "  gl_FragColor = texture2D(tex, fUV);\n"
                        "}\n";
 
 
@@ -141,6 +142,9 @@ void graphics_draw_Image(graphics_Image* image) {
   glUseProgram(moduleData.imageProgram);
 
 
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, image->texID);
+  glUniform1i(glGetUniformLocation(moduleData.imageProgram, "tex"), 0);
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, &moduleData.projectionMatrix);
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  matrixstack_head());
 

@@ -6,6 +6,8 @@
 
 void l_tools_register_module(lua_State* state, char const* moduleName, luaL_Reg const * funcs);
 float l_tools_tonumber_or_err(lua_State* state, int index);
+char const* l_tools_tostring_or_err(lua_State* state, int index);
+int l_tools_make_type_mt(lua_State* state, luaL_Reg const* funcs);
 
 
 #define l_check_type_fn(name, typeMT) \
@@ -24,3 +26,4 @@ bool name(lua_State* state, int index) { \
 type* name(lua_State* state, int index) {\
   return (type*)lua_touserdata(state, index);\
 }
+
