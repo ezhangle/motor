@@ -78,16 +78,6 @@ void graphics_init(int width, int height) {
   glBindAttribLocation(moduleData.imageProgram, 1, "vUV");
   glLinkProgram(moduleData.imageProgram);
 
-  GLint len;
-  GLint err;
-  glGetProgramiv(moduleData.imageProgram, GL_LINK_STATUS, &err);
-  printf("compiled: %d\n", err);
-  glGetProgramiv(moduleData.imageProgram, GL_INFO_LOG_LENGTH, &len);
-  GLchar * infolog = malloc(len);
-  glGetProgramInfoLog(moduleData.imageProgram, len, 0, infolog);
-  printf("fragment Info Log: %s\n", infolog);
-
-
   glGenVertexArrays(1, &moduleData.imageVAO);
   glBindVertexArray(moduleData.imageVAO);
   glGenBuffers(1, &moduleData.imageVBO);
@@ -145,8 +135,8 @@ void graphics_draw_Image(graphics_Image* image) {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, image->texID);
   glUniform1i(glGetUniformLocation(moduleData.imageProgram, "tex"), 0);
-  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, &moduleData.projectionMatrix);
-  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  matrixstack_head());
+  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, (GLfloat*)&moduleData.projectionMatrix);
+  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)matrixstack_head());
 
   glBindVertexArray(moduleData.imageVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, moduleData.imageIBO);

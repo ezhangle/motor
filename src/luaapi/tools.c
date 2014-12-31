@@ -1,3 +1,4 @@
+#include <string.h>
 #include "tools.h"
 
 void l_tools_register_module(lua_State* state, char const* moduleName, luaL_Reg const * funcs) {
@@ -41,4 +42,30 @@ int l_tools_make_type_mt(lua_State* state, luaL_Reg const* funcs) {
   lua_pop(state, 1);
 
   return mtref;
+}
+
+int l_tools_toenum_or_err(lua_State* state, int index, l_tools_Enum const* values) {
+  char const* string = l_tools_tostring_or_err(state, index);
+
+  while(values->name) {
+    if(!strcmp(values->name, string)) {
+      return values->value;
+    }
+    ++values;
+  }
+
+  lua_pushstring(state, "invalid enum value");
+  return lua_error(state);
+}
+
+void l_tools_pushenum(lua_State* state, int value, l_tools_Enum const* values) {
+  while(values->name) {
+    if(values->value == value) {
+      lua_pushstring(state, values->name);
+      return;
+    }
+    ++values;
+  }
+
+  // C code has to make sure the enum value is valid!
 }

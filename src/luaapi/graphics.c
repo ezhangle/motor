@@ -238,104 +238,11 @@ static int l_graphics_Quad_setViewport(lua_State* state) {
   return 0;
 }
 
-static graphics_WrapMode l_graphics_Image_setFilter_getFilterMode(lua_State* state, int index) {
-  char const* modestr = l_tools_tostring_or_err(state, index);
-  graphics_FilterMode mode;
-  if(!strcmp(modestr, "linear")) {
-    mode = graphics_FilterMode_linear;
-  } else if(!strcmp(modestr, "nearest")) {
-    mode = graphics_FilterMode_nearest;
-  } else {
-    lua_pushstring(state, "invalid filter mode");
-    lua_error(state);
-  }
-
-  return mode;
-}
-
-static int l_graphics_Image_setFilter(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
-
-  l_graphics_Image* img = l_graphics_toImage(state, 1);
-  graphics_FilterMode minMode = l_graphics_Image_setFilter_getFilterMode(state, 2);
-  graphics_FilterMode magMode = l_graphics_Image_setFilter_getFilterMode(state, 3);
-
-  graphics_Image_setFilter(img, minMode, magMode);
-
-  return 0;
-}
-
-static graphics_WrapMode l_graphics_Image_setWrap_getWrapMode(lua_State* state, int index) {
-  char const* modestr = l_tools_tostring_or_err(state, index);
-  graphics_WrapMode mode;
-  if(!strcmp(modestr, "repeat")) {
-    mode = graphics_WrapMode_repeat;
-  } else if(!strcmp(modestr, "clamp")) {
-    mode = graphics_WrapMode_clamp;
-  } else {
-    lua_pushstring(state, "invalid wrap mode");
-    lua_error(state);
-  }
-
-  return mode;
-}
-
-static int l_graphics_Image_setWrap(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
-
-  l_graphics_Image* img = l_graphics_toImage(state, 1);
-  graphics_WrapMode horMode = l_graphics_Image_setWrap_getWrapMode(state, 2);
-  graphics_WrapMode verMode = l_graphics_Image_setWrap_getWrapMode(state, 3);
-
-  graphics_Image_setFilter(img, horMode, verMode);
-
-  return 0;
-}
-
-static void l_graphics_Image_getWrap_pushFilterMode(lua_State* state, graphics_FilterMode mode) {
-  switch(mode) {
-  case graphics_FilterMode_nearest:
-    lua_pushstring(state, "nearest");
-    break;
-  case graphics_FilterMode_linear:
-    lua_pushstring(state, "linear");
-    break;
-  }
-}
-
-static int l_graphics_Image_getFilter(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
-
-  l_graphics_Image* img = l_graphics_toImage(state, 1);
-
-  graphics_FilterMode minMode, magMode;
-  graphics_Image_getFilter(img, &minMode, &magMode);
-
-  l_graphics_Image_getWrap_pushFilterMode(state, minMode);
-  l_graphics_Image_getWrap_pushFilterMode(state, magMode);
-
-  return 2;
-}
-
-static void l_graphics_Image_getWrap_pushWrapMode(lua_State* state, graphics_FilterMode mode) {
-  switch(mode) {
-  case graphics_WrapMode_clamp:
-    lua_pushstring(state, "clamp");
-    break;
-  case graphics_WrapMode_repeat:
-    lua_pushstring(state, "repeat");
-    break;
-  }
-}
+static const l_tools_Enum l_graphics_WrapMode[] = {
+  {"clamp", graphics_WrapMode_clamp},
+  {"repeat", graphics_WrapMode_repeat},
+  {NULL, 0}
+};
 
 static int l_graphics_Image_getWrap(lua_State* state) {
   if(!l_graphics_isImage(state, 1)) {
@@ -345,15 +252,142 @@ static int l_graphics_Image_getWrap(lua_State* state) {
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
-  graphics_WrapMode modeHor, modeVert;
-  graphics_Image_getFilter(img, &modeHor, &modeVert);
+  graphics_Wrap wrap;
+  graphics_Image_getWrap(&img->image, &wrap);
 
-  l_graphics_Image_getWrap_pushWrapMode(state, modeHor);
-  l_graphics_Image_getWrap_pushWrapMode(state, modeVert);
-
+  l_tools_pushenum(state, wrap.horMode, l_graphics_WrapMode);
+  l_tools_pushenum(state, wrap.verMode, l_graphics_WrapMode);
 
   return 2;
 }
+
+static int l_graphics_Image_setWrap(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+  graphics_Wrap wrap;
+  wrap.horMode = l_tools_toenum_or_err(state, 2, l_graphics_WrapMode);
+  wrap.verMode = l_tools_toenum_or_err(state, 3, l_graphics_WrapMode);
+
+  graphics_Image_setWrap(&img->image, &wrap);
+
+  return 0;
+}
+
+static const l_tools_Enum l_graphics_FilterMode[] = {
+  {"nearest", graphics_FilterMode_nearest},
+  {"linear",  graphics_FilterMode_linear},
+  {NULL, 0}
+};
+
+static int l_graphics_Image_getFilter(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+
+  graphics_Filter filter;
+
+  graphics_Image_getFilter(&img->image, &filter);
+
+  l_tools_pushenum(state, filter.minMode, l_graphics_FilterMode);
+  l_tools_pushenum(state, filter.magMode, l_graphics_FilterMode);
+  lua_pushnumber(state, filter.maxAnisotropy);
+
+  return 3;
+}
+
+static int l_graphics_Image_setFilter(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+  graphics_Filter newFilter;
+  graphics_Image_getFilter(&img->image, &newFilter);
+  newFilter.minMode = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
+  newFilter.magMode = l_tools_toenum_or_err(state, 3, l_graphics_FilterMode);
+  newFilter.maxAnisotropy = luaL_optnumber(state, 4, 1.0f);
+  graphics_Image_setFilter(&img->image, &newFilter);
+
+  return 0;
+}
+
+static int l_graphics_Image_setMipmapFilter(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+
+  graphics_Filter newFilter;
+  graphics_Image_getFilter(&img->image, &newFilter);
+
+  if(lua_isnoneornil(state, 2)) {
+    newFilter.mipmapMode  = graphics_FilterMode_none; 
+    newFilter.mipmapLodBias = 0.0f;
+  } else {
+    newFilter.mipmapMode  = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
+    // param 2 is supposed to be "sharpness", which is exactly opposite to LOD,
+    // therefore we use the negative value
+    newFilter.mipmapLodBias = -luaL_optnumber(state, 3, 0.0f);
+  }
+  graphics_Image_setFilter(&img->image, &newFilter);
+
+  return 0;
+}
+
+static int l_graphics_Image_getMipmapFilter(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+
+  graphics_Filter filter;
+
+  graphics_Image_getFilter(&img->image, &filter);
+
+  l_tools_pushenum(state, filter.mipmapMode, l_graphics_FilterMode);
+  lua_pushnumber(state, filter.mipmapLodBias);
+
+  return 2;
+}
+
+static int l_graphics_Image_getData(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+
+  lua_rawgeti(state, LUA_REGISTRYINDEX, img->imageDataRef);
+
+  return 1;
+}
+
+static int l_graphics_Image_refresh(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    return lua_error(state);
+  }
+
+  l_graphics_Image* img = l_graphics_toImage(state, 1);
+
+  graphics_Image_refresh(&img->image);
+
+  return 0;
+}
+
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
@@ -379,8 +413,12 @@ static luaL_Reg const imageMetatableFuncs[] = {
   {"getHeight",          l_graphics_Image_getHeight},
   {"setFilter",          l_graphics_Image_setFilter},
   {"getFilter",          l_graphics_Image_getFilter},
+  {"setMipmapFilter",    l_graphics_Image_setMipmapFilter},
+  {"getMipmapFilter",    l_graphics_Image_getMipmapFilter},
   {"setWrap",            l_graphics_Image_setWrap},
   {"getWrap",            l_graphics_Image_getWrap},
+  {"getData",            l_graphics_Image_getData},
+  {"refresh",            l_graphics_Image_refresh},
   {NULL, NULL}
 };
 
