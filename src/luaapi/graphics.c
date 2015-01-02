@@ -96,7 +96,32 @@ static int l_graphics_draw(lua_State* state) {
     return lua_error(state);
   }
 
-  graphics_draw_Image(&l_graphics_toImage(state, 1)->image);
+  graphics_Quad defaultQuad = {
+    .x = 0.0,
+    .y = 0.0,
+    .w = 1.0,
+    .h = 1.0
+  };
+
+  graphics_Quad* quad = &defaultQuad;
+  int baseidx = 2;
+
+  if(l_graphics_isQuad(state, 2)) {
+    quad = l_graphics_toQuad(state, 2);
+    baseidx = 1;
+  }
+  
+  float x  = luaL_optnumber(state, baseidx,     0.0f);
+  float y  = luaL_optnumber(state, baseidx + 1, 0.0f);
+  float r  = luaL_optnumber(state, baseidx + 2, 0.0f);
+  float sx = luaL_optnumber(state, baseidx + 3, 1.0f);
+  float sy = luaL_optnumber(state, baseidx + 4, sx);
+  float ox = luaL_optnumber(state, baseidx + 5, 0.0f);
+  float oy = luaL_optnumber(state, baseidx + 6, 0.0f);
+  float kx = luaL_optnumber(state, baseidx + 7, 0.0f);
+  float ky = luaL_optnumber(state, baseidx + 8, 0.0f);
+
+  graphics_draw_Image(&l_graphics_toImage(state, 1)->image, quad, x, y, r, sx, sy, ox, oy, kx, ky);
   return 0;
 }
 

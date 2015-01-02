@@ -16,6 +16,51 @@ void m4x4_translate(mat4x4 *inout, float x, float y, float z) {
   inout->m[3][2] += z * inout->m[0][2] + y * inout->m[1][2] + z * inout->m[2][2];
 }
 
+void m4x4_shear2d(mat4x4 *inout, float x, float y) {
+  inout->m[0][0] += x * inout->m[1][0];
+  inout->m[0][1] += x * inout->m[1][1];
+  inout->m[0][2] += x * inout->m[1][2];
+  inout->m[1][0] += y * inout->m[0][0];
+  inout->m[1][1] += y * inout->m[0][1];
+  inout->m[1][2] += y * inout->m[0][2];
+}
+
+void m4x4_new_transform2d(mat4x4 *out, float x, float y, float r, float sx, float sy,
+                      float ox, float oy, float kx, float ky, float w, float h) {
+
+  float sa = sin(r);
+  float ca = cos(r);
+  float a = h * sa;
+  float b = h * ca;
+  float c = w * sa;
+  float d = w * ca;
+  float e = ky * sy;
+  float f = kx * sx;
+  float g = -ky*ox-oy;
+  float j = g * sy;
+  float k = -kx*oy-ox;
+
+  out->m[0][0] = d*sx-c*e;
+  out->m[0][1] = c*sx+d*e;
+  out->m[0][2] = 0.0f;
+  out->m[0][3] = 0.0f;
+
+  out->m[1][0] = b*f-a*sy;
+  out->m[1][1] = b*sy+a*f;
+  out->m[1][2] = 0.0f;
+  out->m[1][3] = 0.0f;
+
+  out->m[2][0] = 0.0f;
+  out->m[2][1] = 0.0f;
+  out->m[2][2] = 1.0f;
+  out->m[2][3] = 0.0f;
+
+  out->m[3][0] = x+ca*k*sx-j*sa;
+  out->m[3][1] = y+k*sa*sx+ca*j;
+  out->m[3][2] = 0.0f;
+  out->m[3][3] = 1.0f;
+}
+
 void m4x4_rotate_z(mat4x4 *inout, float a) {
   float ca = cos(a);
   float sa = sin(a);

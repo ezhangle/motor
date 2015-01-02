@@ -128,7 +128,9 @@ void graphics_swap() {
   SDL_GL_SwapBuffers();
 }
 
-void graphics_draw_Image(graphics_Image* image) {
+void graphics_draw_Image(graphics_Image const* image, graphics_Quad const* quad,
+                         float x, float y, float r, float sx, float sy,
+                         float ox, float oy, float kx, float ky) {
   glUseProgram(moduleData.imageProgram);
 
 
@@ -136,7 +138,27 @@ void graphics_draw_Image(graphics_Image* image) {
   glBindTexture(GL_TEXTURE_2D, image->texID);
   glUniform1i(glGetUniformLocation(moduleData.imageProgram, "tex"), 0);
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, (GLfloat*)&moduleData.projectionMatrix);
-  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)matrixstack_head());
+
+  mat4x4 tr;
+  /*
+  memcpy(&tr, matrixstack_head(), sizeof(mat4x4));
+  m4x4_translate(&tr, x, y, 0.0f);
+  m4x4_rotate_z(&tr, r);
+  m4x4_scale(&tr, sx, sy, 1.0f);
+  m4x4_shear2d(&tr, kx, ky);
+  m4x4_translate(&tr, -ox, -oy, 0.0f);
+  m4x4_scale(&tr, image->width, image->height, 1.0f);
+  // */
+
+  // /*
+  // TODO add m4x4_transform2d and use it. that would safe a lot of multiplications and additions
+  mat4x4 tr2d;
+  m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, image->width, image->height);
+  m4x4_mul_m4x4(&tr, matrixstack_head(), &tr2d);
+  // */
+
+  //glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)matrixstack_head());
+  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)&tr);
 
   glBindVertexArray(moduleData.imageVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, moduleData.imageIBO);
