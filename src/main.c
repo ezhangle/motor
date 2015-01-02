@@ -12,8 +12,11 @@
 #include "luaapi/image.h"
 #include "luaapi/motor.h"
 #include "luaapi/boot.h"
+#include "luaapi/keyboard.h"
 
 #include "graphics/graphics.h"
+
+#include "keyboard.h"
 
 double curtime() {
 #ifdef EMSCRIPTEN
@@ -62,6 +65,19 @@ void main_loop(void *data) {
 
   loopData->lastTime = newTime;
 
+  SDL_Event event;
+  while(SDL_PollEvent(&event)) {
+    switch(event.type) {
+    case SDL_KEYDOWN:
+      l_keyboard_keypressed(event.key.keysym.sym, event.key.repeat);
+      break;
+    case SDL_KEYUP:
+      l_keyboard_keyreleased(event.key.keysym.sym);
+      break;
+
+    }
+  }
+
 }
 
 int main()
@@ -69,10 +85,10 @@ int main()
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
 
-
   l_motor_register(lua);
   l_graphics_register(lua);
   l_image_register(lua);
+  l_keyboard_register(lua);
 
   lua_pushcfunction(lua, &lua_curtime);
   lua_setglobal(lua, "gettime");
@@ -81,6 +97,7 @@ int main()
 
   l_boot(lua, &config);
 
+  keyboard_init();
   graphics_init(config.window.width, config.window.height);
 
   if(luaL_dofile(lua, "/main.lua")) {
