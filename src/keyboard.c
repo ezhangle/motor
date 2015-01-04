@@ -1,4 +1,7 @@
+#include <string.h>
+#include <stdbool.h>
 #include "keyboard.h"
+#include "luaapi/keyboard.h"
 
 typedef struct {
   SDL_Keycode keycode;
@@ -164,9 +167,14 @@ static const KeyName keynames[] = {
 
 static struct {
   char const * keynames[SDLK_LAST];
+  bool keystate[SDLK_LAST];
+  bool textActive;
 } moduleData;
 
+void keyboard_startText();
+
 void keyboard_init() {
+
   for(int i = 0; i < SDLK_LAST; ++i) {
     moduleData.keynames[i] = "unknown";
   }
@@ -174,8 +182,54 @@ void keyboard_init() {
   for(int i = 0; i < sizeof(keynames) / sizeof(KeyName); ++i) {
     moduleData.keynames[keynames[i].keycode] = keynames[i].name;
   }
+
+  memset(&moduleData.keystate, 0, sizeof(moduleData.keystate));
+  keyboard_startText();
 }
 
 char const * keyboard_getKeyName(SDL_Keycode key) {
   return moduleData.keynames[key];
+}
+
+SDL_Keycode keyboard_getKeycode(char const* name) {
+  // TODO this is really slow. use appropriate data structure
+  for(int i = 0; i < SDLK_LAST; ++i) {
+    if(!strcmp(name, keynames[i].name)) {
+      return keynames[i].keycode;
+    }
+  }
+  return 0;
+}
+
+void keyboard_keypressed(SDL_Keycode key) {
+  bool repeat = moduleData.keystate[key];
+  moduleData.keystate[key] = true;
+  l_keyboard_keypressed(key, repeat);
+}
+
+void keyboard_keyreleased(SDL_Keycode key) {
+  moduleData.keystate[key] = false;
+  l_keyboard_keyreleased(key);
+}
+
+bool keyboard_ispressed(SDL_Keycode key) {
+  return moduleData.keystate[key];
+}
+
+void keyboard_startText() {
+  SDL_StartTextInput();
+  moduleData.textActive = true;
+}
+
+void keyboard_stopText() {
+  SDL_StopTextInput();
+  moduleData.textActive = false;
+}
+
+bool keyboard_isTextEnabled() {
+  return moduleData.textActive;
+}
+
+void keyboard_textInput(char const* text) {
+  l_keyboard_textInput(text);
 }

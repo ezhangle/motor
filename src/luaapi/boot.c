@@ -7,6 +7,7 @@ static char const bootScript[] =
   "motor.load = function() end\n"
   "motor.keypressed = function() end\n"
   "motor.keyreleased = function() end\n"
+  "motor.textinput = function() end\n"
   "local conf = {\n"
   "  window = {\n"
   "    width = 400,\n"

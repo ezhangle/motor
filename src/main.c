@@ -69,15 +69,17 @@ void main_loop(void *data) {
   while(SDL_PollEvent(&event)) {
     switch(event.type) {
     case SDL_KEYDOWN:
-      l_keyboard_keypressed(event.key.keysym.sym, event.key.repeat);
+      keyboard_keypressed(event.key.keysym.sym);
       break;
     case SDL_KEYUP:
-      l_keyboard_keyreleased(event.key.keysym.sym);
+      keyboard_keyreleased(event.key.keysym.sym);
+      break;
+    case SDL_TEXTINPUT:
+      keyboard_textInput(event.text.text);
       break;
 
     }
   }
-
 }
 
 int main()
