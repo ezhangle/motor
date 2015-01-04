@@ -18,7 +18,9 @@ static int l_graphics_setBackgroundColor(lua_State* state) {
   int blue  = lua_tointeger(state, 3);
   int alpha = lua_tointeger(state, 4);
 
-  graphics_setBackgroundColor(red, green, blue, alpha);
+  float scale = 1.0f / 255.0f;
+
+  graphics_setBackgroundColor(red * scale, green * scale, blue * scale, alpha * scale);
   return 0;
 }
 
@@ -28,7 +30,9 @@ static int l_graphics_setColor(lua_State* state) {
   int blue  = lua_tointeger(state, 3);
   int alpha = lua_tointeger(state, 4);
 
-  graphics_setColor(red, green, blue, alpha);
+  float scale = 1.0f / 255.0f;
+
+  graphics_setColor(red * scale, green * scale, blue * scale, alpha * scale);
   return 0;
 }
 
@@ -108,7 +112,7 @@ static int l_graphics_draw(lua_State* state) {
 
   if(l_graphics_isQuad(state, 2)) {
     quad = l_graphics_toQuad(state, 2);
-    baseidx = 1;
+    baseidx = 3;
   }
   
   float x  = luaL_optnumber(state, baseidx,     0.0f);

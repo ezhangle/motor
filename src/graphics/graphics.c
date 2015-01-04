@@ -7,10 +7,10 @@
 
 
 typedef struct {
-  unsigned red;
-  unsigned green;
-  unsigned blue;
-  unsigned alpha;
+  float red;
+  float green;
+  float blue;
+  float alpha;
 } graphics_Color;
 
 typedef struct {
@@ -50,19 +50,21 @@ void graphics_init(int width, int height) {
 
   GLchar const *vsrc = "uniform   mat4 transform;\n"  
                        "uniform   mat4 projection;\n"
+                       "uniform   mat2 textureRect;\n"
                        "attribute vec2 vPos;\n"
                        "attribute vec2 vUV;\n"
                        "varying   vec2 fUV;\n"
                        "void main() {\n"
                        "  gl_Position = projection * transform * vec4(vPos, 1.0, 1.0);\n"
-                       "  fUV = vUV;\n"
+                       "  fUV = vUV * textureRect[1] + textureRect[0];\n"
                        "}\n";
 
   GLchar const *fsrc = "precision mediump float;\n"
                        "varying vec2 fUV;\n"
-                       "uniform sampler2D tex\n;"
+                       "uniform sampler2D tex;\n"
+                       "uniform vec4 color;\n"
                        "void main() {\n"
-                       "  gl_FragColor = texture2D(tex, fUV);\n"
+                       "  gl_FragColor = texture2D(tex, fUV) * color;\n"
                        "}\n";
 
 
@@ -102,18 +104,19 @@ void graphics_init(int width, int height) {
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, 0);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, (GLvoid const*)8);
+
+  graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void graphics_setBackgroundColor(int red, int green, int blue, int alpha) {
+void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
   moduleData.backgroundColor.red   = red;
   moduleData.backgroundColor.green = green;
   moduleData.backgroundColor.blue  = blue;
   moduleData.backgroundColor.alpha = alpha;
-  float scale = 1.0f / 255.0f;
-  glClearColor(red * scale, green * scale, blue * scale, alpha * scale);
+  glClearColor(red, green, blue, alpha);
 }
 
-void graphics_setColor(int red, int green, int blue, int alpha) {
+void graphics_setColor(float red, float green, float blue, float alpha) {
   moduleData.foregroundColor.red   = red;
   moduleData.foregroundColor.green = green;
   moduleData.foregroundColor.blue  = blue;
@@ -138,26 +141,15 @@ void graphics_draw_Image(graphics_Image const* image, graphics_Quad const* quad,
   glBindTexture(GL_TEXTURE_2D, image->texID);
   glUniform1i(glGetUniformLocation(moduleData.imageProgram, "tex"), 0);
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, (GLfloat*)&moduleData.projectionMatrix);
+  glUniformMatrix2fv(glGetUniformLocation(moduleData.imageProgram, "textureRect"), 1, 0, (GLfloat*)quad);
+  glUniform4fv(glGetUniformLocation(moduleData.imageProgram, "color"), 1, (GLfloat*)&moduleData.foregroundColor);
 
   mat4x4 tr;
-  /*
-  memcpy(&tr, matrixstack_head(), sizeof(mat4x4));
-  m4x4_translate(&tr, x, y, 0.0f);
-  m4x4_rotate_z(&tr, r);
-  m4x4_scale(&tr, sx, sy, 1.0f);
-  m4x4_shear2d(&tr, kx, ky);
-  m4x4_translate(&tr, -ox, -oy, 0.0f);
-  m4x4_scale(&tr, image->width, image->height, 1.0f);
-  // */
-
-  // /*
   // TODO add m4x4_transform2d and use it. that would safe a lot of multiplications and additions
   mat4x4 tr2d;
-  m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, image->width, image->height);
+  m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, image->width * quad->w, image->height * quad->h);
   m4x4_mul_m4x4(&tr, matrixstack_head(), &tr2d);
-  // */
 
-  //glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)matrixstack_head());
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)&tr);
 
   glBindVertexArray(moduleData.imageVAO);
