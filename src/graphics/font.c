@@ -2,6 +2,7 @@
 #include <string.h>
 #include <tgmath.h>
 #include "font.h"
+#include <stdlib.h>
 
 extern void graphics_font_init();
 extern int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize);
@@ -13,15 +14,16 @@ extern int graphics_Font_getBaseline(graphics_Font const* font);
 extern int graphics_Font_getWidth(graphics_Font const* font, char const* line);
 
 int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width, char ** wrapped) {
+  // TODO with some brains this can be made even faster by removing strtok_r and parsing the text
+  //      directly, without separating it into lines and words first.
+  //      The current version scans the text up to 3x, once to split it into lines, once to split
+  //      each line into words and once to move the word to the appropriate output position.
+  //      The task at hand can in principle be done reading the text only once.
+  
   int linecount = 0;
   int len = strlen(text);
   char *wbuf = malloc(len+1);
   char *out = NULL;
-
-  if(wrapped) {
-    *wrapped = malloc(len+1);
-    out = *wrapped;
-  }
 
   memcpy(wbuf, text, len+1);
 
@@ -29,7 +31,6 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
   int spaceWidth;
   TTF_GlyphMetrics(font->font, ' ', NULL, NULL, NULL, NULL, &spaceWidth);
   char *line = strtok_r(wbuf, "\n", &line_save);
-  char *curline;
   while(line) {
     if(linecount != 0) {
       *out = '\n';
@@ -48,6 +49,7 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
       } else {
         if(curwidth + ww + spaceWidth > width) {
           *out = '\n';
+          ++linecount;
           curwidth = ww;
         } else {
           curwidth += ww + spaceWidth;
@@ -55,7 +57,9 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
         }
         ++out;
       }
-      strcpy(out, word);
+      if(out != word) {
+        memmove(out, word, wlen + 1);
+      }
       out += wlen;
 
       word = strtok_r(NULL, " ", &word_save);
@@ -64,5 +68,11 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
     line = strtok_r(NULL, "\n", &line_save);
   }
 
-  strcpy(wbuf, line);
+  if(wrapped) {
+    *wrapped = wbuf;
+  } else {
+    free(wbuf);
+  }
+
+  return linecount;
 }
