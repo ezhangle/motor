@@ -1,58 +1,68 @@
+#define _POSIX_SOURCE
+#include <string.h>
 #include <tgmath.h>
 #include "font.h"
 
-void graphics_font_init() {
-  TTF_Init();
-}
+extern void graphics_font_init();
+extern int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize);
+extern void graphics_Font_free(graphics_Font *obj);
+extern int graphics_Font_getHeight(graphics_Font const* font); 
+extern int graphics_Font_getAscent(graphics_Font const* font);
+extern int graphics_Font_getDescent(graphics_Font const* font);
+extern int graphics_Font_getBaseline(graphics_Font const* font);
+extern int graphics_Font_getWidth(graphics_Font const* font, char const* line);
 
-int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
-  dst->font = TTF_OpenFont(filename, ptsize);
-  return dst->font == NULL;
-}
-
-void graphics_Font_free(graphics_Font *obj) {
-  TTF_CloseFont(obj->font);
-}
-
-int graphics_Font_getHeight(graphics_Font const* font) {
-  return TTF_FontHeight(font->font);
-}
-
-int graphics_Font_getAscent(graphics_Font const* font) {
-  return TTF_FontAscent(font->font);
-}
-
-int graphics_Font_getDescent(graphics_Font const* font) {
-  return TTF_FontDescent(font->font);
-}
-
-int graphics_Font_getBaseline(graphics_Font const* font) {
-  // No idea how this works, I stole it from Love2d
-  return floor(graphics_Font_getHeight(font) / 1.25f + 0.5f);
-}
-
-int graphics_Font_getWidth(graphics_Font const* font, char const* line) {
-  int w;
-  TTF_SizeUTF8(font->font, line, &w, NULL);
-  return w;
-}
-
-int graphics_Font_getWrap(graphics_Font const* font, char const* line, int width, char ** wrapped) {
+int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width, char ** wrapped) {
   int linecount = 0;
-  int len = strlen(line)+1;
-  char *wbuf = malloc(len);
-  int curwidth = 0;
-  int curwordoffset = 0;
+  int len = strlen(text);
+  char *wbuf = malloc(len+1);
+  char *out = NULL;
 
-  for(int i = 0; i < len; ++i) {
-    wbuf[i] = line[i];
+  if(wrapped) {
+    *wrapped = malloc(len+1);
+    out = *wrapped;
+  }
 
+  memcpy(wbuf, text, len+1);
 
+  char *line_save;
+  int spaceWidth;
+  TTF_GlyphMetrics(font->font, ' ', NULL, NULL, NULL, NULL, &spaceWidth);
+  char *line = strtok_r(wbuf, "\n", &line_save);
+  char *curline;
+  while(line) {
+    if(linecount != 0) {
+      *out = '\n';
+      ++out;
+    }
+
+    ++linecount;
+    char *word_save;
+    char *word = strtok_r(line, " ", &word_save);
+    int curwidth = 0;
+    while(word) {
+      int wlen = strlen(word);
+      int ww = graphics_Font_getWidth(font, word);
+      if(curwidth == 0) {
+        curwidth = ww;
+      } else {
+        if(curwidth + ww + spaceWidth > width) {
+          *out = '\n';
+          curwidth = ww;
+        } else {
+          curwidth += ww + spaceWidth;
+          *out = ' ';
+        }
+        ++out;
+      }
+      strcpy(out, word);
+      out += wlen;
+
+      word = strtok_r(NULL, " ", &word_save);
+    }
+
+    line = strtok_r(NULL, "\n", &line_save);
   }
 
   strcpy(wbuf, line);
-
-
-  printf("Wrapped:\n'%s'\n", wbuf);
-
 }

@@ -517,7 +517,8 @@ static int l_graphics_Font_getWrap(lua_State* state) {
   char const* line = l_tools_tostring_or_err(state, 2);
   int width = l_tools_tonumber_or_err(state, 3);
 
-  lua_pushinteger(state, graphics_Font_getWrap(font, line, width, NULL));
+  char* wrapped;
+  lua_pushinteger(state, graphics_Font_getWrap(font, line, width, &wrapped));
   return 1;
 }
 
