@@ -5,11 +5,13 @@
 #include "../graphics/matrixstack.h"
 #include "../graphics/image.h"
 #include "../graphics/quad.h"
+#include "../graphics/font.h"
 #include "image.h"
 
 static struct {
   int imageMT;
   int quadMT;
+  int fontMT;
 } moduleData;
 
 static int l_graphics_setBackgroundColor(lua_State* state) {
@@ -417,6 +419,107 @@ static int l_graphics_Image_refresh(lua_State* state) {
   return 0;
 }
 
+l_check_type_fn(l_graphics_isFont, moduleData.fontMT)
+l_to_type_fn(l_graphics_toFont, graphics_Font)
+
+static int l_graphics_newFont(lua_State* state) {
+  // TODO: alternative signatures for newFont
+  char const * filename = l_tools_tostring_or_err(state, 1);
+  int ptsize = l_tools_tonumber_or_err(state, 2);
+
+  graphics_Font* font = lua_newuserdata(state, sizeof(graphics_Font));
+  if(graphics_Font_new(font, filename, ptsize)) {
+    lua_pushstring(state, "Could not open font");
+    lua_error(state);
+  }
+
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.fontMT);
+  lua_setmetatable(state, -2);
+  return 1;
+}
+
+static int l_graphics_gcFont(lua_State* state) {
+  graphics_Font* font = l_graphics_toFont(state, 1);
+  graphics_Font_free(font);
+  return 0;
+}
+
+static int l_graphics_Font_getHeight(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  lua_pushinteger(state, graphics_Font_getHeight(font));
+  return 1;
+}
+
+static int l_graphics_Font_getDescent(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  lua_pushinteger(state, graphics_Font_getDescent(font));
+  return 1;
+}
+
+static int l_graphics_Font_getAscent(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  lua_pushinteger(state, graphics_Font_getAscent(font));
+  return 1;
+}
+
+static int l_graphics_Font_getBaseline(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  lua_pushinteger(state, graphics_Font_getBaseline(font));
+  return 1;
+}
+
+static int l_graphics_Font_getWidth(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  char const* line = l_tools_tostring_or_err(state, 2);
+
+  lua_pushinteger(state, graphics_Font_getWidth(font, line));
+  return 1;
+}
+
+static int l_graphics_Font_getWrap(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  char const* line = l_tools_tostring_or_err(state, 2);
+  int width = l_tools_tonumber_or_err(state, 3);
+
+  lua_pushinteger(state, graphics_Font_getWrap(font, line, width, NULL));
+  return 1;
+}
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
@@ -432,6 +535,7 @@ static luaL_Reg const regFuncs[] = {
   {"scale",              l_graphics_scale},
   {"shear",              l_graphics_shear},
   {"translate",          l_graphics_translate},
+  {"newFont",            l_graphics_newFont},
   {NULL, NULL}
 };
 
@@ -457,11 +561,23 @@ static luaL_Reg const quadMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const fontMetatableFuncs[] = {
+  {"__gc",               l_graphics_gcFont},
+  {"getHeight",          l_graphics_Font_getHeight},
+  {"getAscent",          l_graphics_Font_getAscent},
+  {"getDescent",         l_graphics_Font_getDescent},
+  {"getBaseline",        l_graphics_Font_getBaseline},
+  {"getWidth",           l_graphics_Font_getWidth},
+  {"getWrap",            l_graphics_Font_getWrap},
+  {NULL, NULL}
+};
+
 int l_graphics_register(lua_State* state) {
   l_tools_register_module(state, "graphics", regFuncs);
 
   moduleData.imageMT = l_tools_make_type_mt(state, imageMetatableFuncs);
   moduleData.quadMT  = l_tools_make_type_mt(state, quadMetatableFuncs);
+  moduleData.fontMT  = l_tools_make_type_mt(state, fontMetatableFuncs);
 
   return 0;
 }

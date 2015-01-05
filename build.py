@@ -6,6 +6,7 @@ import re
 import shutil
 
 sources = [
+  'graphics/font.c',
   'graphics/graphics.c',
   'graphics/image.c',
   'graphics/matrixstack.c',

@@ -4,6 +4,7 @@
 #include <SDL_opengl.h>
 #include "../math/vector.h"
 #include "matrixstack.h"
+#include "font.h"
 
 
 typedef struct {
@@ -106,6 +107,8 @@ void graphics_init(int width, int height) {
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, (GLvoid const*)8);
 
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+  graphics_font_init();
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
