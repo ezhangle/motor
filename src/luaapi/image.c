@@ -27,7 +27,6 @@ int l_image_newImageData(lua_State* state) {
 }
 
 static int l_image_gcImageData(lua_State* state) {
-  printf("freeing image data\n");
   image_ImageData* imagedata = (image_ImageData*)lua_touserdata(state, 1);
   image_ImageData_free(imagedata);
   return 0;

@@ -109,6 +109,8 @@ void graphics_init(int width, int height) {
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
   graphics_font_init();
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
@@ -138,6 +140,7 @@ void graphics_draw_Image(graphics_Image const* image, graphics_Quad const* quad,
                          float x, float y, float r, float sx, float sy,
                          float ox, float oy, float kx, float ky) {
   glUseProgram(moduleData.imageProgram);
+//  printf("Program: %d\n", moduleData.imageProgram);
 
 
   glActiveTexture(GL_TEXTURE0);

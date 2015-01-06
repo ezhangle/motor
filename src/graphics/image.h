@@ -28,14 +28,14 @@ typedef struct {
 } graphics_Wrap;
 
 typedef struct {
-  image_ImageData const * imageData;
+  image_ImageData* imageData;
   GLuint texID;
   int width;
   int height;
 } graphics_Image;
 
 
-void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData const *data);
+void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData *data);
 void graphics_Image_free(graphics_Image *obj);
 void graphics_Image_setFilter(graphics_Image *img, graphics_Filter const* filter);
 void graphics_Image_getFilter(graphics_Image *img, graphics_Filter *filter);
