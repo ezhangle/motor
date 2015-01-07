@@ -20,7 +20,7 @@
 
 double curtime() {
 #ifdef EMSCRIPTEN
-  return emscripten_get_now();
+  return emscripten_get_now() / 1000.0;
 #else
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);

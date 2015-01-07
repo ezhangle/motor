@@ -2,19 +2,17 @@
 
 #include <tgmath.h>
 #include "image.h"
+#include "quad.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 typedef struct {
   unsigned code;
-  int width;
-  int height;
   int bearingX;
   int bearingY;
   int advance;
   int textureIdx;
-  int textureX;
-  int textureY;
+  graphics_Quad textureCoords;
 } graphics_Glyph;
 
 typedef struct {
@@ -38,6 +36,7 @@ typedef struct {
 typedef struct {
   FT_Face face;
   graphics_GlyphMap glyphs;
+  int baseline;
 } graphics_Font;
 
 
