@@ -19,7 +19,7 @@ typedef struct {
 
 typedef struct {
   graphics_Glyph const* glyphs;
-  int numGlypths;
+  int numGlyphs;
 
 } graphics_GlyphSet;
 
@@ -31,6 +31,7 @@ typedef struct {
   int numTextures;
   int currentX;
   int currentY;
+  int currentRowHeight;
 
 } graphics_GlyphMap;
 
