@@ -22,6 +22,13 @@ static struct {
   GLuint imageProgram;
   mat4x4 matrixStack[32];
   mat4x4 projectionMatrix;
+  struct {
+    GLuint transform;
+    GLuint projection;
+    GLuint textureRect;
+    GLuint tex;
+    GLuint color;
+  } uniformLocations;
 
 } moduleData;
 
@@ -76,6 +83,11 @@ void graphics_init(int width, int height) {
   glBindAttribLocation(moduleData.imageProgram, 2, "vColor");
   glLinkProgram(moduleData.imageProgram);
 
+  moduleData.uniformLocations.transform = glGetUniformLocation(moduleData.imageProgram, "transform");
+  moduleData.uniformLocations.projection = glGetUniformLocation(moduleData.imageProgram, "projection");
+  moduleData.uniformLocations.textureRect = glGetUniformLocation(moduleData.imageProgram, "textureRect");
+  moduleData.uniformLocations.tex= glGetUniformLocation(moduleData.imageProgram, "tex");
+  moduleData.uniformLocations.color= glGetUniformLocation(moduleData.imageProgram, "color");
 
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -115,16 +127,16 @@ void graphics_swap() {
 
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType) {
   glUseProgram(moduleData.imageProgram);
-  glUniform1i(glGetUniformLocation(moduleData.imageProgram, "tex"), 0);
+  glUniform1i(moduleData.uniformLocations.tex, 0);
   // TODO do not request the uniforms every time
-  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, (GLfloat*)&moduleData.projectionMatrix);
-  glUniformMatrix2fv(glGetUniformLocation(moduleData.imageProgram, "textureRect"), 1, 0, (GLfloat*)quad);
-  glUniform4fv(glGetUniformLocation(moduleData.imageProgram, "color"), 1, (GLfloat*)&moduleData.foregroundColor);
+  glUniformMatrix4fv(moduleData.uniformLocations.projection, 1, 0, (GLfloat*)&moduleData.projectionMatrix);
+  glUniformMatrix2fv(moduleData.uniformLocations.textureRect, 1, 0, (GLfloat*)quad);
+  glUniform4fv(moduleData.uniformLocations.color, 1, (GLfloat*)&moduleData.foregroundColor);
 
   mat4x4 tr;
   m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
 
-  glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)&tr);
+  glUniformMatrix4fv(moduleData.uniformLocations.transform, 1, 0,  (GLfloat*)&tr);
   glBindVertexArray(vao);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glDrawElements(type, count, indexType, 0);
