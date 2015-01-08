@@ -62,6 +62,12 @@ void graphics_Batch_new(graphics_Batch* batch, graphics_Image const* texture, in
   batch->dirty = false;
   batch->bound = false;
   batch->usage = usage;
+  batch->colorSet = false;
+  batch->colorUsed = false;
+  batch->color.x = 1.0f;
+  batch->color.y = 1.0f;
+  batch->color.z = 1.0f;
+  batch->color.w = 1.0f;
 }
 
 void graphics_Batch_free(graphics_Batch* batch) {
@@ -72,16 +78,65 @@ static const vec2 batchQuadPts[4] = {
   {0,0},{0,1},{1,0},{1,1}
 };
 
-void graphics_Batch_add(graphics_Batch* batch, graphics_Quad const* q, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky) {
+int graphics_Batch_add(graphics_Batch* batch, graphics_Quad const* q, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky) {
 
   if(batch->insertPos == batch->maxCount) {
-    return;
+    return -1;
   }
 
   mat3x3 transform;
   m3x3_new_transform2d(&transform, x, y, r, sx, sy, ox, oy, kx, ky, q->w * batch->texture->width, q->h * batch->texture->height);
 
   graphics_Vertex *v = batch->vertexData+ 4*batch->insertPos;
+  
+  for(int i = 0; i < 4; ++i) {
+    m3x3_mul_v2(&v[i].pos, &transform, batchQuadPts+i);
+    v[i].color = batch->color;
+  }
+
+  batch->colorUsed |= batch->colorSet;
+
+  v[0].uv.x = q->x;
+  v[0].uv.y = q->y;
+  v[1].uv.x = q->x;
+  v[1].uv.y = q->y + q->h;
+  v[2].uv.x = q->x + q->w;
+  v[2].uv.y = q->y;
+  v[3].uv.x = q->x + q->w;
+  v[3].uv.y = q->y + q->h;
+
+  if(batch->bound) {
+    batch->dirty = true;
+  } else {
+    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, batch->insertPos * 4, 4*sizeof(graphics_Vertex), v);
+  }
+
+  return batch->insertPos++;
+}
+
+void graphics_Batch_setBufferSize(graphics_Batch* batch, int newsize) {
+  batch->vertexData = realloc(batch->vertexData, newsize * 4 * sizeof(graphics_Vertex));
+  memset(batch->vertexData+batch->insertPos, 0, (newsize-batch->insertPos) * 4 * sizeof(graphics_Vertex));
+  if(!batch->bound) {
+    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+    glBufferData(GL_ARRAY_BUFFER, 4*newsize*sizeof(graphics_Vertex), batch->vertexData, batch->usage);
+  }
+  batch->maxCount = newsize;
+  if(batch->insertPos > newsize) {
+    batch->insertPos = newsize;
+  }
+}
+
+void graphics_Batch_set(graphics_Batch* batch, int id, graphics_Quad const* q, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky) {
+  if(id >= batch->insertPos) {
+    return;
+  }
+
+  mat3x3 transform;
+  m3x3_new_transform2d(&transform, x, y, r, sx, sy, ox, oy, kx, ky, q->w * batch->texture->width, q->h * batch->texture->height);
+
+  graphics_Vertex *v = batch->vertexData + 4*id;
   
   for(int i = 0; i < 4; ++i) {
     m3x3_mul_v2(&v[i].pos, &transform, batchQuadPts+i);
@@ -104,15 +159,16 @@ void graphics_Batch_add(graphics_Batch* batch, graphics_Quad const* q, float x, 
     batch->dirty = true;
   } else {
     glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, batch->insertPos * 4, 4*sizeof(graphics_Vertex), &v);
+    glBufferSubData(GL_ARRAY_BUFFER, id * 4, 4*sizeof(graphics_Vertex), v);
   }
-
-  ++batch->insertPos;
 }
 
 static const graphics_Quad fullQuad = {
   0.0f,0.0f,1.0f,1.0f
 };
+
+static float const defaultColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
 void graphics_Batch_draw(graphics_Batch const* batch,
                          float x, float y, float r, float sx, float sy,
                          float ox, float oy, float kx, float ky) {
@@ -121,7 +177,9 @@ void graphics_Batch_draw(graphics_Batch const* batch,
   glBindTexture(GL_TEXTURE_2D, batch->texture->texID);
   mat4x4 tr2d;
   m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, 1, 1);
-  graphics_drawArray(&fullQuad, &tr2d, batch->vao, moduleData.sharedIndexBuffer, batch->insertPos*6, GL_TRIANGLES, GL_UNSIGNED_SHORT);
+  float * color = batch->colorUsed ? defaultColor : graphics_getColorPtr();
+
+  graphics_drawArray(&fullQuad, &tr2d, batch->vao, moduleData.sharedIndexBuffer, batch->insertPos*6, GL_TRIANGLES, GL_UNSIGNED_SHORT, color);
 }
 
 void graphics_Batch_bind(graphics_Batch *batch) {
@@ -142,4 +200,25 @@ void graphics_Batch_unbind(graphics_Batch *batch) {
     
   }
   batch->bound = false;
+}
+
+void graphics_Batch_clear(graphics_Batch *batch) {
+  batch->insertPos = 0;
+  batch->colorUsed = false;
+}
+
+void graphics_Batch_setColor(graphics_Batch *batch, float r, float g, float b, float a) {
+  batch->color.x = r;
+  batch->color.y = g;
+  batch->color.z = b;
+  batch->color.w = a;
+  batch->colorSet = true;
+}
+
+void graphics_Batch_clearColor(graphics_Batch *batch) {
+  batch->color.x = 1.0f;
+  batch->color.y = 1.0f;
+  batch->color.z = 1.0f;
+  batch->color.w = 1.0f;
+  batch->colorSet = false;
 }

@@ -125,13 +125,14 @@ void graphics_swap() {
   SDL_GL_SwapBuffers();
 }
 
-void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType) {
+void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor) {
   glUseProgram(moduleData.imageProgram);
   glUniform1i(moduleData.uniformLocations.tex, 0);
   // TODO do not request the uniforms every time
   glUniformMatrix4fv(moduleData.uniformLocations.projection, 1, 0, (GLfloat*)&moduleData.projectionMatrix);
   glUniformMatrix2fv(moduleData.uniformLocations.textureRect, 1, 0, (GLfloat*)quad);
-  glUniform4fv(moduleData.uniformLocations.color, 1, (GLfloat*)&moduleData.foregroundColor);
+  //glUniform4fv(moduleData.uniformLocations.color, 1, (GLfloat*)&moduleData.foregroundColor);
+  glUniform4fv(moduleData.uniformLocations.color, 1, useColor);
 
   mat4x4 tr;
   m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
@@ -148,4 +149,8 @@ int graphics_getWidth() {
 
 int graphics_getHeight() {
   return moduleData.surface->h;
+}
+
+float* graphics_getColorPtr() {
+  return (float*)(&moduleData.foregroundColor);
 }

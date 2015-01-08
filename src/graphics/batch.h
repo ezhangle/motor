@@ -22,6 +22,9 @@ typedef struct {
   GLuint vao;
   bool dirty;
   bool bound;
+  vec4 color;
+  bool colorSet;
+  bool colorUsed;
   graphics_BatchUsage usage;
 } graphics_Batch;
 
@@ -29,7 +32,12 @@ typedef struct {
 void graphics_batch_init();
 void graphics_Batch_new(graphics_Batch* batch, graphics_Image const* texture, int maxSize, graphics_BatchUsage usage);
 void graphics_Batch_free(graphics_Batch* batch);
-void graphics_Batch_add(graphics_Batch* batch, graphics_Quad const* q, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky);
+int graphics_Batch_add(graphics_Batch* batch, graphics_Quad const* q, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky);
+void graphics_Batch_set(graphics_Batch* batch, int id, graphics_Quad const* q, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky);
 void graphics_Batch_draw(graphics_Batch const* batch, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky);
 void graphics_Batch_bind(graphics_Batch *batch);
 void graphics_Batch_unbind(graphics_Batch *batch);
+void graphics_Batch_clear(graphics_Batch *batch);
+void graphics_Batch_setBufferSize(graphics_Batch* batch, int newsize);
+void graphics_Batch_setColor(graphics_Batch* batch, float r, float g, float b, float a);
+void graphics_Batch_clearColor(graphics_Batch* batch);
