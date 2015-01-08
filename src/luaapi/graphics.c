@@ -6,12 +6,14 @@
 #include "../graphics/image.h"
 #include "../graphics/quad.h"
 #include "../graphics/font.h"
+#include "../graphics/batch.h"
 #include "image.h"
 
 static struct {
   int imageMT;
   int quadMT;
   int fontMT;
+  int batchMT;
 
   graphics_Font* currentFont;
   int currentFontRef;
@@ -77,6 +79,14 @@ static int l_graphics_newImage(lua_State* state) {
 }
 
 
+typedef struct {
+  graphics_Batch batch;
+  int textureRef;
+} l_graphics_Batch;
+
+l_check_type_fn(l_graphics_isBatch, moduleData.batchMT)
+l_to_type_fn(l_graphics_toBatch, graphics_Batch)
+
 l_check_type_fn(l_graphics_isImage, moduleData.imageMT)
 l_to_type_fn(l_graphics_toImage, l_graphics_Image)
 l_check_type_fn(l_graphics_isQuad, moduleData.quadMT)
@@ -104,18 +114,22 @@ static const graphics_Quad defaultQuad = {
   .h = 1.0
 };
 static int l_graphics_draw(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "Expected Image");
-    return lua_error(state);
-  }
-
-
+  l_graphics_Image const * image = NULL;
+  l_graphics_Batch const * batch = NULL;
   graphics_Quad const * quad = &defaultQuad;
   int baseidx = 2;
 
-  if(l_graphics_isQuad(state, 2)) {
-    quad = l_graphics_toQuad(state, 2);
-    baseidx = 3;
+  if(l_graphics_isImage(state, 1)) {
+    if(l_graphics_isQuad(state, 2)) {
+      quad = l_graphics_toQuad(state, 2);
+      baseidx = 3;
+    }
+    image = l_graphics_toImage(state, 1);
+  } else if(l_graphics_isBatch(state, 1)) {
+    batch = l_graphics_toBatch(state, 1);
+  } else {
+    lua_pushstring(state, "expected image or spritebatch");
+    lua_error(state);
   }
   
   float x  = luaL_optnumber(state, baseidx,     0.0f);
@@ -128,7 +142,11 @@ static int l_graphics_draw(lua_State* state) {
   float kx = luaL_optnumber(state, baseidx + 7, 0.0f);
   float ky = luaL_optnumber(state, baseidx + 8, 0.0f);
 
-  graphics_draw_Image(&l_graphics_toImage(state, 1)->image, quad, x, y, r, sx, sy, ox, oy, kx, ky);
+  if(image) {
+    graphics_Image_draw(&image->image, quad, x, y, r, sx, sy, ox, oy, kx, ky);
+  } else if(batch) {
+    graphics_Batch_draw(&batch->batch, x, y, r, sx, sy, ox, oy, kx, ky);
+  }
   return 0;
 }
 
@@ -557,6 +575,88 @@ static int l_graphics_print(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_newSpriteBatch(lua_State* state) {
+  if(!l_graphics_isImage(state, 1)) {
+    lua_pushstring(state, "expected image");
+    lua_error(state);
+  }
+
+  graphics_Image const* image = l_graphics_toImage(state, 1);
+  int count = luaL_optnumber(state, 2, 128);
+
+  l_graphics_Batch* batch = lua_newuserdata(state, sizeof(l_graphics_Batch));
+  graphics_Batch_new(&batch->batch, image, count, graphics_BatchUsage_static);
+
+  lua_pushvalue(state, 1);
+  batch->textureRef = luaL_ref(state, LUA_REGISTRYINDEX);
+
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.batchMT);
+  lua_setmetatable(state, -2);
+  return 1;
+}
+
+static int l_graphics_gcSpriteBatch(lua_State* state) {
+  l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
+  graphics_Batch_free(&batch->batch);
+  luaL_unref(state, LUA_REGISTRYINDEX, batch->textureRef);
+
+
+  return 0;
+}
+
+static int l_graphics_SpriteBatch_bind(lua_State* state) {
+  if(!l_graphics_isBatch(state, 1)) {
+    lua_pushstring(state, "expected batch");
+    lua_error(state);
+  }
+
+  l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
+
+  graphics_Batch_bind(batch);
+}
+
+static int l_graphics_SpriteBatch_unbind(lua_State* state) {
+  if(!l_graphics_isBatch(state, 1)) {
+    lua_pushstring(state, "expected batch");
+    lua_error(state);
+  }
+
+  l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
+
+  graphics_Batch_unbind(batch);
+}
+
+static int l_graphics_SpriteBatch_add(lua_State* state) {
+  if(!l_graphics_isBatch(state, 1)) {
+    lua_pushstring(state, "expected batch");
+    lua_error(state);
+  }
+
+  l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
+
+  graphics_Quad const * quad = &defaultQuad;
+  int baseidx = 2;
+
+  if(l_graphics_isQuad(state, 2)) {
+    quad = l_graphics_toQuad(state, 2);
+    baseidx = 3;
+  }
+  
+  float x  = luaL_optnumber(state, baseidx,     0.0f);
+  float y  = luaL_optnumber(state, baseidx + 1, 0.0f);
+  float r  = luaL_optnumber(state, baseidx + 2, 0.0f);
+  float sx = luaL_optnumber(state, baseidx + 3, 1.0f);
+  float sy = luaL_optnumber(state, baseidx + 4, sx);
+  float ox = luaL_optnumber(state, baseidx + 5, 0.0f);
+  float oy = luaL_optnumber(state, baseidx + 6, 0.0f);
+  float kx = luaL_optnumber(state, baseidx + 7, 0.0f);
+  float ky = luaL_optnumber(state, baseidx + 8, 0.0f);
+
+  graphics_Batch_add(&batch->batch, quad, x, y, r, sx, sy, ox, oy, kx, ky);
+
+  return 0;
+}
+
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
@@ -576,6 +676,7 @@ static luaL_Reg const regFuncs[] = {
   {"setFont",            l_graphics_setFont},
   {"printf",             l_graphics_printf},
   {"print",              l_graphics_print},
+  {"newSpriteBatch",     l_graphics_newSpriteBatch},
   {NULL, NULL}
 };
 
@@ -612,12 +713,21 @@ static luaL_Reg const fontMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const batchMetatableFuncs[] = {
+  {"__gc",               l_graphics_gcSpriteBatch},
+  {"add",                l_graphics_SpriteBatch_add},
+  {"bind",               l_graphics_SpriteBatch_bind},
+  {"unbind",             l_graphics_SpriteBatch_unbind},
+  {NULL, NULL}
+};
+
 int l_graphics_register(lua_State* state) {
   l_tools_register_module(state, "graphics", regFuncs);
 
   moduleData.imageMT = l_tools_make_type_mt(state, imageMetatableFuncs);
   moduleData.quadMT  = l_tools_make_type_mt(state, quadMetatableFuncs);
   moduleData.fontMT  = l_tools_make_type_mt(state, fontMetatableFuncs);
+  moduleData.batchMT = l_tools_make_type_mt(state, batchMetatableFuncs);
   moduleData.currentFont = NULL;
 
   return 0;

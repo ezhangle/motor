@@ -240,7 +240,7 @@ void graphics_Font_render(graphics_Font* font, char const* text) {
       font->glyphs.textures[glyph->textureIdx],
       GlyphTextureWidth, GlyphTextureHeight };
 
-    graphics_draw_Image(&img, &glyph->textureCoords, px+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
+    graphics_Image_draw(&img, &glyph->textureCoords, px+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
 
     px += glyph->advance;
   }
@@ -248,7 +248,6 @@ void graphics_Font_render(graphics_Font* font, char const* text) {
 
 void graphics_font_init() {
   int error = FT_Init_FreeType(&moduleData.ft);
-  printf("FT init: %d\n", error);
 }
 
 int graphics_Font_getHeight(graphics_Font const* font) {

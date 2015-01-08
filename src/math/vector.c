@@ -61,6 +61,34 @@ void m4x4_new_transform2d(mat4x4 *out, float x, float y, float r, float sx, floa
   out->m[3][3] = 1.0f;
 }
 
+void m3x3_new_transform2d(mat3x3 *out, float x, float y, float r, float sx, float sy,
+                      float ox, float oy, float kx, float ky, float w, float h) {
+
+  float sa = sin(r);
+  float ca = cos(r);
+  float a = h * sa;
+  float b = h * ca;
+  float c = w * sa;
+  float d = w * ca;
+  float e = ky * sy;
+  float f = kx * sx;
+  float g = -ky*ox-oy;
+  float j = g * sy;
+  float k = -kx*oy-ox;
+
+  out->m[0][0] = d*sx-c*e;
+  out->m[0][1] = c*sx+d*e;
+  out->m[0][2] = 0.0f;
+
+  out->m[1][0] = b*f-a*sy;
+  out->m[1][1] = b*sy+a*f;
+  out->m[1][2] = 0.0f;
+
+  out->m[2][0] = x+ca*k*sx-j*sa;
+  out->m[2][1] = y+k*sa*sx+ca*j;
+  out->m[2][2] = 1.0f;
+}
+
 void m4x4_rotate_z(mat4x4 *inout, float a) {
   float ca = cos(a);
   float sa = sin(a);
@@ -180,3 +208,7 @@ void m4x4_mul_m4x4(mat4x4 *out, mat4x4 const* a, mat4x4 const* b) {
 void m4x4_mul_v4(vec4 *out, mat4x4 const* m, vec4 const* v) {
 }
 
+void m3x3_mul_v2(vec2 *out, mat3x3 const* m, vec2 const* v) {
+  out->x = m->m[0][0] * v->x + m->m[1][0] * v->y + m->m[2][0];
+  out->y = m->m[0][1] * v->x + m->m[1][1] * v->y + m->m[2][1];
+}

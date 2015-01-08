@@ -5,7 +5,8 @@
 #include "../math/vector.h"
 #include "matrixstack.h"
 #include "font.h"
-
+#include "batch.h"
+#include "quad.h"
 
 typedef struct {
   float red;
@@ -14,22 +15,11 @@ typedef struct {
   float alpha;
 } graphics_Color;
 
-typedef struct {
-  float x;
-  float y;
-  float u;
-  float v;
-} graphics_Vertex;
-
-
 static struct {
   SDL_Surface* surface;
   graphics_Color backgroundColor;
   graphics_Color foregroundColor;
-  GLuint imageVBO;
-  GLuint imageIBO;
   GLuint imageProgram;
-  GLuint imageVAO;
   mat4x4 matrixStack[32];
   mat4x4 projectionMatrix;
 
@@ -54,18 +44,22 @@ void graphics_init(int width, int height) {
                        "uniform   mat2 textureRect;\n"
                        "attribute vec2 vPos;\n"
                        "attribute vec2 vUV;\n"
+                       "attribute vec4 vColor;\n"
                        "varying   vec2 fUV;\n"
+                       "varying   vec4 fColor;\n"
                        "void main() {\n"
                        "  gl_Position = projection * transform * vec4(vPos, 1.0, 1.0);\n"
                        "  fUV = vUV * textureRect[1] + textureRect[0];\n"
+                       "  fColor = vColor;\n"
                        "}\n";
 
   GLchar const *fsrc = "precision mediump float;\n"
                        "varying vec2 fUV;\n"
+                       "varying vec4 fColor;\n"
                        "uniform sampler2D tex;\n"
                        "uniform vec4 color;\n"
                        "void main() {\n"
-                       "  gl_FragColor = texture2D(tex, fUV) * color;\n"
+                       "  gl_FragColor = texture2D(tex, fUV) * color * fColor;\n"
                        "}\n";
 
 
@@ -79,36 +73,15 @@ void graphics_init(int width, int height) {
   glAttachShader(moduleData.imageProgram, fragmentShader);
   glBindAttribLocation(moduleData.imageProgram, 0, "vPos");
   glBindAttribLocation(moduleData.imageProgram, 1, "vUV");
+  glBindAttribLocation(moduleData.imageProgram, 2, "vColor");
   glLinkProgram(moduleData.imageProgram);
 
-  glGenVertexArrays(1, &moduleData.imageVAO);
-  glBindVertexArray(moduleData.imageVAO);
-  glGenBuffers(1, &moduleData.imageVBO);
-  glGenBuffers(1, &moduleData.imageIBO);
-
-  graphics_Vertex const imageVertices[] = {
-    {0.0f, 0.0f, 0.0f, 0.0f},
-    {1.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f, 1.0f}
-  };
-
-  unsigned char const imageIndices[] = { 0, 1, 2, 3 };
-
-  glBindBuffer(GL_ARRAY_BUFFER, moduleData.imageVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(imageVertices), imageVertices, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, moduleData.imageIBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(imageIndices), imageIndices, GL_STATIC_DRAW);
-
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, 0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, (GLvoid const*)8);
 
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
   graphics_font_init();
+  graphics_batch_init();
+  graphics_image_init();
 
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
@@ -140,30 +113,27 @@ void graphics_swap() {
   SDL_GL_SwapBuffers();
 }
 
-void graphics_draw_Image(graphics_Image const* image, graphics_Quad const* quad,
-                         float x, float y, float r, float sx, float sy,
-                         float ox, float oy, float kx, float ky) {
+void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType) {
   glUseProgram(moduleData.imageProgram);
-//  printf("Program: %d\n", moduleData.imageProgram);
-
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, image->texID);
   glUniform1i(glGetUniformLocation(moduleData.imageProgram, "tex"), 0);
+  // TODO do not request the uniforms every time
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "projection"), 1, 0, (GLfloat*)&moduleData.projectionMatrix);
   glUniformMatrix2fv(glGetUniformLocation(moduleData.imageProgram, "textureRect"), 1, 0, (GLfloat*)quad);
   glUniform4fv(glGetUniformLocation(moduleData.imageProgram, "color"), 1, (GLfloat*)&moduleData.foregroundColor);
 
   mat4x4 tr;
-  // TODO add m4x4_transform2d and use it. that would safe a lot of multiplications and additions
-  mat4x4 tr2d;
-  m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, image->width * quad->w, image->height * quad->h);
-  m4x4_mul_m4x4(&tr, matrixstack_head(), &tr2d);
+  m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
 
   glUniformMatrix4fv(glGetUniformLocation(moduleData.imageProgram, "transform"), 1, 0,  (GLfloat*)&tr);
+  glBindVertexArray(vao);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glDrawElements(type, count, indexType, 0);
+}
 
-  glBindVertexArray(moduleData.imageVAO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, moduleData.imageIBO);
-  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, 0);
+int graphics_getWidth() {
+  return moduleData.surface->w;
+}
 
+int graphics_getHeight() {
+  return moduleData.surface->h;
 }
