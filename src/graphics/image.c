@@ -17,10 +17,10 @@ void graphics_image_init() {
   glGenBuffers(1, &moduleData.imageIBO);
 
   graphics_Vertex const imageVertices[] = {
-    {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f},
-    {1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f},
-    {0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}
+    {{0.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+    {{1.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+    {{0.0f, 1.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+    {{1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}
   };
 
   unsigned char const imageIndices[] = { 0, 1, 2, 3 };
@@ -90,7 +90,6 @@ void graphics_Image_setFilter(graphics_Image *img, graphics_Filter const* filter
       break;
     }
   } else {
-    printf("Mipmap filter enabled\n");
     if(filter->mipmapMode == graphics_FilterMode_nearest) {
       switch(filter->minMode) {
       case graphics_FilterMode_linear:

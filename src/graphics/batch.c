@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <string.h>
 #include "batch.h"
 #include "graphics.h"
 
@@ -177,7 +179,7 @@ void graphics_Batch_draw(graphics_Batch const* batch,
   glBindTexture(GL_TEXTURE_2D, batch->texture->texID);
   mat4x4 tr2d;
   m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, 1, 1);
-  float * color = batch->colorUsed ? defaultColor : graphics_getColorPtr();
+  float const * color = batch->colorUsed ? defaultColor : graphics_getColorPtr();
 
   graphics_drawArray(&fullQuad, &tr2d, batch->vao, moduleData.sharedIndexBuffer, batch->insertPos*6, GL_TRIANGLES, GL_UNSIGNED_SHORT, color);
 }
