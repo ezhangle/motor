@@ -7,6 +7,7 @@ import shutil
 
 sources = [
   'graphics/batch.c',
+  'graphics/canvas.c',
   'graphics/font.c',
   'graphics/graphics.c',
   'graphics/image.c',

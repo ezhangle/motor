@@ -7,6 +7,7 @@
 #include "../graphics/quad.h"
 #include "../graphics/font.h"
 #include "../graphics/batch.h"
+#include "../graphics/canvas.h"
 #include "image.h"
 
 static struct {
@@ -14,9 +15,12 @@ static struct {
   int quadMT;
   int fontMT;
   int batchMT;
+  int canvasMT;
 
   graphics_Font* currentFont;
   int currentFontRef;
+  graphics_Canvas* currentCanvas;
+  int currentCanvasRef;
 } moduleData;
 
 static int l_graphics_setBackgroundColor(lua_State* state) {
@@ -91,6 +95,8 @@ l_check_type_fn(l_graphics_isImage, moduleData.imageMT)
 l_to_type_fn(l_graphics_toImage, l_graphics_Image)
 l_check_type_fn(l_graphics_isQuad, moduleData.quadMT)
 l_to_type_fn(l_graphics_toQuad, graphics_Quad)
+l_check_type_fn(l_graphics_isCanvas, moduleData.canvasMT)
+l_to_type_fn(l_graphics_toCanvas, graphics_Canvas)
 
 
 static int l_graphics_gcImage(lua_State* state) {
@@ -116,6 +122,7 @@ static const graphics_Quad defaultQuad = {
 static int l_graphics_draw(lua_State* state) {
   l_graphics_Image const * image = NULL;
   l_graphics_Batch const * batch = NULL;
+  graphics_Canvas const * canvas = NULL;
   graphics_Quad const * quad = &defaultQuad;
   int baseidx = 2;
 
@@ -125,6 +132,13 @@ static int l_graphics_draw(lua_State* state) {
       baseidx = 3;
     }
     image = l_graphics_toImage(state, 1);
+  } else if(l_graphics_isCanvas(state, 1)) {
+    if(l_graphics_isQuad(state, 2)) {
+      quad = l_graphics_toQuad(state, 2);
+      baseidx = 3;
+    }
+    canvas = l_graphics_toCanvas(state, 1);
+
   } else if(l_graphics_isBatch(state, 1)) {
     batch = l_graphics_toBatch(state, 1);
   } else {
@@ -144,6 +158,8 @@ static int l_graphics_draw(lua_State* state) {
 
   if(image) {
     graphics_Image_draw(&image->image, quad, x, y, r, sx, sy, ox, oy, kx, ky);
+  } else if(canvas) {
+    graphics_Canvas_draw(canvas, quad, x, y, r, sx, sy, ox, oy, kx, ky);
   } else if(batch) {
     graphics_Batch_draw(&batch->batch, x, y, r, sx, sy, ox, oy, kx, ky);
   }
@@ -826,6 +842,62 @@ int l_graphics_SpriteBatch_getColor(lua_State* state) {
   return 4;
 }
 
+static int l_graphics_newCanvas(lua_State* state) {
+  // TODO support default parameters
+
+  int width = l_tools_tonumber_or_err(state, 1);
+  int height = l_tools_tonumber_or_err(state, 2);
+  
+  graphics_Canvas *canvas = lua_newuserdata(state, sizeof(graphics_Canvas));
+  graphics_Canvas_new(canvas, width, height);
+
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.canvasMT);
+  lua_setmetatable(state, -2);
+
+  return 1;
+}
+
+static int l_graphics_gcCanvas(lua_State* state) {
+  if(!l_graphics_isCanvas(state, 1)) {
+    lua_pushstring(state, "expected canvas");
+    return lua_error(state);
+  }
+
+  graphics_Canvas *canvas = l_graphics_toCanvas(state, 1);
+
+  graphics_Canvas_free(canvas);
+
+  return 1;
+}
+
+static int l_graphics_setCanvas(lua_State* state) {
+  graphics_Canvas *canvas = NULL;
+
+  if(l_graphics_isCanvas(state, 1)) {
+    canvas = l_graphics_toCanvas(state, 1);
+  } else if(!lua_isnoneornil(state, 1)) {
+    lua_pushstring(state, "expected none or canvas");
+    return lua_error(state);
+  }
+
+  if(moduleData.currentCanvas) {
+    moduleData.currentCanvas = NULL;
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentFontRef);
+  }
+
+  // TODO support multiple canvases
+  lua_settop(state, 1);
+
+  graphics_setCanvas(canvas);
+  if(canvas) {
+    moduleData.currentCanvas = canvas;
+    moduleData.currentFontRef = luaL_ref(state, LUA_REGISTRYINDEX);
+  }
+
+  return 0;
+}
+
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
@@ -845,6 +917,8 @@ static luaL_Reg const regFuncs[] = {
   {"printf",             l_graphics_printf},
   {"print",              l_graphics_print},
   {"newSpriteBatch",     l_graphics_newSpriteBatch},
+  {"newCanvas",          l_graphics_newCanvas},
+  {"setCanvas",          l_graphics_setCanvas},
   {NULL, NULL}
 };
 
@@ -900,13 +974,19 @@ static luaL_Reg const batchMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const canvasMetatableFuncs[] = {
+  {"__gc",               l_graphics_gcCanvas},
+  {NULL, NULL}
+};
+
 int l_graphics_register(lua_State* state) {
   l_tools_register_module(state, "graphics", regFuncs);
 
-  moduleData.imageMT = l_tools_make_type_mt(state, imageMetatableFuncs);
-  moduleData.quadMT  = l_tools_make_type_mt(state, quadMetatableFuncs);
-  moduleData.fontMT  = l_tools_make_type_mt(state, fontMetatableFuncs);
-  moduleData.batchMT = l_tools_make_type_mt(state, batchMetatableFuncs);
+  moduleData.imageMT  = l_tools_make_type_mt(state, imageMetatableFuncs);
+  moduleData.quadMT   = l_tools_make_type_mt(state, quadMetatableFuncs);
+  moduleData.fontMT   = l_tools_make_type_mt(state, fontMetatableFuncs);
+  moduleData.batchMT  = l_tools_make_type_mt(state, batchMetatableFuncs);
+  moduleData.canvasMT = l_tools_make_type_mt(state, canvasMetatableFuncs);
   moduleData.currentFont = NULL;
 
   return 0;

@@ -7,6 +7,7 @@
 #include "font.h"
 #include "batch.h"
 #include "quad.h"
+#include "canvas.h"
 
 typedef struct {
   float red;
@@ -21,7 +22,7 @@ static struct {
   graphics_Color foregroundColor;
   GLuint imageProgram;
   mat4x4 matrixStack[32];
-  mat4x4 projectionMatrix;
+  //mat4x4 projectionMatrix;
   struct {
     GLuint transform;
     GLuint projection;
@@ -30,6 +31,9 @@ static struct {
     GLuint color;
   } uniformLocations;
 
+  graphics_Canvas const * canvas;
+  graphics_Canvas defaultCanvas;
+  
 } moduleData;
 
 
@@ -40,8 +44,12 @@ void graphics_init(int width, int height) {
 
   matrixstack_init();
 
-  m4x4_new_translation(&moduleData.projectionMatrix, -1.0f, 1.0f, 0.0f);
-  m4x4_scale(&moduleData.projectionMatrix, 2.0f / width, -2.0f / height, 0.0f);
+  m4x4_new_translation(&moduleData.defaultCanvas.projectionMatrix, -1.0f, 1.0f, 0.0f);
+  m4x4_scale(&moduleData.defaultCanvas.projectionMatrix, 2.0f / width, -2.0f / height, 0.0f);
+  moduleData.defaultCanvas.fbo = 0;
+  moduleData.defaultCanvas.width = width;
+  moduleData.defaultCanvas.height = height;
+  moduleData.canvas = &moduleData.defaultCanvas;
 
   moduleData.imageProgram = glCreateProgram();
   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -128,10 +136,8 @@ void graphics_swap() {
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor) {
   glUseProgram(moduleData.imageProgram);
   glUniform1i(moduleData.uniformLocations.tex, 0);
-  // TODO do not request the uniforms every time
-  glUniformMatrix4fv(moduleData.uniformLocations.projection, 1, 0, (GLfloat*)&moduleData.projectionMatrix);
+  glUniformMatrix4fv(moduleData.uniformLocations.projection, 1, 0, (GLfloat*)&moduleData.canvas->projectionMatrix);
   glUniformMatrix2fv(moduleData.uniformLocations.textureRect, 1, 0, (GLfloat*)quad);
-  //glUniform4fv(moduleData.uniformLocations.color, 1, (GLfloat*)&moduleData.foregroundColor);
   glUniform4fv(moduleData.uniformLocations.color, 1, useColor);
 
   mat4x4 tr;
@@ -153,4 +159,14 @@ int graphics_getHeight() {
 
 float* graphics_getColorPtr() {
   return (float*)(&moduleData.foregroundColor);
+}
+
+void graphics_setCanvas(graphics_Canvas const* canvas) {
+  if(!canvas) {
+    canvas = &moduleData.defaultCanvas;
+  }
+  moduleData.canvas = canvas;
+  glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
+
+  glViewport(0,0,canvas->width, canvas->height);
 }
