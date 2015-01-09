@@ -99,7 +99,7 @@ graphics_Glyph const* graphics_Font_findGlyph(graphics_Font *font, unsigned unic
   uint8_t *row = b.buffer;
   for(int i = 0; i < b.rows; ++i) {
     for(int c = 0; c < b.width; ++c) {
-      buf[2*(i*b.width + c)    ] = row[c];
+      buf[2*(i*b.width + c)    ] = 255;
       buf[2*(i*b.width + c) + 1] = row[c];
     }
     row += b.pitch;

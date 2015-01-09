@@ -33,6 +33,8 @@ static struct {
 
   graphics_Canvas const * canvas;
   graphics_Canvas defaultCanvas;
+  bool colorMask[4];
+  graphics_BlendMode blendMode;
   
 } moduleData;
 
@@ -108,6 +110,9 @@ void graphics_init(int width, int height) {
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  graphics_setColorMask(true, true, true, true);
+  graphics_setBlendMode(graphics_BlendMode_alpha);
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
@@ -169,4 +174,74 @@ void graphics_setCanvas(graphics_Canvas const* canvas) {
   glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
 
   glViewport(0,0,canvas->width, canvas->height);
+}
+
+void graphics_setColorMask(bool r, bool g, bool b, bool a) {
+  moduleData.colorMask[0] = r;
+  moduleData.colorMask[1] = g;
+  moduleData.colorMask[2] = b;
+  moduleData.colorMask[3] = a;
+
+  glColorMask(r,g,b,a);
+}
+
+void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a) {
+  *r = moduleData.colorMask[0];
+  *g = moduleData.colorMask[1];
+  *b = moduleData.colorMask[2];
+  *a = moduleData.colorMask[3];
+}
+
+graphics_BlendMode graphics_getBlendMode() {
+  return moduleData.blendMode;
+}
+
+void graphics_setBlendMode(graphics_BlendMode mode) {
+  moduleData.blendMode = mode;
+
+  GLenum sfRGB = GL_ONE;
+  GLenum dfRGB = GL_ZERO;
+  GLenum sfA = GL_ONE;
+  GLenum dfA = GL_ZERO;
+  GLenum bFunc = GL_FUNC_ADD;
+
+  switch(mode) {
+  case graphics_BlendMode_alpha:
+    sfRGB = GL_SRC_ALPHA;
+    sfA = GL_ONE;
+    dfRGB = dfA = GL_ONE_MINUS_SRC_ALPHA;
+    break;
+
+  case graphics_BlendMode_subtractive:
+    bFunc = GL_FUNC_REVERSE_SUBTRACT;
+    // fallthrough
+  case graphics_BlendMode_additive:
+    sfA = sfRGB = GL_SRC_ALPHA;
+    dfA = dfRGB = GL_ONE;
+    break;
+
+
+  case graphics_BlendMode_multiplicative:
+    sfA = sfRGB = GL_DST_COLOR;
+    dfA = dfRGB = GL_ZERO;
+    break;
+
+  case graphics_BlendMode_premultiplied:
+    sfA = sfRGB = GL_ONE;
+    dfA = dfRGB = GL_ONE_MINUS_SRC_ALPHA;
+    break;
+
+  case graphics_BlendMode_screen:
+    sfA = sfRGB = GL_ONE;
+    dfA = dfRGB = GL_ONE_MINUS_SRC_COLOR;
+    break;
+
+  case graphics_BlendMode_replace:
+  default:
+    // uses default init values   
+    break;
+  }
+
+  glBlendFuncSeparate(sfRGB, dfRGB, sfA, dfA);
+  glBlendEquation(bFunc);
 }

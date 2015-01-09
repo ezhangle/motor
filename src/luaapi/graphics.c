@@ -897,6 +897,61 @@ static int l_graphics_setCanvas(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_setColorMask(lua_State* state) {
+  if(lua_isnone(state, 1)) {
+    graphics_setColorMask(true, true, true, true);
+    return 0;
+  } else {
+    for(int i = 2; i < 5; ++i) {
+      if(lua_isnone(state, i)) {
+        lua_pushstring(state, "illegal paramters");
+        return lua_error(state);
+      }
+    }
+  }
+
+  bool r = lua_toboolean(state, 1);
+  bool g = lua_toboolean(state, 2);
+  bool b = lua_toboolean(state, 3);
+  bool a = lua_toboolean(state, 4);
+
+  graphics_setColorMask(r,g,b,a);
+
+  return 0;
+}
+
+static int l_graphics_getColorMask(lua_State* state) {
+  bool r,g,b,a;
+  graphics_getColorMask(&r, &g, &b, &a);
+  lua_pushboolean(state, r);
+  lua_pushboolean(state, g);
+  lua_pushboolean(state, b);
+  lua_pushboolean(state, a);
+
+  return 4;
+}
+
+static const l_tools_Enum l_graphics_BlendMode[] = {
+  {"additive",       graphics_BlendMode_additive},
+  {"alpha",          graphics_BlendMode_alpha},
+  {"subtractive",    graphics_BlendMode_subtractive},
+  {"multiplicative", graphics_BlendMode_multiplicative},
+  {"premultiplied",  graphics_BlendMode_premultiplied},
+  {"replace",        graphics_BlendMode_replace},
+  {"screen",         graphics_BlendMode_screen},
+  {NULL, 0}
+};
+
+static int l_graphics_setBlendMode(lua_State* state) {
+  graphics_BlendMode mode = l_tools_toenum_or_err(state, 1, l_graphics_BlendMode);
+  graphics_setBlendMode(mode);
+  return 0;
+}
+
+static int l_graphics_getBlendMode(lua_State* state) {
+  l_tools_pushenum(state, graphics_getBlendMode(), l_graphics_BlendMode);
+  return 1;
+}
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
@@ -919,6 +974,10 @@ static luaL_Reg const regFuncs[] = {
   {"newSpriteBatch",     l_graphics_newSpriteBatch},
   {"newCanvas",          l_graphics_newCanvas},
   {"setCanvas",          l_graphics_setCanvas},
+  {"setColorMask",       l_graphics_setColorMask},
+  {"getColorMask",       l_graphics_getColorMask},
+  {"setBlendMode",       l_graphics_setBlendMode},
+  {"getBlendMode",       l_graphics_getBlendMode},
   {NULL, NULL}
 };
 
