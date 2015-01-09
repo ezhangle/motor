@@ -31,3 +31,6 @@ void graphics_setColorMask(bool r, bool g, bool b, bool a);
 void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a);
 graphics_BlendMode graphics_getBlendMode();
 void graphics_setBlendMode(graphics_BlendMode mode);
+void graphics_clearScissor();
+void graphics_setScissor(int x, int y, int w, int h);
+bool graphics_getScissor(int *x, int *y, int *w, int *h);

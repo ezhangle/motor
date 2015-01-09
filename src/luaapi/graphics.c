@@ -953,6 +953,44 @@ static int l_graphics_getBlendMode(lua_State* state) {
   return 1;
 }
 
+static int l_graphics_setScissor(lua_State* state) {
+  if(lua_isnone(state, 1)) {
+    graphics_clearScissor();
+    return 0;
+  } else {
+    for(int i = 2; i < 5; ++i) {
+      if(lua_isnone(state, i)) {
+        lua_pushstring(state, "illegal paramters");
+        return lua_error(state);
+      }
+    }
+  }
+
+  int x = l_tools_tonumber_or_err(state, 1);
+  int y = l_tools_tonumber_or_err(state, 2);
+  int w = l_tools_tonumber_or_err(state, 3);
+  int h = l_tools_tonumber_or_err(state, 4);
+
+  graphics_setScissor(x,y,w,h);
+
+  return 0;
+}
+
+static int l_graphics_getScissor(lua_State* state) {
+  int x,y,w,h;
+  bool scissor = graphics_getScissor(&x, &y, &w, &h);
+  if(!scissor) {
+    return 0;
+  }
+
+  lua_pushinteger(state, x);
+  lua_pushinteger(state, y);
+  lua_pushinteger(state, w);
+  lua_pushinteger(state, h);
+
+  return 4;
+}
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
@@ -978,6 +1016,8 @@ static luaL_Reg const regFuncs[] = {
   {"getColorMask",       l_graphics_getColorMask},
   {"setBlendMode",       l_graphics_setBlendMode},
   {"getBlendMode",       l_graphics_getBlendMode},
+  {"setScissor",         l_graphics_setScissor},
+  {"getScissor",         l_graphics_getScissor},
   {NULL, NULL}
 };
 

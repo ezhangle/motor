@@ -35,6 +35,8 @@ static struct {
   graphics_Canvas defaultCanvas;
   bool colorMask[4];
   graphics_BlendMode blendMode;
+  int scissorBox[4];
+  bool scissorSet;
   
 } moduleData;
 
@@ -113,6 +115,7 @@ void graphics_init(int width, int height) {
 
   graphics_setColorMask(true, true, true, true);
   graphics_setBlendMode(graphics_BlendMode_alpha);
+  graphics_clearScissor();
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
@@ -244,4 +247,32 @@ void graphics_setBlendMode(graphics_BlendMode mode) {
 
   glBlendFuncSeparate(sfRGB, dfRGB, sfA, dfA);
   glBlendEquation(bFunc);
+}
+
+void graphics_clearScissor() {
+  moduleData.scissorSet = false;
+  glDisable(GL_SCISSOR_TEST);
+}
+
+void graphics_setScissor(int x, int y, int w, int h) {
+  moduleData.scissorBox[0] = x;
+  moduleData.scissorBox[1] = y;
+  moduleData.scissorBox[2] = w;
+  moduleData.scissorBox[3] = h;
+  moduleData.scissorSet = true;
+  glScissor(x,y,w,h);
+  glEnable(GL_SCISSOR_TEST);
+}
+
+bool graphics_getScissor(int *x, int *y, int *w, int *h) {
+  if(!moduleData.scissorSet) {
+    return false;
+  }
+
+  *x = moduleData.scissorBox[0];
+  *y = moduleData.scissorBox[1];
+  *w = moduleData.scissorBox[2];
+  *h = moduleData.scissorBox[3];
+
+  return true;
 }
