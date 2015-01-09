@@ -13,6 +13,7 @@ sources = [
   'graphics/image.c',
   'graphics/matrixstack.c',
   'graphics/quad.c',
+  'graphics/shader.c',
   'image/imagedata.c',
   'luaapi/boot.c',
   'luaapi/keyboard.c',

@@ -1,0 +1,20 @@
+#pragma once
+
+#include <SDL_opengl.h>
+#include "../math/vector.h"
+#include "quad.h"
+
+typedef struct {
+  struct {
+    GLuint transform;
+    GLuint projection;
+    GLuint textureRect;
+    GLuint tex;
+    GLuint color;
+  } uniformLocations;
+
+  GLuint program;
+} graphics_Shader;
+
+void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char const* fragmentCode);
+void graphics_Shader_activate(graphics_Shader *shader, mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor);
