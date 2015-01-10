@@ -5,7 +5,44 @@
 
 static struct {
   int fontMT;
+  graphics_Font* currentFont;
+  int currentFontRef;
 } moduleData;
+
+static int l_graphics_setFont(lua_State* state) {
+  if(!l_graphics_isFont(state, 1)) {
+    lua_pushstring(state, "expected font");
+    lua_error(state);
+  }
+
+  lua_settop(state, 1);
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  // Release current font in Lua, so it can be GCed if needed
+  if(moduleData.currentFont) {
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentFontRef);
+  }
+
+  moduleData.currentFontRef = luaL_ref(state, LUA_REGISTRYINDEX);
+  moduleData.currentFont = font;
+
+  return 0;
+}
+
+static int l_graphics_printf(lua_State* state) {
+  char const* text = l_tools_tostring_or_err(state, 1);
+  return 0;
+}
+
+static int l_graphics_print(lua_State* state) {
+  char const* text = l_tools_tostring_or_err(state, 1);
+  int x = l_tools_tonumber_or_err(state, 2);
+  int y = l_tools_tonumber_or_err(state, 3);
+
+  graphics_Font_render(moduleData.currentFont, text);
+  return 0;
+}
 
 int l_graphics_newFont(lua_State* state) {
   // TODO: alternative signatures for newFont
@@ -118,9 +155,20 @@ static luaL_Reg const fontMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const fontFreeFuncs[] = {
+  {"newFont",            l_graphics_newFont},
+  {"setFont",            l_graphics_setFont},
+  {"printf",             l_graphics_printf},
+  {"print",              l_graphics_print},
+  {NULL, NULL}
+};
+
 l_check_type_fn(l_graphics_isFont, moduleData.fontMT)
 l_to_type_fn(l_graphics_toFont, graphics_Font)
 
 void l_graphics_font_register(lua_State* state) {
+  l_tools_register_funcs_in_module(state, "graphics", fontFreeFuncs);
   moduleData.fontMT   = l_tools_make_type_mt(state, fontMetatableFuncs);
+  moduleData.currentFont = NULL;
+
 }

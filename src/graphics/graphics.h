@@ -26,7 +26,6 @@ void graphics_swap();
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const * useColor);
 int graphics_getWidth();
 int graphics_getHeight();
-void graphics_setCanvas(graphics_Canvas const* canvas);
 void graphics_setColorMask(bool r, bool g, bool b, bool a);
 void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a);
 graphics_BlendMode graphics_getBlendMode();

@@ -1,9 +1,12 @@
 #include <lauxlib.h>
 #include "tools.h"
 #include "graphics_canvas.h"
+#include "../graphics/graphics.h"
 
 static struct {
   int canvasMT;
+  graphics_Canvas* currentCanvas;
+  int currentCanvasRef;
 } moduleData;
 
 l_check_type_fn(l_graphics_isCanvas, moduleData.canvasMT)
@@ -38,11 +41,44 @@ static int l_graphics_gcCanvas(lua_State* state) {
   return 1;
 }
 
+static int l_graphics_setCanvas(lua_State* state) {
+  graphics_Canvas *canvas = NULL;
+
+  if(l_graphics_isCanvas(state, 1)) {
+    canvas = l_graphics_toCanvas(state, 1);
+  } else if(!lua_isnoneornil(state, 1)) {
+    lua_pushstring(state, "expected none or canvas");
+    return lua_error(state);
+  }
+
+  if(moduleData.currentCanvas) {
+    moduleData.currentCanvas = NULL;
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentCanvasRef);
+  }
+
+  // TODO support multiple canvases
+  lua_settop(state, 1);
+
+  graphics_setCanvas(canvas);
+  if(canvas) {
+    moduleData.currentCanvas = canvas;
+    moduleData.currentCanvasRef = luaL_ref(state, LUA_REGISTRYINDEX);
+  }
+
+  return 0;
+}
+
 static luaL_Reg const canvasMetatableFuncs[] = {
   {"__gc",               l_graphics_gcCanvas},
   {NULL, NULL}
 };
 
+static luaL_Reg const canvasFreeFuncs[] = {
+  {"newCanvas",          l_graphics_newCanvas},
+  {"setCanvas",          l_graphics_setCanvas},
+};
+
 void l_graphics_canvas_register(lua_State * state) {
   moduleData.canvasMT = l_tools_make_type_mt(state, canvasMetatableFuncs);
+  l_tools_register_funcs_in_module(state, "graphics", canvasFreeFuncs);
 }

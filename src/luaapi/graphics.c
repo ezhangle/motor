@@ -3,8 +3,6 @@
 #include "tools.h"
 #include "../graphics/graphics.h"
 #include "../graphics/matrixstack.h"
-#include "../graphics/batch.h"
-#include "../graphics/canvas.h"
 #include "../graphics/shader.h"
 #include "image.h"
 
@@ -14,13 +12,6 @@
 #include "graphics_quad.h"
 #include "graphics_font.h"
 #include "graphics_shader.h"
-
-static struct {
-  graphics_Font* currentFont;
-  int currentFontRef;
-  graphics_Canvas* currentCanvas;
-  int currentCanvasRef;
-} moduleData;
 
 static int l_graphics_setBackgroundColor(lua_State* state) {
   int red   = lua_tointeger(state, 1);
@@ -154,70 +145,6 @@ static int l_graphics_rotate(lua_State* state) {
   return 0;
 }
 
-
-
-static int l_graphics_setFont(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
-
-  lua_settop(state, 1);
-
-  graphics_Font* font = l_graphics_toFont(state, 1);
-
-  // Release current font in Lua, so it can be GCed if needed
-  if(moduleData.currentFont) {
-    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentFontRef);
-  }
-
-  moduleData.currentFontRef = luaL_ref(state, LUA_REGISTRYINDEX);
-  moduleData.currentFont = font;
-
-  return 0;
-}
-
-static int l_graphics_printf(lua_State* state) {
-  char const* text = l_tools_tostring_or_err(state, 1);
-  return 0;
-}
-
-static int l_graphics_print(lua_State* state) {
-  char const* text = l_tools_tostring_or_err(state, 1);
-  int x = l_tools_tonumber_or_err(state, 2);
-  int y = l_tools_tonumber_or_err(state, 3);
-
-  graphics_Font_render(moduleData.currentFont, text);
-  return 0;
-}
-
-static int l_graphics_setCanvas(lua_State* state) {
-  graphics_Canvas *canvas = NULL;
-
-  if(l_graphics_isCanvas(state, 1)) {
-    canvas = l_graphics_toCanvas(state, 1);
-  } else if(!lua_isnoneornil(state, 1)) {
-    lua_pushstring(state, "expected none or canvas");
-    return lua_error(state);
-  }
-
-  if(moduleData.currentCanvas) {
-    moduleData.currentCanvas = NULL;
-    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentFontRef);
-  }
-
-  // TODO support multiple canvases
-  lua_settop(state, 1);
-
-  graphics_setCanvas(canvas);
-  if(canvas) {
-    moduleData.currentCanvas = canvas;
-    moduleData.currentFontRef = luaL_ref(state, LUA_REGISTRYINDEX);
-  }
-
-  return 0;
-}
-
 static int l_graphics_setColorMask(lua_State* state) {
   if(lua_isnone(state, 1)) {
     graphics_setColorMask(true, true, true, true);
@@ -317,8 +244,6 @@ static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
   {"clear",              l_graphics_clear},
-  {"newImage",           l_graphics_newImage},
-  {"newQuad",            l_graphics_newQuad},
   {"draw",               l_graphics_draw},
   {"push",               l_graphics_push},
   {"pop",                l_graphics_pop},
@@ -327,13 +252,6 @@ static luaL_Reg const regFuncs[] = {
   {"scale",              l_graphics_scale},
   {"shear",              l_graphics_shear},
   {"translate",          l_graphics_translate},
-  {"newFont",            l_graphics_newFont},
-  {"setFont",            l_graphics_setFont},
-  {"printf",             l_graphics_printf},
-  {"print",              l_graphics_print},
-  {"newSpriteBatch",     l_graphics_newSpriteBatch},
-  {"newCanvas",          l_graphics_newCanvas},
-  {"setCanvas",          l_graphics_setCanvas},
   {"setColorMask",       l_graphics_setColorMask},
   {"getColorMask",       l_graphics_getColorMask},
   {"setBlendMode",       l_graphics_setBlendMode},
@@ -357,7 +275,5 @@ int l_graphics_register(lua_State* state) {
   l_graphics_canvas_register(state);
   l_graphics_shader_register(state);
   
-  moduleData.currentFont = NULL;
-
   return 0;
 }

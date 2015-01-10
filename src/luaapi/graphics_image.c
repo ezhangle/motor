@@ -245,7 +245,13 @@ static luaL_Reg const imageMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const imageFreeFuncs[] = {
+  {"newImage",           l_graphics_newImage},
+  {NULL, NULL}
+};
+
 void l_graphics_image_register(lua_State* state) {
+  l_tools_register_funcs_in_module(state, "graphics", imageFreeFuncs);
   moduleData.imageMT  = l_tools_make_type_mt(state, imageMetatableFuncs);
 }
 

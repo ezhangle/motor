@@ -1,6 +1,14 @@
 #include <string.h>
 #include "tools.h"
 
+void l_tools_register_funcs_in_module(lua_State* state, char const* module, luaL_Reg const* funcs) {
+  lua_getglobal(state, "motor");
+  lua_pushstring(state, module);
+  lua_gettable(state, -2);
+  luaL_setfuncs(state, funcs, 0);
+  lua_pop(state, 2);
+}
+
 void l_tools_register_module(lua_State* state, char const* moduleName, luaL_Reg const * funcs) {
   lua_getglobal(state, "motor");
   lua_pushstring(state, moduleName);

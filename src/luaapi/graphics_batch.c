@@ -289,6 +289,12 @@ static luaL_Reg const batchMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const batchFreeFuncs[] = {
+  {"newSpriteBatch",     l_graphics_newSpriteBatch},
+  {NULL, NULL}
+};
+
 void l_graphics_batch_register(lua_State* state) {
+  l_tools_register_funcs_in_module(state, "graphics", batchFreeFuncs);
   moduleData.batchMT  = l_tools_make_type_mt(state, batchMetatableFuncs);
 }

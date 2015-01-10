@@ -22,8 +22,6 @@ static struct {
   graphics_Color backgroundColor;
   graphics_Color foregroundColor;
 
-  graphics_Canvas const * canvas;
-  graphics_Canvas defaultCanvas;
   bool colorMask[4];
   graphics_BlendMode blendMode;
   int scissorBox[4];
@@ -43,12 +41,7 @@ void graphics_init(int width, int height) {
 
   matrixstack_init();
 
-  m4x4_new_translation(&moduleData.defaultCanvas.projectionMatrix, -1.0f, 1.0f, 0.0f);
-  m4x4_scale(&moduleData.defaultCanvas.projectionMatrix, 2.0f / width, -2.0f / height, 0.0f);
-  moduleData.defaultCanvas.fbo = 0;
-  moduleData.defaultCanvas.width = width;
-  moduleData.defaultCanvas.height = height;
-  moduleData.canvas = &moduleData.defaultCanvas;
+  graphics_canvas_init(width, height);
 
   graphics_Shader_new(&moduleData.defaultShader, NULL, NULL);
   moduleData.activeShader = &moduleData.defaultShader;
@@ -98,7 +91,7 @@ void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint va
 
   graphics_Shader_activate(
     moduleData.activeShader,
-    &moduleData.canvas->projectionMatrix,
+    &graphics_getCanvas()->projectionMatrix,
     &tr,
     quad,
     useColor
@@ -119,16 +112,6 @@ int graphics_getHeight() {
 
 float* graphics_getColorPtr() {
   return (float*)(&moduleData.foregroundColor);
-}
-
-void graphics_setCanvas(graphics_Canvas const* canvas) {
-  if(!canvas) {
-    canvas = &moduleData.defaultCanvas;
-  }
-  moduleData.canvas = canvas;
-  glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
-
-  glViewport(0,0,canvas->width, canvas->height);
 }
 
 void graphics_setColorMask(bool r, bool g, bool b, bool a) {

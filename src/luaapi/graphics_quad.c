@@ -68,6 +68,13 @@ static luaL_Reg const quadMetatableFuncs[] = {
   {NULL, NULL}
 };
 
+static luaL_Reg const quadFreeFuncs[] = {
+  {"newQuad",            l_graphics_newQuad},
+  {NULL, NULL}
+};
+
+
 void l_graphics_quad_register(lua_State* state) {
+  l_tools_register_funcs_in_module(state, "graphics", quadFreeFuncs);
   moduleData.quadMT   = l_tools_make_type_mt(state, quadMetatableFuncs);
 }

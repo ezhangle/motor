@@ -1,6 +1,11 @@
 #include "canvas.h"
 #include "image.h"
 
+static struct {
+  graphics_Canvas const * canvas;
+  graphics_Canvas defaultCanvas;
+} moduleData;
+
 void graphics_Canvas_new(graphics_Canvas *canvas, int width, int height) {
   GLuint oldTex, oldFBO;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&oldTex);
@@ -37,5 +42,27 @@ void graphics_Canvas_draw(graphics_Canvas const* canvas, graphics_Quad const* qu
   graphics_Image img = {NULL, canvas->texture, canvas->width, canvas->height};
 
   graphics_Image_draw(&img, quad, x, y, r, sx, sy, ox, oy, kx, ky);
-  
+}
+
+void graphics_setCanvas(graphics_Canvas const* canvas) {
+  if(!canvas) {
+    canvas = &moduleData.defaultCanvas;
+  }
+  moduleData.canvas = canvas;
+  glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
+
+  glViewport(0,0,canvas->width, canvas->height);
+}
+
+void graphics_canvas_init(int width, int height) {
+  m4x4_new_translation(&moduleData.defaultCanvas.projectionMatrix, -1.0f, 1.0f, 0.0f);
+  m4x4_scale(&moduleData.defaultCanvas.projectionMatrix, 2.0f / width, -2.0f / height, 0.0f);
+  moduleData.defaultCanvas.fbo = 0;
+  moduleData.defaultCanvas.width = width;
+  moduleData.defaultCanvas.height = height;
+  moduleData.canvas = &moduleData.defaultCanvas;
+}
+
+graphics_Canvas* graphics_getCanvas() {
+  return moduleData.canvas;
 }
