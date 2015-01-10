@@ -123,10 +123,10 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-DFT2_BUILD_LIBRARY -Wall -std=c11 -O3 --llvm-lto 3 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+CFLAGS = '-DFT2_BUILD_LIBRARY -Wall -std=c11 -O2 --llvm-lto 3 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 CC = 'emcc'
 LD = 'emcc'
-LDFLAGS = '-O3 --llvm-lto 3'
+LDFLAGS = '-O2 --llvm-lto 3'
 
 if SRCDIR == '.' or SRCDIR == '':
   print("Please build out-of-source")
@@ -135,7 +135,7 @@ if SRCDIR == '.' or SRCDIR == '':
 includeregex = re.compile('^\s*#\s*include\s*"([^"]+)"\s*$')
 
 os.system('sed -e "s/FT_CONFIG_OPTIONS_H/<ftoption.h>/" -e "s/FT_CONFIG_STANDARD_LIBRARY_H/<ftstdlib.h>/" -e "s?/undef ?#undef ?" <{srcdir}/3rdparty/freetype/builds/unix/ftconfig.in >ftconfig.h'.format(srcdir=os.path.relpath(SRCDIR)))
-os.system('mkdir -f config; sed -e \'/tt_driver\\|sfnt_module\\|ft_smooth_renderer/ !d\' < {srcdir}/3rdparty/freetype/include/config/ftmodule.h >config/ftmodule.h'.format(srcdir=os.path.relpath(SRCDIR)))
+os.system('mkdir -p config; sed -e \'/tt_driver\\|sfnt_module\\|ft_smooth_renderer/ !d\' < {srcdir}/3rdparty/freetype/include/config/ftmodule.h >config/ftmodule.h'.format(srcdir=os.path.relpath(SRCDIR)))
 
 
 def newestDependency(filename, trace=[]):
