@@ -9,6 +9,7 @@
 #include "../graphics/batch.h"
 #include "../graphics/canvas.h"
 #include "image.h"
+#include "../3rdparty/slre/slre.h"
 
 static struct {
   int imageMT;
@@ -991,6 +992,19 @@ static int l_graphics_getScissor(lua_State* state) {
   return 4;
 }
 
+static int l_graphics_newShader(lua_State* state) {
+  char const* str1 = l_tools_tostring_or_err(state, 1);
+  char const* str2 = NULL;
+  if(lua_isstring(state, 2)) {
+    str2 = lua_tostring(state, 2);
+  }
+
+  graphics_Shader * shader = lua_newuserdata(sizeof(graphics_Shader));
+  graphics_Shader_new(shader, str1, str2);
+
+  return 1;
+}
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
@@ -1018,6 +1032,7 @@ static luaL_Reg const regFuncs[] = {
   {"getBlendMode",       l_graphics_getBlendMode},
   {"setScissor",         l_graphics_setScissor},
   {"getScissor",         l_graphics_getScissor},
+  {"newShader",          l_graphics_newShader},
   {NULL, NULL}
 };
 
@@ -1076,6 +1091,10 @@ static luaL_Reg const batchMetatableFuncs[] = {
 static luaL_Reg const canvasMetatableFuncs[] = {
   {"__gc",               l_graphics_gcCanvas},
   {NULL, NULL}
+};
+
+static luaL_Reg const shaderMetatableFuncs[] = {
+
 };
 
 int l_graphics_register(lua_State* state) {
