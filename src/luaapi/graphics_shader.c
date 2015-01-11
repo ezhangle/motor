@@ -18,7 +18,7 @@ static char const * vertexShaderDetectRegexSrc = "vec4\\s*position\\s*\\(";
 
 
 bool static isVertexShader(char const* str) {
-  return slre_match(&moduleData.fragmentSingleShaderDetectRegex, str, strlen(str), NULL);
+  return slre_match(&moduleData.vertexShaderDetectRegex, str, strlen(str), NULL);
 }
 
 bool static isSingleFragmentShader(char const* str) {
@@ -74,9 +74,8 @@ int l_graphics_newShader(lua_State* state) {
 
   } else {
     if(isVertexShader(vertexSrc)) {
-      printf("fragment shader detected\n");
+      // nothing required
     } else if(isSingleFragmentShader(vertexSrc)) {
-      printf("vertex shader detected\n");
       fragmentSrc = vertexSrc;
       vertexSrc = NULL;
     } else {
@@ -100,7 +99,7 @@ int l_graphics_newShader(lua_State* state) {
     }
   }
 
-  l_graphics_Shader * shader = lua_newuserdata(state, sizeof(graphics_Shader));
+  l_graphics_Shader * shader = lua_newuserdata(state, sizeof(l_graphics_Shader));
   graphics_Shader_new(&shader->shader, vertexSrc, fragmentSrc);
 
   lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.shaderMT);
@@ -121,6 +120,25 @@ int l_graphics_gcShader(lua_State* state) {
   return 0;
 }
 
+int l_graphics_setShader(lua_State *state) {
+  if(lua_isnoneornil(state, 1)) {
+    graphics_setDefaultShader();
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentShaderRef);
+    moduleData.currentShaderRef = LUA_NOREF;
+    return 0;
+  } else if(l_graphics_isShader(state, 1)) {
+    l_graphics_Shader* shader = l_graphics_toShader(state, 1);
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentShaderRef);
+    lua_settop(state, 1);
+    moduleData.currentShaderRef = luaL_ref(state, LUA_REGISTRYINDEX);
+    graphics_setShader(&shader->shader);
+    return 0;
+  } else {
+    lua_pushstring(state, "expected nil or shader");
+    return lua_error(state);
+  }
+}
+
 static luaL_Reg const shaderMetatableFuncs[] = {
   {"__gc",   l_graphics_gcShader},
   {NULL, NULL}
@@ -128,6 +146,7 @@ static luaL_Reg const shaderMetatableFuncs[] = {
 
 static luaL_Reg const shaderFreeFuncs[] = {
   {"newShader", l_graphics_newShader},
+  {"setShader", l_graphics_setShader},
   {NULL, NULL}
 };
 

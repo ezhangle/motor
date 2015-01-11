@@ -21,3 +21,5 @@ void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform,
 graphics_Shader* graphics_getShader();
 void graphics_shader_init();
 void graphics_Shader_free(graphics_Shader* shader);
+void graphics_setDefaultShader();
+void graphics_setShader(graphics_Shader* shader);
