@@ -1,4 +1,10 @@
 #include "shader.h"
+#include "../3rdparty/slre/slre.h"
+
+static struct {
+  graphics_Shader *activeShader;
+  graphics_Shader defaultShader;
+} moduleData;
 
 GLchar const *defaultVertexSource = 
   "uniform   mat4 transform;\n"  
@@ -60,13 +66,27 @@ void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char c
   shader->uniformLocations.color       = glGetUniformLocation(shader->program, "color");
 }
 
-void graphics_Shader_activate(graphics_Shader *shader, mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor) {
+void graphics_Shader_free(graphics_Shader* shader) {
+  // TODO
+}
 
-  glUseProgram(shader->program);
+void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor) {
 
-  glUniform1i(       shader->uniformLocations.tex,               0);
-  glUniformMatrix4fv(shader->uniformLocations.projection,  1, 0, (GLfloat const*)projection);
-  glUniformMatrix2fv(shader->uniformLocations.textureRect, 1, 0, (GLfloat const*)textureRect);
-  glUniform4fv(      shader->uniformLocations.color,       1,                    useColor);
-  glUniformMatrix4fv(shader->uniformLocations.transform,   1, 0, (GLfloat const*)transform);
+  glUseProgram(moduleData.activeShader->program);
+
+  glUniform1i(       moduleData.activeShader->uniformLocations.tex,               0);
+  glUniformMatrix4fv(moduleData.activeShader->uniformLocations.projection,  1, 0, (GLfloat const*)projection);
+  glUniformMatrix2fv(moduleData.activeShader->uniformLocations.textureRect, 1, 0, (GLfloat const*)textureRect);
+  glUniform4fv(      moduleData.activeShader->uniformLocations.color,       1,                    useColor);
+  glUniformMatrix4fv(moduleData.activeShader->uniformLocations.transform,   1, 0, (GLfloat const*)transform);
+}
+
+
+graphics_Shader* graphics_getShader() {
+  return moduleData.activeShader;
+}
+
+void graphics_shader_init() {
+  graphics_Shader_new(&moduleData.defaultShader, NULL, NULL);
+  moduleData.activeShader = &moduleData.defaultShader;
 }

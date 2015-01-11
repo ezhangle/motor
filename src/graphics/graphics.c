@@ -27,8 +27,6 @@ static struct {
   int scissorBox[4];
   bool scissorSet;
 
-  graphics_Shader *activeShader;
-  graphics_Shader defaultShader;
   
 } moduleData;
 
@@ -43,14 +41,13 @@ void graphics_init(int width, int height) {
 
   graphics_canvas_init(width, height);
 
-  graphics_Shader_new(&moduleData.defaultShader, NULL, NULL);
-  moduleData.activeShader = &moduleData.defaultShader;
 
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
   graphics_font_init();
   graphics_batch_init();
   graphics_image_init();
+  graphics_shader_init();
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -90,7 +87,6 @@ void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint va
   m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
 
   graphics_Shader_activate(
-    moduleData.activeShader,
     &graphics_getCanvas()->projectionMatrix,
     &tr,
     quad,

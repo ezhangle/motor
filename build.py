@@ -33,6 +33,9 @@ sources = [
   'keyboard.c',
   'tools/utf8.c',
 
+  # SLRE
+  '3rdparty/slre/slre.c',
+
   # Lua
   '3rdparty/lua/src/lapi.c',
   '3rdparty/lua/src/lauxlib.c',
