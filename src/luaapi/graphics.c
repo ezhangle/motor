@@ -240,6 +240,16 @@ static int l_graphics_getScissor(lua_State* state) {
 }
 
 
+static int l_graphics_getWidth(lua_State* state) {
+  lua_pushnumber(state, graphics_getWidth());
+  return 1;
+}
+
+static int l_graphics_getHeight(lua_State* state) {
+  lua_pushnumber(state, graphics_getHeight());
+  return 1;
+}
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
@@ -259,6 +269,8 @@ static luaL_Reg const regFuncs[] = {
   {"setScissor",         l_graphics_setScissor},
   {"getScissor",         l_graphics_getScissor},
   {"newShader",          l_graphics_newShader},
+  {"getWidth",           l_graphics_getWidth},
+  {"getHeight",          l_graphics_getHeight},
   {NULL, NULL}
 };
 

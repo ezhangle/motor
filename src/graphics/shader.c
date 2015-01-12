@@ -17,11 +17,13 @@ static GLchar const vertexHeader[] =
   "uniform   mat4 transform;\n"  
   "uniform   mat4 projection;\n"
   "uniform   mat2 textureRect;\n"
+  "#define extern uniform\n"
   "attribute vec2 vPos;\n"
   "attribute vec2 vUV;\n"
   "attribute vec4 vColor;\n"
   "varying   vec2 fUV;\n"
-  "varying   vec4 fColor;\n";
+  "varying   vec4 fColor;\n"
+  "#line 0\n";
 
 static GLchar const vertexFooter[] =
   "void main() {\n"
@@ -39,10 +41,12 @@ static GLchar const fragmentHeader[] =
   "precision mediump float;\n"
   "#define Image sampler2D\n"
   "#define Texel texture2D\n"
+  "#define extern uniform\n"
   "varying vec2 fUV;\n"
   "varying vec4 fColor;\n"
   "uniform sampler2D tex;\n"
-  "uniform vec4 color;\n";
+  "uniform vec4 color;\n"
+  "#line 0\n";
 
 static GLchar const fragmentFooter[] =
   "void main() {\n"
@@ -69,6 +73,7 @@ static void compileAndAttachShader(GLuint program, GLenum shaderType, char const
     footerlen = sizeof(fragmentFooter) - 1;
     break;
   }
+  printf("%u, %u\n", sizeof(fragmentHeader), sizeof(fragmentFooter));
   int codelen = strlen(code);
   GLchar *combinedCode = malloc(headerlen + footerlen + codelen + 1);
   memcpy(combinedCode, header, headerlen);
@@ -77,6 +82,7 @@ static void compileAndAttachShader(GLuint program, GLenum shaderType, char const
 
   GLuint shader = glCreateShader(shaderType);
   glShaderSource(shader, 1, &combinedCode, 0);
+  printf("Full Source:\n%s\n\n---------------------\n", combinedCode);
   glCompileShader(shader);
 
   glAttachShader(program, shader);

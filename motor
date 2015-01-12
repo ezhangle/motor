@@ -36,7 +36,10 @@ def findNewestDataFile(directory):
 
 
 def repackage():
-  datafilemtime = min(os.path.getmtime('_build/package.data'), os.path.getmtime('_build/package.data.js'))
+  if not os.path.exists('_build'):
+    os.mkdir('_build')
+
+  datafilemtime = (os.path.exists('_build/package.data') and os.path.exists('_build/package.data.js')) and min(os.path.getmtime('_build/package.data'), os.path.getmtime('_build/package.data.js')) or 0
   if datafilemtime < findNewestDataFile('.'):
     print("Rebuilding package")
 

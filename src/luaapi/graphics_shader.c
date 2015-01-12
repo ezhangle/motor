@@ -5,6 +5,7 @@
 #include "graphics_shader.h"
 #include "../graphics/shader.h"
 #include "../3rdparty/slre/slre.h"
+#include "../filesystem/filesystem.h"
 
 static struct {
   int shaderMT;
@@ -25,23 +26,6 @@ bool static isSingleFragmentShader(char const* str) {
   return slre_match(&moduleData.fragmentSingleShaderDetectRegex, str, strlen(str), NULL);
 }
 
-
-static char *readFile(char const* filename) {
-  FILE* infile = fopen(filename, "r");
-  if(!infile) {
-    return NULL;
-  }
-
-  fseek(infile, 0, SEEK_END);
-  long size = ftell(infile);
-  rewind(infile);
-
-  char *buf = malloc(size);
-  fread(buf, size, 1, infile);
-  fclose(infile);
-  return buf;
-}
-
 int l_graphics_newShader(lua_State* state) {
   char const* vertexSrc = l_tools_tostring_or_err(state, 1);
   char const* fragmentSrc = NULL;
@@ -52,7 +36,7 @@ int l_graphics_newShader(lua_State* state) {
     fragmentSrc = lua_tostring(state, 2);
     
     if(!isVertexShader(vertexSrc)) {
-      loadedFile1 = readFile(vertexSrc);
+      int loadedFile1Size = filesystem_read(vertexSrc, &loadedFile1);
       if(!loadedFile1 || !isVertexShader(loadedFile1)) {
         free(loadedFile1);
         lua_pushstring(state, "input 1 is not a valid vertex shader");
@@ -62,7 +46,7 @@ int l_graphics_newShader(lua_State* state) {
     }
 
     if(!isSingleFragmentShader(fragmentSrc)) {
-      loadedFile2 = readFile(fragmentSrc);
+      int loadedFile2Size = filesystem_read(fragmentSrc, &loadedFile2);
       if(!loadedFile2 || !isSingleFragmentShader(loadedFile2)) {
         free(loadedFile1);
         free(loadedFile2);
@@ -79,7 +63,8 @@ int l_graphics_newShader(lua_State* state) {
       fragmentSrc = vertexSrc;
       vertexSrc = NULL;
     } else {
-      loadedFile1 = readFile(vertexSrc);
+      
+      int loadedFile1Size = filesystem_read(vertexSrc, &loadedFile1);
       if(!loadedFile1) {
         lua_pushstring(state, "could not open file");
         return lua_error(state);

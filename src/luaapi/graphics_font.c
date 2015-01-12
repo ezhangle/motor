@@ -67,6 +67,10 @@ static int l_graphics_gcFont(lua_State* state) {
 }
 
 static int l_graphics_Font_getHeight(lua_State* state) {
+
+  lua_pushnumber(state, 64);
+  return 1;
+
   if(!l_graphics_isFont(state, 1)) {
     lua_pushstring(state, "expected font");
     lua_error(state);
@@ -115,6 +119,9 @@ static int l_graphics_Font_getBaseline(lua_State* state) {
 }
 
 static int l_graphics_Font_getWidth(lua_State* state) {
+  lua_pushnumber(state, 64);
+  return 1;
+
   if(!l_graphics_isFont(state, 1)) {
     lua_pushstring(state, "expected font");
     lua_error(state);

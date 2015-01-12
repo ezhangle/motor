@@ -6,6 +6,7 @@ import re
 import shutil
 
 sources = [
+  'filesystem/filesystem.c',
   'graphics/batch.c',
   'graphics/canvas.c',
   'graphics/font.c',
@@ -16,6 +17,7 @@ sources = [
   'graphics/shader.c',
   'image/imagedata.c',
   'luaapi/boot.c',
+  'luaapi/filesystem.c',
   'luaapi/keyboard.c',
   'luaapi/motor.c',
   'luaapi/graphics.c',

@@ -68,6 +68,15 @@ static int l_graphics_setCanvas(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_getCanvas(lua_State* state) {
+  if(moduleData.currentCanvas) {
+    lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.currentCanvasRef);
+    return 1;
+ }
+ lua_pushnil(state);
+ return 1;
+}
+
 static luaL_Reg const canvasMetatableFuncs[] = {
   {"__gc",               l_graphics_gcCanvas},
   {NULL, NULL}
@@ -76,6 +85,8 @@ static luaL_Reg const canvasMetatableFuncs[] = {
 static luaL_Reg const canvasFreeFuncs[] = {
   {"newCanvas",          l_graphics_newCanvas},
   {"setCanvas",          l_graphics_setCanvas},
+  {"getCanvas",          l_graphics_getCanvas},
+  {NULL, NULL}
 };
 
 void l_graphics_canvas_register(lua_State * state) {

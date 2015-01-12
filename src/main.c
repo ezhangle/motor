@@ -13,6 +13,7 @@
 #include "luaapi/motor.h"
 #include "luaapi/boot.h"
 #include "luaapi/keyboard.h"
+#include "luaapi/filesystem.h"
 
 #include "graphics/graphics.h"
 
@@ -35,9 +36,16 @@ int lua_curtime(lua_State *state) {
 }
 
 
+int lua_errorhandler(lua_State *state) {
+  const char* msg = lua_tostring(state, 1);
+  luaL_traceback(state, state, msg, 1);
+  return 1;
+}
+
 typedef struct {
   double lastTime;
   lua_State *luaState;
+  int errhand;
 } MainLoopData;
 
 void main_loop(void *data) {
@@ -46,19 +54,27 @@ void main_loop(void *data) {
   double newTime = curtime();
   double deltaTime = newTime - loopData->lastTime;
 
+
+  lua_rawgeti(loopData->luaState, LUA_REGISTRYINDEX, loopData->errhand);
   lua_getglobal(loopData->luaState, "motor");
   lua_pushstring(loopData->luaState, "update");
 
   // TODO use pcall, add error handling
   lua_rawget(loopData->luaState, -2);
   lua_pushnumber(loopData->luaState, deltaTime);
-  lua_call(loopData->luaState, 1, 0);
+  if(lua_pcall(loopData->luaState, 1, 0, 1)) {
+    printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
+    emscripten_force_exit(1);
+  }
 
   lua_pushstring(loopData->luaState, "draw");
   lua_rawget(loopData->luaState, -2);
 
   // TODO use pcall, add error handling
-  lua_call(loopData->luaState, 0, 0);
+  if(lua_pcall(loopData->luaState, 0, 0, 1)) {
+    printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
+    emscripten_force_exit(1);
+  }
   graphics_swap();
 
   lua_pop(loopData->luaState, 1);
@@ -91,6 +107,7 @@ int main()
   l_graphics_register(lua);
   l_image_register(lua);
   l_keyboard_register(lua);
+  l_filesystem_register(lua);
 
   lua_pushcfunction(lua, &lua_curtime);
   lua_setglobal(lua, "gettime");
@@ -112,10 +129,13 @@ int main()
   lua_call(lua, 0, 0);
   lua_pop(lua, 1);
 
+  lua_pushcfunction(lua, lua_errorhandler);
   MainLoopData mainLoopData = {
     .lastTime = curtime(),
-    .luaState = lua
+    .luaState = lua,
+    .errhand = luaL_ref(lua, LUA_REGISTRYINDEX)
   };
+
 
   emscripten_set_main_loop_arg(main_loop, &mainLoopData, 0, 1);
 }
