@@ -17,6 +17,7 @@ static GLchar const vertexHeader[] =
   "uniform   mat4 transform;\n"  
   "uniform   mat4 projection;\n"
   "uniform   mat2 textureRect;\n"
+  "uniform   vec2 size;\n"
   "#define extern uniform\n"
   "attribute vec2 vPos;\n"
   "attribute vec2 vUV;\n"
@@ -27,7 +28,7 @@ static GLchar const vertexHeader[] =
 
 static GLchar const vertexFooter[] =
   "void main() {\n"
-  "  gl_Position = position(projection * transform, vec4(vPos, 1.0, 1.0));\n"
+  "  gl_Position = position(projection * transform, vec4(vPos * size, 1.0, 1.0));\n"
   "  fUV = vUV * textureRect[1] + textureRect[0];\n"
   "  fColor = vColor;\n"
   "}\n";
@@ -126,21 +127,25 @@ void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char c
   shader->uniformLocations.textureRect = glGetUniformLocation(shader->program, "textureRect");
   shader->uniformLocations.tex         = glGetUniformLocation(shader->program, "tex");
   shader->uniformLocations.color       = glGetUniformLocation(shader->program, "color");
+  shader->uniformLocations.size        = glGetUniformLocation(shader->program, "size");
 }
 
 void graphics_Shader_free(graphics_Shader* shader) {
   // TODO
 }
 
-void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor) {
+void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor, float ws, float hs) {
 
   glUseProgram(moduleData.activeShader->program);
   //printf("Using shader %d\n", moduleData.activeShader->program);
+
+  float s[2] = { ws, hs };
 
   glUniform1i(       moduleData.activeShader->uniformLocations.tex,               0);
   glUniformMatrix4fv(moduleData.activeShader->uniformLocations.projection,  1, 0, (GLfloat const*)projection);
   glUniformMatrix2fv(moduleData.activeShader->uniformLocations.textureRect, 1, 0, (GLfloat const*)textureRect);
   glUniform4fv(      moduleData.activeShader->uniformLocations.color,       1,                    useColor);
+  glUniform2fv(      moduleData.activeShader->uniformLocations.size,        1,                    s);
   glUniformMatrix4fv(moduleData.activeShader->uniformLocations.transform,   1, 0, (GLfloat const*)transform);
 }
 

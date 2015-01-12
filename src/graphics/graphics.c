@@ -81,7 +81,7 @@ void graphics_swap() {
   SDL_GL_SwapBuffers();
 }
 
-void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor) {
+void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor, float ws, float hs) {
 
   mat4x4 tr;
   m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
@@ -90,7 +90,9 @@ void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint va
     &graphics_getCanvas()->projectionMatrix,
     &tr,
     quad,
-    useColor
+    useColor,
+    ws,
+    hs
   );
 
   glBindVertexArray(vao);

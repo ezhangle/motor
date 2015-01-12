@@ -111,7 +111,7 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
-    <textarea id="output" rows="8"></textarea>
+    <textarea id="output" rows="8" style="width: 60%"></textarea>
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
@@ -190,6 +190,7 @@
           if (text) Module.printErr('[post-exception status] ' + text);
         };
       };
+      Module.TOTAL_MEMORY=67108864;
     </script>
     <script async type='text/javascript' src='package.data.js'></script>
     <script type="text/javascript">

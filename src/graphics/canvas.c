@@ -48,6 +48,9 @@ void graphics_setCanvas(graphics_Canvas const* canvas) {
   if(!canvas) {
     canvas = &moduleData.defaultCanvas;
   }
+  if(canvas->texture != 28 && canvas->texture != 0) {
+    printf("Setting canvas %d, %d, %d, %d\n", canvas->texture, canvas->fbo, canvas->width, canvas->height);
+  }
   moduleData.canvas = canvas;
   glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
 
@@ -63,6 +66,6 @@ void graphics_canvas_init(int width, int height) {
   moduleData.canvas = &moduleData.defaultCanvas;
 }
 
-graphics_Canvas* graphics_getCanvas() {
+graphics_Canvas const* graphics_getCanvas() {
   return moduleData.canvas;
 }

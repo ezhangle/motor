@@ -3,10 +3,15 @@
 #include "graphics_font.h"
 #include "../graphics/font.h"
 
+#include "../graphics/matrixstack.h"
+#include "../graphics/shader.h"
+#include "../graphics/graphics.h"
+
 static struct {
   int fontMT;
   graphics_Font* currentFont;
   int currentFontRef;
+  int loadedFontsRef;
 } moduleData;
 
 static int l_graphics_setFont(lua_State* state) {
@@ -37,10 +42,11 @@ static int l_graphics_printf(lua_State* state) {
 
 static int l_graphics_print(lua_State* state) {
   char const* text = l_tools_tostring_or_err(state, 1);
+  printf("printing '%s'\n", text);
   int x = l_tools_tonumber_or_err(state, 2);
   int y = l_tools_tonumber_or_err(state, 3);
 
-  graphics_Font_render(moduleData.currentFont, text);
+  graphics_Font_render(moduleData.currentFont, text, x, y);
   return 0;
 }
 
@@ -48,15 +54,52 @@ int l_graphics_newFont(lua_State* state) {
   // TODO: alternative signatures for newFont
   char const * filename = l_tools_tostring_or_err(state, 1);
   int ptsize = l_tools_tonumber_or_err(state, 2);
+  
+  // Create string font:size
+  // Stack: ... fontname
+  lua_pushstring(state, ":");
+  lua_insert(state, -2);
+  lua_concat(state, 3);
 
-  graphics_Font* font = lua_newuserdata(state, sizeof(graphics_Font));
-  if(graphics_Font_new(font, filename, ptsize)) {
-    lua_pushstring(state, "Could not open font");
-    lua_error(state);
+  // Load font table to -2
+  // Stack: ... fonts fontname
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.loadedFontsRef);
+  lua_insert(state, -2);
+
+  // Save fontname for later
+  // Stack: ... fonts fontname fontname
+  lua_pushvalue(state, -1);
+
+  // Load font
+  // Stack: ... fonts fontname maybefont
+  lua_gettable(state, -3);
+
+  if(lua_isnoneornil(state, -1)) {
+    // Stack: ... fonts fontname
+    lua_pop(state, 1);
+
+    // Stack: ... fonts fontname raw-font
+    graphics_Font* font = lua_newuserdata(state, sizeof(graphics_Font));
+    if(graphics_Font_new(font, filename, ptsize)) {
+      lua_pushstring(state, "Could not open font");
+      lua_error(state);
+    }
+
+    // Stack: ... fonts fontname raw-font metatable
+    lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.fontMT);
+
+    // Stack: ... fonts fontname constructed-font
+    lua_setmetatable(state, -2);
+
+    // Stack: ... fonts fontname constructed-font constructed-font
+    lua_pushvalue(state, -1);
+
+    // Stack: ... fonts constructed-font fontname constructed-font
+    lua_insert(state, -3);
+
+    // Stack: ... fonts constructed-font
+    lua_settable(state, -4);
   }
-
-  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.fontMT);
-  lua_setmetatable(state, -2);
   return 1;
 }
 
@@ -67,18 +110,15 @@ static int l_graphics_gcFont(lua_State* state) {
 }
 
 static int l_graphics_Font_getHeight(lua_State* state) {
-
-  lua_pushnumber(state, 64);
-  return 1;
-
   if(!l_graphics_isFont(state, 1)) {
     lua_pushstring(state, "expected font");
     lua_error(state);
   }
 
   graphics_Font* font = l_graphics_toFont(state, 1);
-
-  lua_pushinteger(state, graphics_Font_getHeight(font));
+  
+  int height = graphics_Font_getHeight(font);
+  lua_pushinteger(state, height);
   return 1;
 }
 
@@ -119,9 +159,6 @@ static int l_graphics_Font_getBaseline(lua_State* state) {
 }
 
 static int l_graphics_Font_getWidth(lua_State* state) {
-  lua_pushnumber(state, 64);
-  return 1;
-
   if(!l_graphics_isFont(state, 1)) {
     lua_pushstring(state, "expected font");
     lua_error(state);
@@ -130,8 +167,9 @@ static int l_graphics_Font_getWidth(lua_State* state) {
   graphics_Font* font = l_graphics_toFont(state, 1);
 
   char const* line = l_tools_tostring_or_err(state, 2);
+  int width = graphics_Font_getWidth(font, line);
 
-  lua_pushinteger(state, graphics_Font_getWidth(font, line));
+  lua_pushinteger(state, width);
   return 1;
 }
 
@@ -178,4 +216,26 @@ void l_graphics_font_register(lua_State* state) {
   moduleData.fontMT   = l_tools_make_type_mt(state, fontMetatableFuncs);
   moduleData.currentFont = NULL;
 
+  lua_newtable(state);
+  lua_newtable(state);
+  lua_pushstring(state, "__mode");
+  lua_pushstring(state, "v");
+  lua_rawset(state, -3);
+  lua_setmetatable(state, -2);
+  moduleData.loadedFontsRef = luaL_ref(state, LUA_REGISTRYINDEX);
+}
+
+void l_graphics_font_debug() {
+  matrixstack_origin();
+  graphics_setColor(1.0f, 1.0f, 1.0f, 0.2f);
+  graphics_setDefaultShader();
+  graphics_Image img = {
+    NULL, moduleData.currentFont->glyphs.textures[0],
+    256, 256
+  };
+//  printf("Debugging... %d\n", img.texID);
+  graphics_Quad quad = {
+    0,0,1,1
+  };
+  graphics_Image_draw(&img, &quad, 0, 0, 0, 1, 1, 0, 0, 0, 0);
 }

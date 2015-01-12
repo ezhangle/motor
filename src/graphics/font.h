@@ -37,6 +37,7 @@ typedef struct {
   FT_Face face;
   graphics_GlyphMap glyphs;
   int baseline;
+  int height;
 } graphics_Font;
 
 
@@ -65,4 +66,4 @@ typedef enum {
   graphcis_TextAlign_justify
 } graphics_TextAlign;
 
-void graphics_Font_render(graphics_Font* font, char const* text);
+void graphics_Font_render(graphics_Font* font, char const* text, int x, int y);

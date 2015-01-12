@@ -9,6 +9,7 @@
 #include <lualib.h>
 
 #include "luaapi/graphics.h"
+#include "luaapi/graphics_font.h"
 #include "luaapi/image.h"
 #include "luaapi/motor.h"
 #include "luaapi/boot.h"
@@ -75,6 +76,9 @@ void main_loop(void *data) {
     printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
     emscripten_force_exit(1);
   }
+
+  l_graphics_font_debug();
+
   graphics_swap();
 
   lua_pop(loopData->luaState, 1);

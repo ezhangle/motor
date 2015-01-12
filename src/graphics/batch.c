@@ -181,7 +181,7 @@ void graphics_Batch_draw(graphics_Batch const* batch,
   m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky, 1, 1);
   float const * color = batch->colorUsed ? defaultColor : graphics_getColorPtr();
 
-  graphics_drawArray(&fullQuad, &tr2d, batch->vao, moduleData.sharedIndexBuffer, batch->insertPos*6, GL_TRIANGLES, GL_UNSIGNED_SHORT, color);
+  graphics_drawArray(&fullQuad, &tr2d, batch->vao, moduleData.sharedIndexBuffer, batch->insertPos*6, GL_TRIANGLES, GL_UNSIGNED_SHORT, color, 1.0f, 1.0f);
 }
 
 void graphics_Batch_bind(graphics_Batch *batch) {

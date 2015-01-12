@@ -7,6 +7,7 @@
 #include "graphics.h"
 #include "../tools/utf8.h"
 #include "../math/minmax.h"
+#include "shader.h"
 
 #include FT_GLYPH_H
 
@@ -148,6 +149,7 @@ int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
   dst->baseline = dst->face->bbox.yMax * ptsize / dst->face->units_per_EM;
 
   graphics_GlyphMap_new(&dst->glyphs);
+  dst->height = dst->face->height * ptsize / dst->face->units_per_EM;
 
   return 0;
 }
@@ -174,6 +176,7 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
   char *line_save;
   int spaceWidth;
 //  TTF_GlyphMetrics(font->font, ' ', NULL, NULL, NULL, NULL, &spaceWidth);
+  graphics_Glyph const* glyph = graphics_Font_findGlyph(font, ' ')->advance;
   char *line = strtok_r(wbuf, "\n", &line_save);
   while(line) {
     if(linecount != 0) {
@@ -221,12 +224,13 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
   return linecount;
 }
 
-void graphics_Font_render(graphics_Font* font, char const* text) {
+void graphics_Font_render(graphics_Font* font, char const* text, int px, int py) {
 
   char const* txt = text;
-  int px = 0;
-  int py = font->baseline+1;
+  py += font->baseline+1;
   uint8_t cp;
+  graphics_Shader* shader = graphics_getShader();
+  graphics_setDefaultShader();
   while((cp = utf8_scan(&text))) {
     // This will create the glyph if required
     graphics_Glyph const* glyph = graphics_Font_findGlyph(font, cp);
@@ -242,8 +246,10 @@ void graphics_Font_render(graphics_Font* font, char const* text) {
 
     graphics_Image_draw(&img, &glyph->textureCoords, px+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
 
+    //printf("%c -> %d\n", cp, px);
     px += glyph->advance;
   }
+  graphics_setShader(shader);
 }
 
 void graphics_font_init() {
@@ -251,6 +257,7 @@ void graphics_font_init() {
 }
 
 int graphics_Font_getHeight(graphics_Font const* font) {
+  return font->height;
 }
 
 int graphics_Font_getAscent(graphics_Font const* font) {
@@ -263,5 +270,12 @@ int graphics_Font_getBaseline(graphics_Font const* font) {
 }
 
 int graphics_Font_getWidth(graphics_Font const* font, char const* line) {
+  uint32_t uni;
+  int width=0;
+  while((uni = utf8_scan(&line))) {
+    graphics_Glyph const* g = graphics_Font_findGlyph(font, uni);
+    width += g->advance;
+  }
+  return width;
 }
 

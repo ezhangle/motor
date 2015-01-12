@@ -29,7 +29,8 @@ static int l_graphics_setColor(lua_State* state) {
   int red   = lua_tointeger(state, 1);
   int green = lua_tointeger(state, 2);
   int blue  = lua_tointeger(state, 3);
-  int alpha = lua_tointeger(state, 4);
+  //int alpha = lua_tointeger(state, 4);
+  int alpha = luaL_optinteger(state, 4, 255);
 
   float scale = 1.0f / 255.0f;
 
@@ -96,6 +97,7 @@ static int l_graphics_draw(lua_State* state) {
 }
 
 static int l_graphics_push(lua_State* state) {
+  //printf(")) Push\n");
   if(matrixstack_push()) {
     lua_pushstring(state, "Matrix stack overflow");
     return lua_error(state);
@@ -104,6 +106,7 @@ static int l_graphics_push(lua_State* state) {
 }
 
 static int l_graphics_pop(lua_State* state) {
+  //printf(")) Pop\n");
   if(matrixstack_pop()) {
     lua_pushstring(state, "Matrix stack underrun");
     return lua_error(state);
@@ -115,6 +118,8 @@ static int l_graphics_translate(lua_State* state) {
   float x = l_tools_tonumber_or_err(state, 1);
   float y = l_tools_tonumber_or_err(state, 2);
 
+  //printf(")) Translate %f, %f\n", x, y);
+
   matrixstack_translate(x, y);
   return 0;
 }
@@ -123,16 +128,20 @@ static int l_graphics_scale(lua_State* state) {
   float x = l_tools_tonumber_or_err(state, 1);
   float y = l_tools_tonumber_or_err(state, 2);
 
+  printf(")) Scale: %f, %f\n", x, y);
+
   matrixstack_scale(x, y);
   return 0;
 }
 
 static int l_graphics_origin(lua_State* state) {
+  printf(")) Origin\n");
   matrixstack_origin();
   return 0;
 }
 
 static int l_graphics_shear(lua_State* state) {
+  printf(")) Shear\n");
   lua_pushstring(state, "not implemented");
   lua_error(state);
   return 0;
@@ -140,6 +149,7 @@ static int l_graphics_shear(lua_State* state) {
 
 static int l_graphics_rotate(lua_State* state) {
   float a = l_tools_tonumber_or_err(state, 1);
+  printf(")) Rotate: %f\n", a);
 
   matrixstack_rotate(a);
   return 0;
