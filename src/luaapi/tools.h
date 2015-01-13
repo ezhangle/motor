@@ -36,3 +36,13 @@ type* name(lua_State* state, int index) {\
   return (type*)lua_touserdata(state, index);\
 }
 
+#ifndef MOTOR_SKIP_SAFETY_CHECKS
+// TODO appropriate name
+# define l_assert_type(state, index, func) \
+    if(!func(state, index)) { \
+     lua_pushstring(state, "expected X"); \
+     lua_error(state); \
+    }
+#else
+# define l_assert_type(state, index, func)
+#endif

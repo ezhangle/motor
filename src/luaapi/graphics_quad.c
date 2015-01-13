@@ -24,10 +24,7 @@ int l_graphics_newQuad(lua_State* state) {
 }
 
 static int l_graphics_Quad_getViewport(lua_State* state) {
-  if(!l_graphics_isQuad(state, 1)) {
-    lua_pushstring(state, "expected quad");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isQuad);
 
   graphics_Quad *quad = l_graphics_toQuad(state, 1);
   lua_pushnumber(state, quad->x);
@@ -39,10 +36,7 @@ static int l_graphics_Quad_getViewport(lua_State* state) {
 }
 
 static int l_graphics_Quad_setViewport(lua_State* state) {
-  if(!l_graphics_isQuad(state, 1)) {
-    lua_pushstring(state, "expected quad");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isQuad);
 
   graphics_Quad *quad = l_graphics_toQuad(state, 1);
   

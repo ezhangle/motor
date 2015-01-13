@@ -17,10 +17,7 @@ static const graphics_Quad defaultQuad = {
 };
 
 int l_graphics_newSpriteBatch(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image const* image = l_graphics_toImage(state, 1);
   int count = luaL_optnumber(state, 2, 128);
@@ -46,10 +43,7 @@ static int l_graphics_gcSpriteBatch(lua_State* state) {
 }
 
 static int l_graphics_SpriteBatch_bind(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -59,10 +53,7 @@ static int l_graphics_SpriteBatch_bind(lua_State* state) {
 }
 
 static int l_graphics_SpriteBatch_unbind(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -72,10 +63,7 @@ static int l_graphics_SpriteBatch_unbind(lua_State* state) {
 }
 
 static int l_graphics_SpriteBatch_add(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -105,10 +93,7 @@ static int l_graphics_SpriteBatch_add(lua_State* state) {
 }
 
 static int l_graphics_SpriteBatch_set(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -138,10 +123,7 @@ static int l_graphics_SpriteBatch_set(lua_State* state) {
 }
 
 static int l_graphics_SpriteBatch_clear(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
   graphics_Batch_clear(&batch->batch);
@@ -150,10 +132,7 @@ static int l_graphics_SpriteBatch_clear(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_getBufferSize(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
   
@@ -163,10 +142,7 @@ int l_graphics_SpriteBatch_getBufferSize(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_setBufferSize(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -178,10 +154,7 @@ int l_graphics_SpriteBatch_setBufferSize(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_getCount(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -191,19 +164,12 @@ int l_graphics_SpriteBatch_getCount(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_setTexture(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
+  l_assert_type(state, 2, l_graphics_isImage);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
-
-  if(!l_graphics_isImage(state, 2)) {
-    lua_pushstring(state, "expected image");
-    lua_error(state);
-  }
-
   l_graphics_Image * image = l_graphics_toImage(state, 2);
+
   batch->batch.texture = &image->image;
   luaL_unref(state, LUA_REGISTRYINDEX, batch->textureRef);
   lua_settop(state, 2);
@@ -213,10 +179,7 @@ int l_graphics_SpriteBatch_setTexture(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_getTexture(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -226,10 +189,7 @@ int l_graphics_SpriteBatch_getTexture(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_setColor(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 
@@ -248,10 +208,7 @@ int l_graphics_SpriteBatch_setColor(lua_State* state) {
 }
 
 int l_graphics_SpriteBatch_getColor(lua_State* state) {
-  if(!l_graphics_isBatch(state, 1)) {
-    lua_pushstring(state, "expected batch");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isBatch);
 
   l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
 

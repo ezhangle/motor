@@ -33,10 +33,12 @@ int l_graphics_newImage(lua_State* state) {
 }
 
 static int l_graphics_gcImage(lua_State* state) {
+  /*
   if(!l_graphics_isImage(state, 1)) {
     lua_pushstring(state, "Expected Image");
     return lua_error(state);
   }
+  */
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -46,10 +48,7 @@ static int l_graphics_gcImage(lua_State* state) {
 }
 
 static int l_graphics_Image_getDimensions(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   lua_pushinteger(state, img->image.width);
@@ -58,10 +57,7 @@ static int l_graphics_Image_getDimensions(lua_State* state) {
 }
 
 static int l_graphics_Image_getWidth(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   lua_pushinteger(state, img->image.width);
@@ -69,10 +65,7 @@ static int l_graphics_Image_getWidth(lua_State* state) {
 }
 
 static int l_graphics_Image_getHeight(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   lua_pushinteger(state, img->image.height);
@@ -86,10 +79,7 @@ static const l_tools_Enum l_graphics_WrapMode[] = {
 };
 
 static int l_graphics_Image_getWrap(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -103,10 +93,7 @@ static int l_graphics_Image_getWrap(lua_State* state) {
 }
 
 static int l_graphics_Image_setWrap(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   graphics_Wrap wrap;
@@ -125,10 +112,7 @@ static const l_tools_Enum l_graphics_FilterMode[] = {
 };
 
 static int l_graphics_Image_getFilter(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -144,10 +128,7 @@ static int l_graphics_Image_getFilter(lua_State* state) {
 }
 
 static int l_graphics_Image_setFilter(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   graphics_Filter newFilter;
@@ -161,10 +142,7 @@ static int l_graphics_Image_setFilter(lua_State* state) {
 }
 
 static int l_graphics_Image_setMipmapFilter(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -186,10 +164,7 @@ static int l_graphics_Image_setMipmapFilter(lua_State* state) {
 }
 
 static int l_graphics_Image_getMipmapFilter(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -204,10 +179,7 @@ static int l_graphics_Image_getMipmapFilter(lua_State* state) {
 }
 
 static int l_graphics_Image_getData(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -217,10 +189,7 @@ static int l_graphics_Image_getData(lua_State* state) {
 }
 
 static int l_graphics_Image_refresh(lua_State* state) {
-  if(!l_graphics_isImage(state, 1)) {
-    lua_pushstring(state, "expected image");
-    return lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 

@@ -15,10 +15,7 @@ static struct {
 } moduleData;
 
 static int l_graphics_setFont(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   lua_settop(state, 1);
 
@@ -109,10 +106,7 @@ static int l_graphics_gcFont(lua_State* state) {
 }
 
 static int l_graphics_Font_getHeight(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   graphics_Font* font = l_graphics_toFont(state, 1);
   
@@ -122,10 +116,7 @@ static int l_graphics_Font_getHeight(lua_State* state) {
 }
 
 static int l_graphics_Font_getDescent(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   graphics_Font* font = l_graphics_toFont(state, 1);
 
@@ -134,10 +125,7 @@ static int l_graphics_Font_getDescent(lua_State* state) {
 }
 
 static int l_graphics_Font_getAscent(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   graphics_Font* font = l_graphics_toFont(state, 1);
 
@@ -146,10 +134,7 @@ static int l_graphics_Font_getAscent(lua_State* state) {
 }
 
 static int l_graphics_Font_getBaseline(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   graphics_Font* font = l_graphics_toFont(state, 1);
 
@@ -158,10 +143,7 @@ static int l_graphics_Font_getBaseline(lua_State* state) {
 }
 
 static int l_graphics_Font_getWidth(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   graphics_Font* font = l_graphics_toFont(state, 1);
 
@@ -173,10 +155,7 @@ static int l_graphics_Font_getWidth(lua_State* state) {
 }
 
 static int l_graphics_Font_getWrap(lua_State* state) {
-  if(!l_graphics_isFont(state, 1)) {
-    lua_pushstring(state, "expected font");
-    lua_error(state);
-  }
+  l_assert_type(state, 1, l_graphics_isFont);
 
   graphics_Font* font = l_graphics_toFont(state, 1);
 
@@ -222,19 +201,4 @@ void l_graphics_font_register(lua_State* state) {
   lua_rawset(state, -3);
   lua_setmetatable(state, -2);
   moduleData.loadedFontsRef = luaL_ref(state, LUA_REGISTRYINDEX);
-}
-
-void l_graphics_font_debug() {
-  matrixstack_origin();
-  graphics_setColor(1.0f, 1.0f, 1.0f, 0.2f);
-  graphics_setDefaultShader();
-  graphics_Image img = {
-    NULL, moduleData.currentFont->glyphs.textures[0],
-    256, 256
-  };
-//  printf("Debugging... %d\n", img.texID);
-  graphics_Quad quad = {
-    0,0,1,1
-  };
-  graphics_Image_draw(&img, &quad, 0, 0, 0, 1, 1, 0, 0, 0, 0);
 }

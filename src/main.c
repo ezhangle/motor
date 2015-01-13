@@ -80,8 +80,6 @@ void main_loop(void *data) {
     emscripten_force_exit(1);
   }
 
-  l_graphics_font_debug();
-
   graphics_swap();
 
   lua_pop(loopData->luaState, 1);
