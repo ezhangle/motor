@@ -74,7 +74,7 @@ static int l_graphics_getCanvas(lua_State* state) {
  return 1;
 }
 
-static int l_graphics_renderTo(lua_State* state) {
+static int l_graphics_Canvas_renderTo(lua_State* state) {
   l_assert_type(state, 1, l_graphics_isCanvas);
   l_assert_type(state, 2, lua_isfunction);
 
@@ -89,6 +89,7 @@ static int l_graphics_renderTo(lua_State* state) {
 
 static luaL_Reg const canvasMetatableFuncs[] = {
   {"__gc",               l_graphics_gcCanvas},
+  {"renderTo",           l_graphics_Canvas_renderTo},
   {NULL, NULL}
 };
 
@@ -96,7 +97,6 @@ static luaL_Reg const canvasFreeFuncs[] = {
   {"newCanvas",          l_graphics_newCanvas},
   {"setCanvas",          l_graphics_setCanvas},
   {"getCanvas",          l_graphics_getCanvas},
-  {"renderTo",           l_graphics_renderTo},
   {NULL, NULL}
 };
 

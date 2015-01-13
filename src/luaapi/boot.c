@@ -2,6 +2,7 @@
 #include "boot.h"
 
 static char const bootScript[] =
+  "love = motor\n"
   "motor.update = function(dt) end\n"
   "motor.draw = function() end\n"
   "motor.load = function() end\n"

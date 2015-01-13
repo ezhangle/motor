@@ -256,6 +256,24 @@ static int l_graphics_getHeight(lua_State* state) {
   return 1;
 }
 
+static const l_tools_Enum l_graphics_DrawMode[] = {
+  {"fill", graphics_DrawMode_fill},
+  {"line", graphics_DrawMode_line},
+  {NULL, 0}
+};
+
+static int l_graphics_rectangle(lua_State* state) {
+  graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
+  float x = l_tools_tonumber_or_err(state, 2);
+  float y = l_tools_tonumber_or_err(state, 3);
+  float w = l_tools_tonumber_or_err(state, 4);
+  float h = l_tools_tonumber_or_err(state, 5);
+
+  graphics_rectangle(mode, x, y, w, h);
+  return 0;
+}
+
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"setColor",           l_graphics_setColor},
@@ -277,6 +295,7 @@ static luaL_Reg const regFuncs[] = {
   {"newShader",          l_graphics_newShader},
   {"getWidth",           l_graphics_getWidth},
   {"getHeight",          l_graphics_getHeight},
+  {"rectangle",          l_graphics_rectangle},
   {NULL, NULL}
 };
 

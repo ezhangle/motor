@@ -27,6 +27,9 @@ static struct {
   int scissorBox[4];
   bool scissorSet;
 
+  GLuint polygonVBO;
+  GLuint polygonIBO;
+  GLuint polygonVAO;
   
 } moduleData;
 
@@ -56,6 +59,11 @@ void graphics_init(int width, int height) {
   graphics_setBlendMode(graphics_BlendMode_alpha);
   glEnable(GL_BLEND);
   graphics_clearScissor();
+
+  glGenVertexArrays(1, &moduleData.polygonVAO);
+  glBindVertexArray(moduleData.polygonVAO);
+  glGenBuffers(1, &moduleData.polygonVBO);
+  glGenBuffers(1, &moduleData.polygonIBO);
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
@@ -209,3 +217,15 @@ bool graphics_getScissor(int *x, int *y, int *w, int *h) {
 
   return true;
 }
+
+void graphics_rectangle(graphics_DrawMode mode, float x, float y, float w, float h) {
+  switch(mode) {
+  case graphics_DrawMode_line:
+    break;
+
+  case graphics_DrawMode_fill:
+    
+    break;
+  }
+}
+

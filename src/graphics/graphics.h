@@ -18,6 +18,11 @@ typedef enum {
   graphics_BlendMode_screen
 } graphics_BlendMode;
 
+typedef enum {
+  graphics_DrawMode_fill,
+  graphics_DrawMode_line
+} graphics_DrawMode;
+
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha);
 void graphics_setColor(float red, float green, float blue, float alpha);
 float* graphics_getColorPtr();
@@ -33,3 +38,4 @@ void graphics_setBlendMode(graphics_BlendMode mode);
 void graphics_clearScissor();
 void graphics_setScissor(int x, int y, int w, int h);
 bool graphics_getScissor(int *x, int *y, int *w, int *h);
+void graphics_rectangle(graphics_DrawMode mode, float x, float y, float w, float h);
