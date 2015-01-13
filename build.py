@@ -28,12 +28,14 @@ sources = [
   'luaapi/graphics_quad.c',
   'luaapi/graphics_shader.c',
   'luaapi/image.c',
+  'luaapi/timer.c',
   'luaapi/tools.c',
   'math/vector.c',
   'main.c',
   'motor.c',
   'keyboard.c',
   'tools/utf8.c',
+  'timer/timer.c',
 
   # SLRE
   '3rdparty/slre/slre.c',
