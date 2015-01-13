@@ -42,7 +42,6 @@ static int l_graphics_printf(lua_State* state) {
 
 static int l_graphics_print(lua_State* state) {
   char const* text = l_tools_tostring_or_err(state, 1);
-  printf("printing '%s'\n", text);
   int x = l_tools_tonumber_or_err(state, 2);
   int y = l_tools_tonumber_or_err(state, 3);
 

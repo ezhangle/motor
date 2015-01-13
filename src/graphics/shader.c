@@ -74,7 +74,6 @@ static void compileAndAttachShader(GLuint program, GLenum shaderType, char const
     footerlen = sizeof(fragmentFooter) - 1;
     break;
   }
-  printf("%u, %u\n", sizeof(fragmentHeader), sizeof(fragmentFooter));
   int codelen = strlen(code);
   GLchar *combinedCode = malloc(headerlen + footerlen + codelen + 1);
   memcpy(combinedCode, header, headerlen);
@@ -83,7 +82,6 @@ static void compileAndAttachShader(GLuint program, GLenum shaderType, char const
 
   GLuint shader = glCreateShader(shaderType);
   glShaderSource(shader, 1, &combinedCode, 0);
-  printf("Full Source:\n%s\n\n---------------------\n", combinedCode);
   glCompileShader(shader);
 
   glAttachShader(program, shader);

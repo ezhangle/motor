@@ -49,7 +49,6 @@ void graphics_setCanvas(graphics_Canvas const* canvas) {
     canvas = &moduleData.defaultCanvas;
   }
   if(canvas->texture != 28 && canvas->texture != 0) {
-    printf("Setting canvas %d, %d, %d, %d\n", canvas->texture, canvas->fbo, canvas->width, canvas->height);
   }
   moduleData.canvas = canvas;
   glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
