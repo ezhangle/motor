@@ -12,9 +12,10 @@ motor_dir = os.path.dirname(sys.argv[0])
 search_path = [motor_dir + "/build", motor_dir + "/html"]
 
 
-emroot = subprocess.Popen("em-config EMSCRIPTEN_ROOT", shell=True, stdout=subprocess.PIPE).communicate()[0].decode("ascii")[:-1]
+#emroot = subprocess.Popen("em-config EMSCRIPTEN_ROOT", shell=True, stdout=subprocess.PIPE).communicate()[0].decode("ascii")[:-1]
 
-file_packager = emroot + "/tools/file_packager.py"
+#file_packager = emroot + "/tools/file_packager.py"
+file_packager = motor_dir + "/emscripten/file_packager.py"
 
 if not os.path.exists(file_packager):
   print("emscripten file_packager not found")
