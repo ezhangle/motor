@@ -101,6 +101,7 @@ void main_loop(void *data) {
 
     }
   }
+  //lua_gc(loopData->luaState, LUA_GCCOLLECT, 0);
 }
 
 int main()

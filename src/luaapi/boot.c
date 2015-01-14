@@ -43,6 +43,8 @@ int l_boot(lua_State* state, motor_Config *config) {
 
   lua_pop(state, 3);
 
+//  lua_gc(state, LUA_GCSTOP, 0);
+
   return 0;
 
 }
