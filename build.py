@@ -44,10 +44,10 @@ sources = [
   '3rdparty/lua/src/lapi.c',
   '3rdparty/lua/src/lauxlib.c',
   '3rdparty/lua/src/lbaselib.c',
-  '3rdparty/lua/src/lbitlib.c',
+#  '3rdparty/lua/src/lbitlib.c',
   '3rdparty/lua/src/lcode.c',
-  '3rdparty/lua/src/lcorolib.c',
-  '3rdparty/lua/src/lctype.c',
+#  '3rdparty/lua/src/lcorolib.c',
+#  '3rdparty/lua/src/lctype.c',
   '3rdparty/lua/src/ldblib.c',
   '3rdparty/lua/src/ldebug.c',
   '3rdparty/lua/src/ldo.c',
@@ -136,10 +136,10 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s CORRECT_ROUNDINGS=0 -s RELOOP=1 -s ASSERTIONS=0 -s CLOSURE_ANNOTATIONS=1 -DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 -O3 --llvm-lto 3 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+CFLAGS = '--closure 1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s CORRECT_ROUNDINGS=1 -s RELOOP=1 -s ASSERTIONS=0 -s CLOSURE_ANNOTATIONS=0 -DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 -O3 --llvm-lto 3 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 CC = 'emcc'
 LD = 'emcc'
-LDFLAGS = '-s CORRECT_ROUNDINGS=0 -s RELOOP=1 -s ASSERTIONS=0 -s CLOSURE_ANNOTATIONS=1  -O3 --llvm-lto 3'
+LDFLAGS = '--closure 1 -s CORRECT_ROUNDINGS=1 -s RELOOP=1 -s ASSERTIONS=0 -s CLOSURE_ANNOTATIONS=0  -O3 --llvm-lto 3'
 
 if SRCDIR == '.' or SRCDIR == '':
   print("Please build out-of-source")

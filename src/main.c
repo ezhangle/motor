@@ -41,7 +41,7 @@ int lua_curtime(lua_State *state) {
 
 int lua_errorhandler(lua_State *state) {
   const char* msg = lua_tostring(state, 1);
-  luaL_traceback(state, state, msg, 1);
+  //luaL_traceback(state, state, msg, 1);
   return 1;
 }
 
