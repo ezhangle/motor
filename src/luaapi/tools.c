@@ -53,3 +53,7 @@ void l_tools_pushenum(lua_State* state, int value, l_tools_Enum const* values) {
 
   // C code has to make sure the enum value is valid!
 }
+
+extern inline float l_tools_tonumber_or_err(lua_State* state, int index);
+extern inline char const* l_tools_tostring_or_err(lua_State* state, int index);
+extern inline int l_tools_toenum_or_err(lua_State* state, int index, l_tools_Enum const* values);

@@ -27,7 +27,6 @@ inline char const* l_tools_tostring_or_err(lua_State* state, int index) {
     lua_error(state);
   }
 
-sdklfjaslfj
   return lua_tostring(state, index);
 }
 #else
