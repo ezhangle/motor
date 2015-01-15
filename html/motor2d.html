@@ -124,7 +124,7 @@
       var spinnerElement = document.getElementById('spinner');
 
       var Module = {
-        preRun: [],
+        preRun: [function() { FS.Init(function(){}, Module.print, Module.printErr); }],
         postRun: [],
         print: (function() {
           var element = document.getElementById('output');
@@ -198,15 +198,13 @@
       };
       Module.TOTAL_MEMORY=67108864;
     </script>
-    <script async type='text/javascript' src='package.data.js'></script>
+    <script async type='text/javascript' src='package.data.js'></script> 
+<!--
     <script type="text/javascript">
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '/motor2d.js', true);
       xhr.onload=function() {
         Module.setStatus("Done Loading Engine"); 
-        <!-- TODO this only works on non IE browsers :-( 
-             http://sanraul.com/2009/02/14/inserting-script-tags-at-runtime/ 
-        -->
         newScriptTag = document.createElement("script");
         newScriptTag.setAttribute("type", "text/javascript");
         newScriptTag.innerHTML = xhr.response;
@@ -214,6 +212,7 @@
       }
       xhr.send(null);
     </script>
-    <!-- <script async type="text/javascript" src="motor2d.js"></script> -->
+    -->
+    <script async type="text/javascript" src="motor2d.js"></script>
   </body>
 </html>

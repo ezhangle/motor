@@ -21,6 +21,7 @@
 
 #include "keyboard.h"
 #include "timer/timer.h"
+#include "love_file.h"
 
 double curtime() {
 #ifdef EMSCRIPTEN
@@ -104,8 +105,7 @@ void main_loop(void *data) {
   //lua_gc(loopData->luaState, LUA_GCCOLLECT, 0);
 }
 
-int main()
-{
+void launch_game() {
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
 
@@ -141,5 +141,23 @@ int main()
   };
 
   timer_init();
-  emscripten_set_main_loop_arg(main_loop, &mainLoopData, 0, 1);
+  emscripten_set_main_loop_arg(main_loop, &mainLoopData, 0, 0);
+}
+
+static void unpack(unsigned i, void* arg, void* buffer, unsigned s) {
+  printf("Filesize: %d\n", s);
+  fflush(stdout);
+  unzip_love_file(buffer, s);
+}
+
+static void load_error(unsigned i, void* arg, int err, char const* errmsg) {
+  printf("load error\n");
+}
+
+static void load_progress(unsigned int i, void* arg, int loaded, int total) {
+  printf("progress\n");
+}
+
+int main() {
+  emscripten_async_wget2_data("game.love", "GET", "", 0, 0, &unpack, &load_error, &load_progress);
 }
