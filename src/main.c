@@ -4,6 +4,7 @@
 #include <time.h>
 #endif
 #include <stdio.h>
+#include <dirent.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -21,7 +22,6 @@
 
 #include "keyboard.h"
 #include "timer/timer.h"
-#include "love_file.h"
 
 double curtime() {
 #ifdef EMSCRIPTEN
@@ -105,7 +105,17 @@ void main_loop(void *data) {
   //lua_gc(loopData->luaState, LUA_GCCOLLECT, 0);
 }
 
-void launch_game() {
+int main() {
+  EM_ASM( console.log("wat?"); );
+  printf("Hallo?\n");
+  char buf[100000];
+  FILE* inf = fopen("/main.lua", "r");
+  if(!inf) {
+    fprintf(stderr, "geht net\n");
+  }
+  fread(buf, 100000, 1, inf);
+  printf("%s\n", buf);
+  fclose(inf);
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
 
@@ -141,23 +151,5 @@ void launch_game() {
   };
 
   timer_init();
-  emscripten_set_main_loop_arg(main_loop, &mainLoopData, 0, 0);
-}
-
-static void unpack(unsigned i, void* arg, void* buffer, unsigned s) {
-  printf("Filesize: %d\n", s);
-  fflush(stdout);
-  unzip_love_file(buffer, s);
-}
-
-static void load_error(unsigned i, void* arg, int err, char const* errmsg) {
-  printf("load error\n");
-}
-
-static void load_progress(unsigned int i, void* arg, int loaded, int total) {
-  printf("progress\n");
-}
-
-int main() {
-  emscripten_async_wget2_data("game.love", "GET", "", 0, 0, &unpack, &load_error, &load_progress);
+  emscripten_set_main_loop_arg(main_loop, &mainLoopData, 0, 1);
 }

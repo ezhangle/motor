@@ -124,7 +124,7 @@
       var spinnerElement = document.getElementById('spinner');
 
       var Module = {
-        preRun: [function() { FS.Init(function(){}, Module.print, Module.printErr); }],
+        preRun: [/*function() { FS.init(function(){}, Module.print, Module.printErr); }*/],
         postRun: [],
         print: (function() {
           var element = document.getElementById('output');
@@ -198,7 +198,10 @@
       };
       Module.TOTAL_MEMORY=67108864;
     </script>
-    <script async type='text/javascript' src='package.data.js'></script> 
+    <script type="text/javascript" src="zip.js"></script>
+    <script type="text/javascript" src="zip-ext.js"></script>
+    <script type="text/javascript" src="motor2dloader.js"></script>
+<!--    <script async type='text/javascript' src='package.data.js'></script>  -->
 <!--
     <script type="text/javascript">
       var xhr = new XMLHttpRequest();

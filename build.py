@@ -30,7 +30,6 @@ sources = [
   'luaapi/image.c',
   'luaapi/timer.c',
   'luaapi/tools.c',
-  'love_file.c',
   'math/vector.c',
   'math/minmax.c',
   'main.c',
@@ -46,10 +45,7 @@ sources = [
   '3rdparty/lua/src/lapi.c',
   '3rdparty/lua/src/lauxlib.c',
   '3rdparty/lua/src/lbaselib.c',
-#  '3rdparty/lua/src/lbitlib.c',
   '3rdparty/lua/src/lcode.c',
-#  '3rdparty/lua/src/lcorolib.c',
-#  '3rdparty/lua/src/lctype.c',
   '3rdparty/lua/src/ldblib.c',
   '3rdparty/lua/src/ldebug.c',
   '3rdparty/lua/src/ldo.c',
@@ -77,58 +73,22 @@ sources = [
   '3rdparty/lua/src/lzio.c',
 
   # FreeType
-#  '3rdparty/freetype/src/autofit/autofit.c',
-#  '3rdparty/freetype/src/base/ftadvanc.c',
-#  '3rdparty/freetype/src/base/ftbbox.c',
-#  '3rdparty/freetype/src/base/ftbdf.c',
   '3rdparty/freetype/src/base/ftbitmap.c',
   '3rdparty/freetype/src/base/ftcalc.c',
-#  '3rdparty/freetype/src/base/ftcid.c',
-#  '3rdparty/freetype/src/base/ftdbgmem.c',
-#  '3rdparty/freetype/src/base/ftdebug.c',
-#  '3rdparty/freetype/src/base/ftfstype.c',
-#  '3rdparty/freetype/src/base/ftgasp.c',
   '3rdparty/freetype/src/base/ftgloadr.c',
   '3rdparty/freetype/src/base/ftglyph.c',
-#  '3rdparty/freetype/src/base/ftgxval.c',
   '3rdparty/freetype/src/base/ftinit.c',
-#  '3rdparty/freetype/src/base/ftlcdfil.c',
-#  '3rdparty/freetype/src/base/ftmm.c',
   '3rdparty/freetype/src/base/ftobjs.c',
-#  '3rdparty/freetype/src/base/ftotval.c',
   '3rdparty/freetype/src/base/ftoutln.c',
-#  '3rdparty/freetype/src/base/ftpatent.c',
-#  '3rdparty/freetype/src/base/ftpfr.c',
   '3rdparty/freetype/src/base/ftrfork.c',
-#  '3rdparty/freetype/src/base/ftsnames.c',
   '3rdparty/freetype/src/base/ftstream.c',
-#  '3rdparty/freetype/src/base/ftstroke.c',
-#  '3rdparty/freetype/src/base/ftsynth.c',
   '3rdparty/freetype/src/base/ftsystem.c',
   '3rdparty/freetype/src/base/fttrigon.c',
-#  '3rdparty/freetype/src/base/fttype1.c',
   '3rdparty/freetype/src/base/ftutil.c',
-#  '3rdparty/freetype/src/base/ftwinfnt.c',
-#  '3rdparty/freetype/src/base/ftxf86.c',
-#  '3rdparty/freetype/src/bdf/bdf.c',
-#  '3rdparty/freetype/src/bzip2/ftbzip2.c',
-#  '3rdparty/freetype/src/cache/ftcache.c',
-#  '3rdparty/freetype/src/cff/cff.c',
-#  '3rdparty/freetype/src/cid/type1cid.c',
   '3rdparty/freetype/src/gzip/ftgzip.c',
-#  '3rdparty/freetype/src/lzw/ftlzw.c',
-#  '3rdparty/freetype/src/pcf/pcf.c',
-#  '3rdparty/freetype/src/pfr/pfr.c',
-#  '3rdparty/freetype/src/psaux/psaux.c',
-#  '3rdparty/freetype/src/pshinter/pshinter.c',
-#  '3rdparty/freetype/src/psnames/psmodule.c',
-#  '3rdparty/freetype/src/raster/raster.c',
   '3rdparty/freetype/src/sfnt/sfnt.c',
   '3rdparty/freetype/src/smooth/smooth.c',
   '3rdparty/freetype/src/truetype/truetype.c',
-#  '3rdparty/freetype/src/type1/type1.c',
-#  '3rdparty/freetype/src/type42/type42.c',
-#  '3rdparty/freetype/src/winfonts/winfnt.c'
 ]
 
 output = 'motor2d.js'
@@ -138,8 +98,8 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-DFT2_BUILD_LIBRARY -g3 -Wall -std=c11 -O2 --llvm-lto 3 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-LDFLAGS = '-O2 --llvm-lto 3 -g3'
+CFLAGS = '-O3 --llvm-lto 1 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+LDFLAGS = '-O3 --llvm-lto 1'
 #CFLAGS = '-DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 --profiling -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 #LDFLAGS = '--profiling'
 CC = 'emcc'
