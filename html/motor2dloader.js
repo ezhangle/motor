@@ -1,6 +1,5 @@
 function runWithFS() {
 //  FS.init(null, function(c) { Module.print(String.fromCharCode(c));}, Module.printErr);
-  console.log("add zip game.love");
   Module['addRunDependency']("zip game.love");
   zip.workerScripts = {
     inflater: ['z-worker.js', 'inflate.js']
@@ -14,7 +13,6 @@ function runWithFS() {
           Module['FS_createPath']("/", entries[i].filename, 1, 1);
         } else {
           Module['addRunDependency']("fp " + entries[i].filename);
-          console.log("Add dep " + entries[i].filename);
           entries[i].getData(
             new zip.ArrayBufferWriter(), 
             (function(entry) {
@@ -23,10 +21,8 @@ function runWithFS() {
                   function() { // ondone
                     //console.log("Preloaded " + entry.filename);
                     Module['removeRunDependency']("fp " + entry.filename);
-                    console.log("remove dep " + entry.filename);
                   },
                   function() { // onerror
-                    console.log("Error preloading " + entry.filename);
                   },
                   false,
                   false);
@@ -38,7 +34,6 @@ function runWithFS() {
             });
         }
       }
-      console.log("removing zip game.love");
       Module['removeRunDependency']('zip game.love');
     });
   }, function(error) {

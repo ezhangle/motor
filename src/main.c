@@ -106,16 +106,6 @@ void main_loop(void *data) {
 }
 
 int main() {
-  EM_ASM( console.log("wat?"); );
-  printf("Hallo?\n");
-  char buf[100000];
-  FILE* inf = fopen("/main.lua", "r");
-  if(!inf) {
-    fprintf(stderr, "geht net\n");
-  }
-  fread(buf, 100000, 1, inf);
-  printf("%s\n", buf);
-  fclose(inf);
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
 
