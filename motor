@@ -6,19 +6,11 @@ import os
 import shutil
 import subprocess
 import glob
+import zipfile
 
 motor_dir = os.path.dirname(sys.argv[0])
 
 search_path = [motor_dir + "/build", motor_dir + "/html"]
-
-
-#emroot = subprocess.Popen("em-config EMSCRIPTEN_ROOT", shell=True, stdout=subprocess.PIPE).communicate()[0].decode("ascii")[:-1]
-
-#file_packager = emroot + "/tools/file_packager.py"
-
-#if not os.path.exists(file_packager):
-#  print("emscripten file_packager not found")
-
 
 def findNewestDataFile(directory):
   newest = 0
@@ -39,17 +31,18 @@ def repackage():
   if not os.path.exists('_build'):
     os.mkdir('_build')
 
-  #datafilemtime = (os.path.exists('_build/package.data') and os.path.exists('_build/package.data.js')) and min(os.path.getmtime('_build/package.data'), os.path.getmtime('_build/package.data.js')) or 0
   datafilemtime = os.path.exists('_build/game.love') and os.path.getmtime('_build/game.love') or 0
   if datafilemtime < findNewestDataFile('.'):
     print("Rebuilding package")
-
-    exclude = " ".join(map(lambda x: "-x " + x + "/\\*", glob.iglob("_*")))
-#    cmd = "python2 {packager} _build/package.data --preload {datadir}@/ {exclude} --js-output=_build/package.data.js".format(packager=file_packager, exclude=exclude, datadir=os.path.realpath(os.curdir))
-  
-    cmd = "zip -r _build/game.love . {}".format(exclude)
-    print(cmd)
-    os.system(cmd)
+    with zipfile.ZipFile("_build/game.love", "w", zipfile.ZIP_DEFLATED) as zip:
+      for a,b,c in os.walk("."):
+        if a.startswith("./_"):
+          continue
+        print(a)
+        if a != '.':
+          zip.write(a)
+        for i in c:
+          zip.write(os.path.join(a,i))
 
 local_motor_path = os.getcwd() + "/_motor"
 if os.path.exists(local_motor_path):
@@ -82,6 +75,12 @@ if sys.argv[1] == "serve":
         repackage()
 
       super(RequestHandler, self).do_GET()
+
+    def do_HEAD(self):
+      if self.path == '/game.love':
+        repackage()
+
+      super(RequestHandler, self).do_HEAD()
 
   server = http.server.HTTPServer(('', 8000), RequestHandler)
 
