@@ -98,8 +98,8 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-O3 --llvm-lto 3 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-LDFLAGS = '-O3 --llvm-lto 3'
+CFLAGS = '-O3 --memory-init-file 0 --llvm-lto 3 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+LDFLAGS = '-O3 --llvm-lto 3 --memory-init-file 0'
 #CFLAGS = '-DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 --profiling -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 #LDFLAGS = '--profiling'
 CC = 'emcc'
@@ -169,6 +169,17 @@ def build():
     if os.system(cmd) != 0:
       print("Failed")
 
+def buildLoader():
+  closure = os.path.join(os.path.dirname(shutil.which("emcc")), "third_party", "closure-compiler", "compiler.jar")
+  java = shutil.which("java");
+  htmlpath = os.path.join(os.path.dirname(sys.argv[0]), "html")
+  os.system("echo \"var logodata = 'data:image/png;base64,$(base64 -w 0 {logo})';\" >logo.js".format(logo=os.path.join(htmlpath, "motor.png")))
+  cmd = "{java} -jar {closure} --language_in ECMASCRIPT5 --js=logo.js --js={html}/zip.js --js={html}/inflate.js --js={html}/zip-ext.js --js={html}/motor2dloader.js --js_output_file=motor2dloader.js".format(java=java, html=htmlpath, closure=closure)
+  cmd = "cat logo.js {html}/zip.js {html}/inflate.js {html}/zip-ext.js {html}/motor2dloader.js >motor2dloader.js".format(html=htmlpath)
+  os.system(cmd)
+  for i in ["motor2d.html"]:
+    shutil.copyfile(os.path.join(htmlpath, i), i)
+
 def remove(f):
   if os.path.exists(f):
     os.remove(f)
@@ -185,6 +196,8 @@ def clean():
 
 if len(sys.argv) == 1 or sys.argv[1] == 'build':
   build()
+elif sys.argv[1] == 'buildloader':
+  buildLoader()
 elif sys.argv[1] == 'clean':
   clean()
 

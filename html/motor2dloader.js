@@ -1,11 +1,10 @@
 var engineReq = new XMLHttpRequest();
 var gameReq = new XMLHttpRequest();
 
+
 function loadGame() {
   Module['addRunDependency']("zip game.love");
-  zip.workerScripts = {
-    inflater: ['z-worker.js', 'inflate.js']
-  };
+  zip.useWebWorkers=false;
 
   zip.createReader(new zip.BlobReader(gameReq.response), function(reader) {
     reader.getEntries(function(entries) {
@@ -64,16 +63,21 @@ var Module = {
 var enginesize, gamesize;
 var engineloaded = 0, gameloaded = 0
 function updateProgress() {
-  var ratio = Math.floor(100 *(engineloaded + gameloaded) / (enginesize + gamesize))
-  engine_progress.style.width = (4*ratio) + "px";
-  engine_progress3.innerHTML = ratio + "% loaded";
+  if(enginesize == 1 || gamesize == 1) {
+    var kb = Math.floor((engineloaded + gameloaded) / 1024);
+    engine_progress3.innerHTML = kb + "KiB loaded<br>(sorry, total size unknown)";
+  } else {
+    var ratio = Math.floor(100 *(engineloaded + gameloaded) / (enginesize + gamesize))
+    engine_progress.style.width = (4*ratio) + "px";
+    engine_progress3.innerHTML = ratio + "% loaded";
+  }
 }
 
 var layer = document.getElementById('motor_output');
 var canvas;
 var engine_progress, engine_progress2, engine_progress3
 if(!layer) {
-  document.body.innerHTML = "<img src=\"motor.png\"><br>Could not find motor_output layer. Please add &lt;div id=\"motor_output\"&gt;&lt;/div&gt; in the appropriate place in your HTML";
+  document.body.innerHTML = "<img src=\"" + logodata + "\"><br>Could not find motor_output layer. Please add &lt;div id=\"motor_output\"&gt;&lt;/div&gt; in the appropriate place in your HTML";
 
 } else {
   var layer2 = document.createElement('div');
@@ -97,14 +101,14 @@ if(!layer) {
   layer.appendChild(layer4);
 
   var img = document.createElement('img');
-  img.src="motor.png";
+  img.src=logodata;
   layer2.appendChild(img);
   var green = "#BF3D3D";
   var red = "#eee";
   engine_progress = document.createElement('div');
   engine_progress.style.backgroundColor = green;
   engine_progress.style.width="0px";
-  engine_progress.style.paddingLeft="5px";
+  //engine_progress.style.paddingLeft="5px";
   engine_progress.style.textAlign="left";
   engine_progress.style.overflow="hidden";
   engine_progress.style.whiteSpace ="nowrap";
@@ -112,6 +116,7 @@ if(!layer) {
   engine_progress.style.fontFamily = "arial";
   engine_progress.style.fontSize = "12px";
   engine_progress.style.height = "15px";
+  engine_progress.style.position = "relative";
 
   engine_progress2 = document.createElement('div');
   engine_progress2.style.width="400px";
@@ -120,6 +125,7 @@ if(!layer) {
   engine_progress2.style.marginRight="auto";
   engine_progress2.style.marginTop = "2px";
   engine_progress2.style.backgroundColor = red;
+  engine_progress2.style.overflow="hidden";
   layer2.appendChild(engine_progress2);
   engine_progress2.appendChild(engine_progress);
 
@@ -132,6 +138,7 @@ if(!layer) {
 
   function bootEngine() {
     if(engineReq.readyState == 4 && gameReq.readyState == 4) {
+      engine_progress3.innerHTML="Unpacking Game...";
       while(layer2.firstChild) {
         layer2.removeChild(layer2.firstChild);
       }
@@ -148,6 +155,7 @@ if(!layer) {
 
   function loadEngine() {
     if(gamesize && enginesize) {
+
       engineReq.open('GET', 'motor2d.js', true);
       engineReq.onload = function() {
         //eval.call(window, engineReq.response);
@@ -170,19 +178,34 @@ if(!layer) {
         updateProgress();
       };
       gameReq.send();
+
+      // Animate if file size is unknown
+      if(gamesize == 1 || enginesize == 1) {
+        var l = 0;
+        function animateLoadbar() {
+          l = (l + 10) % 450;
+          engine_progress.style.left = (l-50) + "px";
+          if(engineReq.readyState != 4 || gameReq.readyState != 4) {
+            setTimeout(animateLoadbar, 50);
+          }
+        }
+        setTimeout(animateLoadbar, 50);
+        engine_progress.style.width="50px";
+        engine_progress.style.left = "-50px";
+      }
     }
   }
 
   engineReq.open('HEAD', 'motor2d.js', true);
   engineReq.onload = function() {
-    enginesize = parseInt(engineReq.getResponseHeader('Content-Length'));
+    enginesize = parseInt(engineReq.getResponseHeader('Content-Length') || "1");
     loadEngine();
   };
   engineReq.send();
 
   gameReq.open('HEAD', 'game.love', true);
   gameReq.onload = function() {
-    gamesize = parseInt(gameReq.getResponseHeader('Content-Length'));
+    gamesize = parseInt(gameReq.getResponseHeader('Content-Length') || "1");
     loadEngine();
   };
   gameReq.send();

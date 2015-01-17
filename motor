@@ -10,7 +10,8 @@ import zipfile
 
 motor_dir = os.path.dirname(sys.argv[0])
 
-search_path = [motor_dir + "/build", motor_dir + "/html"]
+search_path = [motor_dir + "/build"] 
+#, motor_dir + "/html"]
 
 def findNewestDataFile(directory):
   newest = 0
