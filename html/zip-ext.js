@@ -49,10 +49,6 @@
 			var request;
 			if (!that.data) {
 				request = new XMLHttpRequest();
-        request.addEventListener("progress", function(a) {
-          console.log(a.loaded, a.total);
-          setProgress(a.loaded, a.total);
-        });
 				request.addEventListener("load", function() {
 					if (!that.size)
 						that.size = Number(request.getResponseHeader("Content-Length"));

@@ -76,10 +76,29 @@ if(!layer) {
   document.body.innerHTML = "<img src=\"motor.png\"><br>Could not find motor_output layer. Please add &lt;div id=\"motor_output\"&gt;&lt;/div&gt; in the appropriate place in your HTML";
 
 } else {
+  var layer2 = document.createElement('div');
+  var layer3 = document.createElement('div');
+  var layer4 = document.createElement('div');
+
+  layer4.style.height="100%";
+  layer4.style.display="table";
+  layer4.style.width="100%";
+
+  layer3.style.display="table-cell";
+  layer3.style.verticalAlign="middle";
+  layer4.appendChild(layer3);
+
+  layer2.style.marginLeft = "auto";
+  layer2.style.marginRight = "auto";
+  layer2.style.width="400px";
+  layer3.appendChild(layer2);
+
+
+  layer.appendChild(layer4);
 
   var img = document.createElement('img');
   img.src="motor.png";
-  layer.appendChild(img);
+  layer2.appendChild(img);
   var green = "#BF3D3D";
   var red = "#eee";
   engine_progress = document.createElement('div');
@@ -101,7 +120,7 @@ if(!layer) {
   engine_progress2.style.marginRight="auto";
   engine_progress2.style.marginTop = "2px";
   engine_progress2.style.backgroundColor = red;
-  layer.appendChild(engine_progress2);
+  layer2.appendChild(engine_progress2);
   engine_progress2.appendChild(engine_progress);
 
   engine_progress3 = document.createElement('div');
@@ -109,64 +128,64 @@ if(!layer) {
   engine_progress3.style.marginTop="5px";
   engine_progress3.style.fontSize="12px";
   engine_progress3.style.color = "#888";
-  layer.appendChild(engine_progress3);
-}
+  layer2.appendChild(engine_progress3);
 
-
-function bootEngine() {
-  if(engineReq.readyState == 4 && gameReq.readyState == 4) {
-    while(layer.firstChild) {
-      layer.removeChild(layer.firstChild);
+  function bootEngine() {
+    if(engineReq.readyState == 4 && gameReq.readyState == 4) {
+      while(layer2.firstChild) {
+        layer2.removeChild(layer2.firstChild);
+      }
+      canvas = document.createElement("canvas");
+      canvas.addEventListener("contextmenu", function(event) {event.preventDefault();}, false);
+      canvas.id="motor_canvas";
+      Module.canvas = canvas;
+      canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+      layer2.appendChild(canvas);
+      eval.call(window, engineReq.response);
     }
-    canvas = document.createElement("canvas");
-    canvas.addEventListener("contextmenu", function(event) {event.preventDefault();}, false);
-    canvas.id="motor_canvas";
-    layer.appendChild(canvas);
-    Module.canvas = canvas;
-    canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
-    layer.appendChild(canvas);
-    eval.call(window, engineReq.response);
   }
+
+
+  function loadEngine() {
+    if(gamesize && enginesize) {
+      engineReq.open('GET', 'motor2d.js', true);
+      engineReq.onload = function() {
+        //eval.call(window, engineReq.response);
+        console.log("engine loaded");
+        bootEngine();
+      };
+      engineReq.onprogress = function(a) {
+        engineloaded = a.loaded;
+        updateProgress();
+      };
+      engineReq.send();
+      gameReq.open('GET', 'game.love', true);
+      gameReq.onload = function() {
+        console.log("game loaded");
+        bootEngine();
+      };
+      gameReq.responseType = "blob";
+      gameReq.onprogress = function(a) {
+        gameloaded = a.loaded;
+        updateProgress();
+      };
+      gameReq.send();
+    }
+  }
+
+  engineReq.open('HEAD', 'motor2d.js', true);
+  engineReq.onload = function() {
+    enginesize = parseInt(engineReq.getResponseHeader('Content-Length'));
+    loadEngine();
+  };
+  engineReq.send();
+
+  gameReq.open('HEAD', 'game.love', true);
+  gameReq.onload = function() {
+    gamesize = parseInt(gameReq.getResponseHeader('Content-Length'));
+    loadEngine();
+  };
+  gameReq.send();
 }
 
 
-function loadEngine() {
-  if(gamesize && enginesize) {
-    engineReq.open('GET', 'motor2d.js', true);
-    engineReq.onload = function() {
-      //eval.call(window, engineReq.response);
-      console.log("engine loaded");
-      bootEngine();
-    };
-    engineReq.onprogress = function(a) {
-      engineloaded = a.loaded;
-      updateProgress();
-    };
-    engineReq.send();
-    gameReq.open('GET', 'game.love', true);
-    gameReq.onload = function() {
-      console.log("game loaded");
-      bootEngine();
-    };
-    gameReq.responseType = "blob";
-    gameReq.onprogress = function(a) {
-      gameloaded = a.loaded;
-      updateProgress();
-    };
-    gameReq.send();
-  }
-}
-
-engineReq.open('HEAD', 'motor2d.js', true);
-engineReq.onload = function() {
-  enginesize = parseInt(engineReq.getResponseHeader('Content-Length'));
-  loadEngine();
-};
-engineReq.send();
-
-gameReq.open('HEAD', 'game.love', true);
-gameReq.onload = function() {
-  gamesize = parseInt(gameReq.getResponseHeader('Content-Length'));
-  loadEngine();
-};
-gameReq.send();
