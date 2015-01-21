@@ -3,15 +3,14 @@
 #include <SDL/SDL_opengl.h>
 #include "../math/vector.h"
 #include "quad.h"
+#include "image.h"
 
 typedef struct {
-  GLuint texture;
-  GLuint fbo;
+  graphics_Image image;
 
+  GLuint fbo;
   mat4x4 projectionMatrix;
 
-  int width;
-  int height;
 } graphics_Canvas;
 
 void graphics_Canvas_new(graphics_Canvas *canvas, int width, int height);

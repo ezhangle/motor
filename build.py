@@ -174,8 +174,9 @@ def buildLoader():
   java = shutil.which("java");
   htmlpath = os.path.join(os.path.dirname(sys.argv[0]), "html")
   os.system("echo \"var logodata = 'data:image/png;base64,$(base64 -w 0 {logo})';\" >logo.js".format(logo=os.path.join(htmlpath, "motor.png")))
-  cmd = "{java} -jar {closure} --language_in ECMASCRIPT5 --js=logo.js --js={html}/zip.js --js={html}/inflate.js --js={html}/zip-ext.js --js={html}/motor2dloader.js --js_output_file=motor2dloader.js".format(java=java, html=htmlpath, closure=closure)
-  cmd = "cat logo.js {html}/zip.js {html}/inflate.js {html}/zip-ext.js {html}/motor2dloader.js >motor2dloader.js".format(html=htmlpath)
+  os.system("echo \"var errordata = 'data:image/png;base64,$(base64 -w 0 {logo})';\" >error.js".format(logo=os.path.join(htmlpath, "error.png")))
+  cmd = "{java} -jar {closure} --language_in ECMASCRIPT5 --js=logo.js --js=error.js --js={html}/zip.js --js={html}/inflate.js --js={html}/zip-ext.js --js={html}/motor2dloader.js --js_output_file=motor2dloader.js".format(java=java, html=htmlpath, closure=closure)
+#  cmd = "cat logo.js error.js {html}/zip.js {html}/inflate.js {html}/zip-ext.js {html}/motor2dloader.js >motor2dloader.js".format(html=htmlpath)
   os.system(cmd)
   for i in ["motor2d.html"]:
     shutil.copyfile(os.path.join(htmlpath, i), i)

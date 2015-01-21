@@ -38,6 +38,7 @@ typedef struct {
   graphics_GlyphMap glyphs;
   int baseline;
   int height;
+  float lineHeight;
 } graphics_Font;
 
 

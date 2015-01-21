@@ -2,6 +2,7 @@
 #include "tools.h"
 #include "graphics_canvas.h"
 #include "../graphics/graphics.h"
+#include "graphics.h"
 
 static struct {
   int canvasMT;
@@ -87,9 +88,99 @@ static int l_graphics_Canvas_renderTo(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_Canvas_getDimensions(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+  lua_pushinteger(state, img->image.width);
+  lua_pushinteger(state, img->image.height);
+  return 2;
+}
+
+static int l_graphics_Canvas_getWidth(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+  lua_pushinteger(state, img->image.width);
+  return 1;
+}
+
+static int l_graphics_Canvas_getHeight(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+  lua_pushinteger(state, img->image.height);
+  return 1;
+}
+
+static int l_graphics_Canvas_getWrap(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+
+  graphics_Wrap wrap;
+  graphics_Image_getWrap(&img->image, &wrap);
+
+  l_tools_pushenum(state, wrap.horMode, l_graphics_WrapMode);
+  l_tools_pushenum(state, wrap.verMode, l_graphics_WrapMode);
+
+  return 2;
+}
+
+static int l_graphics_Canvas_setWrap(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+  graphics_Wrap wrap;
+  wrap.horMode = l_tools_toenum_or_err(state, 2, l_graphics_WrapMode);
+  wrap.verMode = l_tools_toenum_or_err(state, 3, l_graphics_WrapMode);
+
+  graphics_Image_setWrap(&img->image, &wrap);
+
+  return 0;
+}
+
+static int l_graphics_Canvas_getFilter(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+
+  graphics_Filter filter;
+
+  graphics_Image_getFilter(&img->image, &filter);
+
+  l_tools_pushenum(state, filter.minMode, l_graphics_FilterMode);
+  l_tools_pushenum(state, filter.magMode, l_graphics_FilterMode);
+  lua_pushnumber(state, filter.maxAnisotropy);
+
+  return 3;
+}
+
+static int l_graphics_Canvas_setFilter(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isCanvas);
+
+  graphics_Canvas* img = l_graphics_toCanvas(state, 1);
+  graphics_Filter newFilter;
+  graphics_Image_getFilter(&img->image, &newFilter);
+  newFilter.minMode = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
+  newFilter.magMode = l_tools_toenum_or_err(state, 3, l_graphics_FilterMode);
+  newFilter.maxAnisotropy = luaL_optnumber(state, 4, 1.0f);
+  graphics_Image_setFilter(&img->image, &newFilter);
+
+  return 0;
+}
+
 static luaL_Reg const canvasMetatableFuncs[] = {
   {"__gc",               l_graphics_gcCanvas},
   {"renderTo",           l_graphics_Canvas_renderTo},
+  {"getDimensions",      l_graphics_Canvas_getDimensions},
+  {"getWidth",           l_graphics_Canvas_getWidth},
+  {"getHeight",          l_graphics_Canvas_getHeight},
+  {"setFilter",          l_graphics_Canvas_setFilter},
+  {"getFilter",          l_graphics_Canvas_getFilter},
+  {"setWrap",            l_graphics_Canvas_setWrap},
+  {"getWrap",            l_graphics_Canvas_getWrap},
+  //{"getData",            l_graphics_Image_getData},
   {NULL, NULL}
 };
 

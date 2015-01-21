@@ -53,21 +53,20 @@ static const graphics_Filter defaultFilter = {
 };
 
 void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData *data) {
-  dst->imageData = data;
   glGenTextures(1, &dst->texID);
   glBindTexture(GL_TEXTURE_2D, dst->texID);
   graphics_Image_setFilter(dst, &defaultFilter);
 
   graphics_Image_setWrap(dst, &defaultWrap);
 
-  graphics_Image_refresh(dst);
+  graphics_Image_refresh(dst, data);
 }
 
-void graphics_Image_refresh(graphics_Image *img) {
+void graphics_Image_refresh(graphics_Image *img, image_ImageData const *data) {
   glBindTexture(GL_TEXTURE_2D, img->texID);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->imageData->surface->w, img->imageData->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->imageData->surface->pixels);
-  img->width = img->imageData->surface->w;
-  img->height = img->imageData->surface->h;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->surface->w, data->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data->surface->pixels);
+  img->width = data->surface->w;
+  img->height = data->surface->h;
 }
 
 void graphics_Image_free(graphics_Image *obj) {

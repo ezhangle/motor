@@ -1,4 +1,5 @@
 #include <lauxlib.h>
+#include "graphics.h"
 #include "graphics_image.h"
 #include "tools.h"
 
@@ -72,12 +73,6 @@ static int l_graphics_Image_getHeight(lua_State* state) {
   return 1;
 }
 
-static const l_tools_Enum l_graphics_WrapMode[] = {
-  {"clamp", graphics_WrapMode_clamp},
-  {"repeat", graphics_WrapMode_repeat},
-  {NULL, 0}
-};
-
 static int l_graphics_Image_getWrap(lua_State* state) {
   l_assert_type(state, 1, l_graphics_isImage);
 
@@ -104,12 +99,6 @@ static int l_graphics_Image_setWrap(lua_State* state) {
 
   return 0;
 }
-
-static const l_tools_Enum l_graphics_FilterMode[] = {
-  {"nearest", graphics_FilterMode_nearest},
-  {"linear",  graphics_FilterMode_linear},
-  {NULL, 0}
-};
 
 static int l_graphics_Image_getFilter(lua_State* state) {
   l_assert_type(state, 1, l_graphics_isImage);
@@ -190,10 +179,12 @@ static int l_graphics_Image_getData(lua_State* state) {
 
 static int l_graphics_Image_refresh(lua_State* state) {
   l_assert_type(state, 1, l_graphics_isImage);
-
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
-  graphics_Image_refresh(&img->image);
+  lua_rawgeti(state, LUA_REGISTRYINDEX, img->imageDataRef);
+  image_ImageData *data = l_image_toImageData(state, -1);
+
+  graphics_Image_refresh(&img->image, data);
 
   return 0;
 }

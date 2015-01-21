@@ -269,6 +269,7 @@ static int l_graphics_rectangle(lua_State* state) {
   float w = l_tools_tonumber_or_err(state, 4);
   float h = l_tools_tonumber_or_err(state, 5);
 
+
   graphics_rectangle(mode, x, y, w, h);
   return 0;
 }

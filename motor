@@ -33,6 +33,7 @@ def repackage():
     os.mkdir('_build')
 
   datafilemtime = os.path.exists('_build/game.love') and os.path.getmtime('_build/game.love') or 0
+  print(datafilemtime, findNewestDataFile('.'))
   if datafilemtime < findNewestDataFile('.'):
     print("Rebuilding package")
     with zipfile.ZipFile("_build/game.love", "w", zipfile.ZIP_DEFLATED) as zip:

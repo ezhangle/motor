@@ -149,7 +149,10 @@ int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
   dst->baseline = dst->face->bbox.yMax * ptsize / dst->face->units_per_EM;
 
   graphics_GlyphMap_new(&dst->glyphs);
-  dst->height = dst->face->height * ptsize / dst->face->units_per_EM;
+
+  //dst->height = (int)(1.25f * dst->face->height * ptsize / dst->face->units_per_EM);
+  dst->height = (int)(1.0f * (dst->face->size->metrics.height >> 6));
+  dst->lineHeight = 1.0f;
 
   return 0;
 }
@@ -231,7 +234,13 @@ void graphics_Font_render(graphics_Font* font, char const* text, int px, int py)
   uint8_t cp;
   graphics_Shader* shader = graphics_getShader();
   graphics_setDefaultShader();
+  int x = px;
   while((cp = utf8_scan(&text))) {
+    if(cp == '\n') {
+      x = px;
+      py += floor(font->height * font->lineHeight + 0.5f);
+      continue;
+    }
     // This will create the glyph if required
     graphics_Glyph const* glyph = graphics_Font_findGlyph(font, cp);
 
@@ -240,14 +249,13 @@ void graphics_Font_render(graphics_Font* font, char const* text, int px, int py)
     //      and adding the instances accordingly, then rendering all with one draw
     //      call per texture
     graphics_Image img = {
-      0,
       font->glyphs.textures[glyph->textureIdx],
       GlyphTextureWidth, GlyphTextureHeight };
 
-    graphics_Image_draw(&img, &glyph->textureCoords, px+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
+    graphics_Image_draw(&img, &glyph->textureCoords, x+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
 
     //printf("%c -> %d\n", cp, px);
-    px += glyph->advance;
+    x += glyph->advance;
   }
   graphics_setShader(shader);
 }
