@@ -11,11 +11,6 @@
 
 #include FT_GLYPH_H
 
-// TODO fixing the texture size may be a bad idea. Trying to find a 
-//      better estimate of the required texture size (like love does)
-//      could improve performance
-static const int GlyphTextureWidth = 256;
-static const int GlyphTextureHeight = 256;
 static const int GlyphTexturePadding = 1;
 
 static struct {
@@ -27,15 +22,17 @@ void graphics_GlyphMap_newTexture(graphics_GlyphMap *map) {
   map->textures = realloc(map->textures, sizeof(GLuint) * (map->numTextures + 1));
   glGenTextures(1, &map->textures[map->numTextures]);
   glBindTexture(GL_TEXTURE_2D, map->textures[map->numTextures]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, GlyphTextureWidth, GlyphTextureHeight, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, map->textureWidth, map->textureHeight, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  ++map->numTextures;
-}
 
-void graphics_GlyphMap_new(graphics_GlyphMap *map) {
-  memset(map, 0, sizeof(graphics_GlyphMap));
-  graphics_GlyphMap_newTexture(map);
+  if(map->numTextures > 0) {
+    graphics_Filter filter;
+    graphics_Texture_getFilter(map->textures[map->numTextures-1], &filter);
+    graphics_Texture_setFilter(map->textures[map->numTextures], &filter);
+  }
+  ++map->numTextures;
+
 }
 
 void graphics_GlyphMap_free(graphics_GlyphMap* map) {
@@ -50,7 +47,7 @@ graphics_Glyph const* graphics_Font_findGlyph(graphics_Font *font, unsigned unic
   // entries long, each. This means finding the glyph requires almost constant time for such
   // languages.
 
-  // TODO error handling is missing completely
+  // TODO error handling if missing completely
 
   unsigned idx = unicode & 0xFF;
   graphics_GlyphSet *set = &font->glyphs.glyphs[idx];
@@ -107,13 +104,20 @@ graphics_Glyph const* graphics_Font_findGlyph(graphics_Font *font, unsigned unic
   }
 
   // Is the current row in the texture too full for the glyph?
-  if(font->glyphs.currentX + GlyphTexturePadding + b.width > GlyphTextureWidth) {
+  if(font->glyphs.currentX + GlyphTexturePadding + b.width > font->glyphs.textureWidth) {
     font->glyphs.currentX = GlyphTexturePadding;
     font->glyphs.currentY += font->glyphs.currentRowHeight;
     font->glyphs.currentRowHeight = GlyphTexturePadding;
   }
 
-  // TODO: create new texture if current texture is full
+  if(font->glyphs.currentY + GlyphTexturePadding + b.rows > font->glyphs.textureHeight) {
+    font->glyphs.currentX = GlyphTexturePadding;
+    font->glyphs.currentY = GlyphTexturePadding;
+    font->glyphs.currentRowHeight = GlyphTexturePadding;
+    graphics_GlyphMap_newTexture(&font->glyphs);
+  }
+
+// TODO: create new texture if current texture is full
 
   // Bind current texture and upload data to the appropriate position.
   // This assumes pixel unpack alignment is set to 1 (glPixelStorei)
@@ -127,10 +131,10 @@ graphics_Glyph const* graphics_Font_findGlyph(graphics_Font *font, unsigned unic
   newGlyph->bearingY        = font->face->glyph->metrics.horiBearingY >> 6;
   newGlyph->advance         = font->face->glyph->metrics.horiAdvance  >> 6;
   newGlyph->textureIdx      = font->glyphs.numTextures - 1;
-  newGlyph->textureCoords.x = (float)font->glyphs.currentX / (float)GlyphTextureWidth;
-  newGlyph->textureCoords.y = (float)font->glyphs.currentY / (float)GlyphTextureHeight;
-  newGlyph->textureCoords.w = (float)b.width / (float)GlyphTextureWidth;
-  newGlyph->textureCoords.h = (float)b.rows  / (float)GlyphTextureHeight;
+  newGlyph->textureCoords.x = (float)font->glyphs.currentX / (float)font->glyphs.textureWidth;
+  newGlyph->textureCoords.y = (float)font->glyphs.currentY / (float)font->glyphs.textureHeight;
+  newGlyph->textureCoords.w = (float)b.width / (float)font->glyphs.textureWidth;
+  newGlyph->textureCoords.h = (float)b.rows  / (float)font->glyphs.textureHeight;
 
   // Advance to render position for next glyph
   font->glyphs.currentX += b.width + GlyphTexturePadding;
@@ -142,16 +146,32 @@ graphics_Glyph const* graphics_Font_findGlyph(graphics_Font *font, unsigned unic
   return newGlyph;
 }
 
+static int const TextureWidths[] =  {128, 128, 256, 256, 512,  512, 1024};
+static int const TextureHeights[] = {128, 256, 256, 512, 512, 1024, 1024};
+static int const TextureSizeCount = sizeof(TextureWidths) / sizeof(int);
+
 int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
   int error = FT_New_Face(moduleData.ft, filename, 0, &dst->face);
   FT_Set_Pixel_Sizes(dst->face, 0, ptsize);
 
-  dst->baseline = dst->face->bbox.yMax * ptsize / dst->face->units_per_EM;
+  memset(&dst->glyphs, 0, sizeof(graphics_GlyphMap));
+  int sizeIdx = TextureSizeCount - 1;
+  int estArea = dst->height * dst->height * 80;
+  for(int i = 0; i < TextureSizeCount; ++i) {
+    if(estArea <= TextureWidths[i] * TextureHeights[i]) {
+      sizeIdx = i;
+      break;
+    }
+  }
 
-  graphics_GlyphMap_new(&dst->glyphs);
+  dst->glyphs.textureWidth = TextureWidths[sizeIdx];
+  dst->glyphs.textureHeight = TextureHeights[sizeIdx];
 
-  //dst->height = (int)(1.25f * dst->face->height * ptsize / dst->face->units_per_EM);
-  dst->height = (int)(1.0f * (dst->face->size->metrics.height >> 6));
+  graphics_GlyphMap_newTexture(&dst->glyphs);
+
+  dst->height = dst->face->size->metrics.height >> 6;
+  dst->ascent = dst->face->size->metrics.ascender >> 6;
+  dst->descent = dst->face->size->metrics.descender >> 6;
   dst->lineHeight = 1.0f;
 
   return 0;
@@ -178,7 +198,6 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
 
   char *line_save;
   int spaceWidth;
-//  TTF_GlyphMetrics(font->font, ' ', NULL, NULL, NULL, NULL, &spaceWidth);
   graphics_Glyph const* glyph = graphics_Font_findGlyph(font, ' ')->advance;
   char *line = strtok_r(wbuf, "\n", &line_save);
   while(line) {
@@ -230,7 +249,7 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
 void graphics_Font_render(graphics_Font* font, char const* text, int px, int py) {
 
   char const* txt = text;
-  py += font->baseline+1;
+  py += font->height+1;
   uint8_t cp;
   graphics_Shader* shader = graphics_getShader();
   graphics_setDefaultShader();
@@ -250,7 +269,7 @@ void graphics_Font_render(graphics_Font* font, char const* text, int px, int py)
     //      call per texture
     graphics_Image img = {
       font->glyphs.textures[glyph->textureIdx],
-      GlyphTextureWidth, GlyphTextureHeight };
+      font->glyphs.textureWidth, font->glyphs.textureHeight };
 
     graphics_Image_draw(&img, &glyph->textureCoords, x+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
 
@@ -269,12 +288,15 @@ int graphics_Font_getHeight(graphics_Font const* font) {
 }
 
 int graphics_Font_getAscent(graphics_Font const* font) {
+  return font->ascent;
 }
 
 int graphics_Font_getDescent(graphics_Font const* font) {
+  return font->descent;
 }
 
 int graphics_Font_getBaseline(graphics_Font const* font) {
+  return floor(font->height / 1.25f + 0.5f);
 }
 
 int graphics_Font_getWidth(graphics_Font const* font, char const* line) {
@@ -287,3 +309,12 @@ int graphics_Font_getWidth(graphics_Font const* font, char const* line) {
   return width;
 }
 
+void graphics_Font_setFilter(graphics_Font *font, graphics_Filter const* filter) {
+  for(int i = 0; i < font->glyphs.numTextures; i++) {
+    graphics_Texture_setFilter(font->glyphs.textures[i], filter);
+  }
+}
+
+void graphics_Font_getFilter(graphics_Font *font, graphics_Filter *filter) {
+  graphics_Texture_getFilter(font->glyphs.textures[0], filter);
+}

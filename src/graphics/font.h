@@ -30,14 +30,17 @@ typedef struct {
   int currentX;
   int currentY;
   int currentRowHeight;
+  int textureWidth;
+  int textureHeight;
 
 } graphics_GlyphMap;
 
 typedef struct {
   FT_Face face;
   graphics_GlyphMap glyphs;
-  int baseline;
   int height;
+  int descent;
+  int ascent;
   float lineHeight;
 } graphics_Font;
 
@@ -68,3 +71,6 @@ typedef enum {
 } graphics_TextAlign;
 
 void graphics_Font_render(graphics_Font* font, char const* text, int x, int y);
+
+void graphics_Font_setFilter(graphics_Font *font, graphics_Filter const* filter);
+void graphics_Font_getFilter(graphics_Font *font, graphics_Filter *filter);

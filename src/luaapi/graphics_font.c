@@ -6,6 +6,7 @@
 #include "../graphics/matrixstack.h"
 #include "../graphics/shader.h"
 #include "../graphics/graphics.h"
+#include "graphics.h"
 
 static struct {
   int fontMT;
@@ -166,6 +167,37 @@ static int l_graphics_Font_getWrap(lua_State* state) {
   return 1;
 }
 
+static int l_graphics_Font_getFilter(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isFont);
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+
+  graphics_Filter filter;
+
+  graphics_Font_getFilter(font, &filter);
+
+  l_tools_pushenum(state, filter.minMode, l_graphics_FilterMode);
+  l_tools_pushenum(state, filter.magMode, l_graphics_FilterMode);
+  lua_pushnumber(state, filter.maxAnisotropy);
+
+  return 3;
+}
+
+static int l_graphics_Font_setFilter(lua_State* state) {
+  l_assert_type(state, 1, l_graphics_isFont);
+
+  graphics_Font* font = l_graphics_toFont(state, 1);
+  graphics_Filter newFilter;
+  graphics_Image_getFilter(font, &newFilter);
+  newFilter.minMode = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
+  newFilter.magMode = l_tools_toenum_or_err(state, 3, l_graphics_FilterMode);
+  newFilter.maxAnisotropy = luaL_optnumber(state, 4, 1.0f);
+  graphics_Font_setFilter(font, &newFilter);
+
+  return 0;
+}
+
+
 
 static luaL_Reg const fontMetatableFuncs[] = {
   {"__gc",               l_graphics_gcFont},
@@ -175,6 +207,8 @@ static luaL_Reg const fontMetatableFuncs[] = {
   {"getBaseline",        l_graphics_Font_getBaseline},
   {"getWidth",           l_graphics_Font_getWidth},
   {"getWrap",            l_graphics_Font_getWrap},
+  {"getFilter",          l_graphics_Font_getFilter},
+  {"setFilter",          l_graphics_Font_setFilter},
   {NULL, NULL}
 };
 

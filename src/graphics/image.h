@@ -4,24 +4,13 @@
 #include "quad.h"
 #include <SDL/SDL_opengl.h>
 
-typedef enum {
-  graphics_FilterMode_none = 0,
-  graphics_FilterMode_nearest = 1,
-  graphics_FilterMode_linear = 2
-} graphics_FilterMode;
+#include "gltools.h"
 
 typedef enum {
   graphics_WrapMode_clamp = GL_CLAMP_TO_EDGE,
   graphics_WrapMode_repeat = GL_REPEAT
 } graphics_WrapMode;
 
-typedef struct {
-  float maxAnisotropy;
-  float mipmapLodBias;
-  graphics_FilterMode minMode;
-  graphics_FilterMode magMode;
-  graphics_FilterMode mipmapMode;
-} graphics_Filter;
 
 typedef struct {
   graphics_WrapMode verMode;
