@@ -215,7 +215,7 @@ static luaL_Reg const fontMetatableFuncs[] = {
 static luaL_Reg const fontFreeFuncs[] = {
   {"newFont",            l_graphics_newFont},
   {"setFont",            l_graphics_setFont},
-  {"printf",             l_graphics_printf},
+//  {"printf",             l_graphics_printf},
   {"print",              l_graphics_print},
   {NULL, NULL}
 };
