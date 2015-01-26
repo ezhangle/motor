@@ -182,6 +182,17 @@ void graphics_Font_free(graphics_Font *obj) {
   graphics_GlyphMap_free(&obj->glyphs);
 }
 
+
+typedef struct {
+  int start;
+  int stop;
+  int width;
+} WrappedWord;
+
+typedef struct {
+
+} WrappedLine;
+
 int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width, char ** wrapped) {
   // TODO with some brains this can be made even faster by removing strtok_r and parsing the text
   //      directly, without separating it into lines and words first.
@@ -277,6 +288,57 @@ void graphics_Font_render(graphics_Font* font, char const* text, int px, int py)
     x += glyph->advance;
   }
   graphics_setShader(shader);
+}
+
+void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align) {
+  int linecount = 0;
+  int len = strlen(text);
+  char *wbuf = malloc(len+1);
+  char *out = wbuf;
+
+  memcpy(wbuf, text, len+1);
+
+  char *line_save;
+  int spaceWidth;
+  graphics_Glyph const* glyph = graphics_Font_findGlyph(font, ' ')->advance;
+  char *line = strtok_r(wbuf, "\n", &line_save);
+  while(line) {
+    if(linecount != 0) {
+      *out = '\n';
+      ++out;
+    }
+
+    ++linecount;
+    char *word_save;
+    char *word = strtok_r(line, " ", &word_save);
+    int curwidth = 0;
+    while(word) {
+      int wlen = strlen(word);
+      int ww = graphics_Font_getWidth(font, word);
+      if(curwidth == 0) {
+        curwidth = ww;
+      } else {
+        if(curwidth + ww + spaceWidth > width) {
+          *out = '\n';
+          ++linecount;
+          curwidth = ww;
+        } else {
+          curwidth += ww + spaceWidth;
+          *out = ' ';
+        }
+        ++out;
+      }
+      if(out != word) {
+        memmove(out, word, wlen + 1);
+      }
+      out += wlen;
+
+      word = strtok_r(NULL, " ", &word_save);
+    }
+
+    line = strtok_r(NULL, "\n", &line_save);
+  }
+  
 }
 
 void graphics_font_init() {
