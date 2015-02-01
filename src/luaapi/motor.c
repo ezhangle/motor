@@ -17,7 +17,7 @@ int l_motor_register(lua_State* state) {
   lua_pushcfunction(state, l_motor_getVersion);
   lua_rawset(state, -3);
   
-  lua_setglobal(state, "motor");
+  lua_setglobal(state, "love");
 
   return 0;
 }

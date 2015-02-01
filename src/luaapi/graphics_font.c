@@ -13,6 +13,7 @@ static struct {
   graphics_Font* currentFont;
   int currentFontRef;
   int loadedFontsRef;
+  graphics_Font defaultFont;
 } moduleData;
 
 static int l_graphics_setFont(lua_State* state) {
@@ -33,8 +34,42 @@ static int l_graphics_setFont(lua_State* state) {
   return 0;
 }
 
+static const l_tools_Enum l_graphics_AlignMode[] = {
+  {"left", graphics_TextAlign_left},
+  {"right", graphics_TextAlign_right},
+  {"center", graphics_TextAlign_center},
+  {"justify", graphics_TextAlign_justify},
+  {NULL, 0}
+};
+
 static int l_graphics_printf(lua_State* state) {
   char const* text = l_tools_tostring_or_err(state, 1);
+  int x = l_tools_tonumber_or_err(state, 2);
+  int y = l_tools_tonumber_or_err(state, 3);
+  int limit = l_tools_tonumber_or_err(state, 4);
+  // TODO
+  graphics_TextAlign align = graphics_TextAlign_left;
+  if(!lua_isnoneornil(state, 5)) {
+    align = l_tools_toenum_or_err(state, 5, l_graphics_AlignMode);
+  }
+
+  float r = luaL_optnumber(state, 6, 0);
+  float sx = luaL_optnumber(state, 7, 1.0f);
+  float sy = luaL_optnumber(state, 8, sx);
+  float ox = luaL_optnumber(state, 9, 0);
+  float oy = luaL_optnumber(state, 10, 0);
+  float kx = luaL_optnumber(state, 11, 0);
+  float ky = luaL_optnumber(state, 12, 0);
+
+  mat4x4 m;
+  m4x4_new_transform2d(&m, 0, 0, r, sx, sy, ox, oy, kx, ky, 1, 1);
+  
+  matrixstack_push();
+  matrixstack_multiply(&m);
+
+  graphics_Font_printf(moduleData.currentFont, text, x, y, limit, align);
+
+  matrixstack_pop();
   return 0;
 }
 
@@ -188,7 +223,7 @@ static int l_graphics_Font_setFilter(lua_State* state) {
 
   graphics_Font* font = l_graphics_toFont(state, 1);
   graphics_Filter newFilter;
-  graphics_Image_getFilter(font, &newFilter);
+  graphics_Font_getFilter(font, &newFilter);
   newFilter.minMode = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
   newFilter.magMode = l_tools_toenum_or_err(state, 3, l_graphics_FilterMode);
   newFilter.maxAnisotropy = luaL_optnumber(state, 4, 1.0f);
@@ -215,13 +250,18 @@ static luaL_Reg const fontMetatableFuncs[] = {
 static luaL_Reg const fontFreeFuncs[] = {
   {"newFont",            l_graphics_newFont},
   {"setFont",            l_graphics_setFont},
-//  {"printf",             l_graphics_printf},
+  {"printf",             l_graphics_printf},
   {"print",              l_graphics_print},
   {NULL, NULL}
 };
 
 l_check_type_fn(l_graphics_isFont, moduleData.fontMT)
 l_to_type_fn(l_graphics_toFont, graphics_Font)
+
+void l_graphics_font_init() {
+  graphics_Font_new(&moduleData.defaultFont, NULL, 12);
+  moduleData.currentFont = &moduleData.defaultFont;
+}
 
 void l_graphics_font_register(lua_State* state) {
   l_tools_register_funcs_in_module(state, "graphics", fontFreeFuncs);
@@ -235,4 +275,5 @@ void l_graphics_font_register(lua_State* state) {
   lua_rawset(state, -3);
   lua_setmetatable(state, -2);
   moduleData.loadedFontsRef = luaL_ref(state, LUA_REGISTRYINDEX);
+
 }

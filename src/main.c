@@ -41,7 +41,8 @@ int lua_curtime(lua_State *state) {
 
 
 int lua_errorhandler(lua_State *state) {
-  const char* msg = lua_tostring(state, 1);
+  // TODO
+  //const char* msg = lua_tostring(state, 1);
   //luaL_traceback(state, state, msg, 1);
   return 1;
 }
@@ -61,7 +62,7 @@ void main_loop(void *data) {
 
   timer_step();
   lua_rawgeti(loopData->luaState, LUA_REGISTRYINDEX, loopData->errhand);
-  lua_getglobal(loopData->luaState, "motor");
+  lua_getglobal(loopData->luaState, "love");
   lua_pushstring(loopData->luaState, "update");
 
   // TODO use pcall, add error handling
@@ -109,6 +110,8 @@ int main() {
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
 
+
+  motor_Config config;
   l_motor_register(lua);
   l_graphics_register(lua);
   l_image_register(lua);
@@ -116,18 +119,18 @@ int main() {
   l_filesystem_register(lua);
   l_timer_register(lua);
 
-  motor_Config config;
-
   l_boot(lua, &config);
 
   keyboard_init();
   graphics_init(config.window.width, config.window.height);
+  l_graphics_font_init();
+
 
   if(luaL_dofile(lua, "/main.lua")) {
     printf("Error: %s\n", lua_tostring(lua, -1));
   }
 
-  lua_getglobal(lua, "motor");
+  lua_getglobal(lua, "love");
   lua_pushstring(lua, "load");
   lua_rawget(lua, -2);
   lua_call(lua, 0, 0);

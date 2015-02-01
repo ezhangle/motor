@@ -52,3 +52,9 @@ void matrixstack_origin() {
 void matrixstack_rotate(float a) {
   m4x4_rotate_z(matrixstack_head(), a);
 }
+
+void matrixstack_multiply(mat4x4 const* matrix) {
+  mat4x4 m;
+  memcpy(&m, matrixstack_head(), sizeof(mat4x4));
+  m4x4_mul_m4x4(matrixstack_head(), matrix, &m);
+}

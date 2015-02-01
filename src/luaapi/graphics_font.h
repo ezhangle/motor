@@ -4,6 +4,7 @@
 #include <lua.h>
 #include "../graphics/font.h"
 
+void l_graphics_font_init();
 void l_graphics_font_register(lua_State* state);
 bool l_graphics_isFont(lua_State* state, int index);
 int l_graphics_newFont(lua_State* state);

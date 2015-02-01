@@ -3,6 +3,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 void l_tools_register_funcs_in_module(lua_State* state, char const* module, luaL_Reg const* funcs);
 void l_tools_register_module(lua_State* state, char const* moduleName, luaL_Reg const * funcs);

@@ -2,13 +2,12 @@
 #include "boot.h"
 
 static char const bootScript[] =
-  "love = motor\n"
-  "motor.update = function(dt) end\n"
-  "motor.draw = function() end\n"
-  "motor.load = function() end\n"
-  "motor.keypressed = function() end\n"
-  "motor.keyreleased = function() end\n"
-  "motor.textinput = function() end\n"
+  "love.update = function(dt) end\n"
+  "love.draw = function() end\n"
+  "love.load = function() end\n"
+  "love.keypressed = function() end\n"
+  "love.keyreleased = function() end\n"
+  "love.textinput = function() end\n"
   "local conf = {\n"
   "  window = {\n"
   "    width = 400,\n"
@@ -18,7 +17,7 @@ static char const bootScript[] =
   "local confFunc = loadfile(\"conf.lua\")\n"
   "if confFunc then\n"
   "  confFunc()\n"
-  "  motor.conf(conf)\n"
+  "  love.conf(conf)\n"
   "end\n"
   "return conf\n"
 ;

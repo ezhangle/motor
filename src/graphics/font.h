@@ -22,7 +22,7 @@ typedef struct {
 } graphics_GlyphSet;
 
 typedef struct {
-  GLuint* textures;
+  GLuint *textures;
 
   graphics_GlyphSet glyphs[256];
 
@@ -45,7 +45,7 @@ typedef struct {
 } graphics_Font;
 
 
-int graphics_Font_getWrap(graphics_Font const* font, char const* line, int width, char **wrapped);
+int graphics_Font_getWrap(graphics_Font * font, char const* line, int width, char **wrapped);
 
 void graphics_font_init();
 
@@ -61,16 +61,17 @@ int graphics_Font_getDescent(graphics_Font const* font);
 
 int graphics_Font_getBaseline(graphics_Font const* font);
 
-int graphics_Font_getWidth(graphics_Font const* font, char const* line);
+int graphics_Font_getWidth(graphics_Font * font, char const* line);
 
 typedef enum {
   graphics_TextAlign_center,
   graphics_TextAlign_left,
   graphics_TextAlign_right,
-  graphcis_TextAlign_justify
+  graphics_TextAlign_justify
 } graphics_TextAlign;
 
 void graphics_Font_render(graphics_Font* font, char const* text, int x, int y);
+void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align);
 
 void graphics_Font_setFilter(graphics_Font *font, graphics_Filter const* filter);
 void graphics_Font_getFilter(graphics_Font *font, graphics_Filter *filter);

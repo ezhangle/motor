@@ -36,7 +36,9 @@ int l_graphics_newShader(lua_State* state) {
     fragmentSrc = lua_tostring(state, 2);
     
     if(!isVertexShader(vertexSrc)) {
+      // TODO
       int loadedFile1Size = filesystem_read(vertexSrc, &loadedFile1);
+      (void) loadedFile1Size;
       if(!loadedFile1 || !isVertexShader(loadedFile1)) {
         free(loadedFile1);
         lua_pushstring(state, "input 1 is not a valid vertex shader");
@@ -46,7 +48,10 @@ int l_graphics_newShader(lua_State* state) {
     }
 
     if(!isSingleFragmentShader(fragmentSrc)) {
+      // TODO
       int loadedFile2Size = filesystem_read(fragmentSrc, &loadedFile2);
+      (void)loadedFile2Size;
+
       if(!loadedFile2 || !isSingleFragmentShader(loadedFile2)) {
         free(loadedFile1);
         free(loadedFile2);
@@ -63,8 +68,9 @@ int l_graphics_newShader(lua_State* state) {
       fragmentSrc = vertexSrc;
       vertexSrc = NULL;
     } else {
-      
+      // TODO
       int loadedFile1Size = filesystem_read(vertexSrc, &loadedFile1);
+      (void) loadedFile1Size;
       if(!loadedFile1) {
         lua_pushstring(state, "could not open file");
         return lua_error(state);

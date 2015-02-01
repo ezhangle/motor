@@ -28,4 +28,5 @@ static luaL_Reg const regFuncs[] = {
 
 int l_filesystem_register(lua_State* state) {
   l_tools_register_module(state, "filesystem", regFuncs);
+  return 0;
 }

@@ -158,6 +158,12 @@
           canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
           layer2.appendChild(canvas);
           eval.call(window, engineReq.response);
+          /*
+          var scriptTag = document.createElement("script");
+          scriptTag.type = "text/javascript";
+          scriptTag.src = "motor2d.js";
+          document.body.appendChild(scriptTag);
+          */
         } else if(engineReq.status != 200) {
           loadError("Could not load engine: " + engineReq.statusText);
         } else if(gameReq.status != 200) {

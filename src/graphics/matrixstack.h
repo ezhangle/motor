@@ -10,4 +10,4 @@ void matrixstack_translate(float x, float y);
 void matrixstack_scale(float x, float y);
 void matrixstack_origin();
 void matrixstack_rotate(float a);
-
+void matrixstack_multiply(mat4x4 const* matrix);

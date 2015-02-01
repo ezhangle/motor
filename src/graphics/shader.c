@@ -81,7 +81,7 @@ static void compileAndAttachShader(GLuint program, GLenum shaderType, char const
   memcpy(combinedCode + headerlen + codelen, footer, footerlen+1); // include zero terminator
 
   GLuint shader = glCreateShader(shaderType);
-  glShaderSource(shader, 1, &combinedCode, 0);
+  glShaderSource(shader, 1, (GLchar const **)&combinedCode, 0);
   glCompileShader(shader);
 
   glAttachShader(program, shader);

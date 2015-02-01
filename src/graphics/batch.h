@@ -39,5 +39,6 @@ void graphics_Batch_bind(graphics_Batch *batch);
 void graphics_Batch_unbind(graphics_Batch *batch);
 void graphics_Batch_clear(graphics_Batch *batch);
 void graphics_Batch_setBufferSize(graphics_Batch* batch, int newsize);
+void graphics_Batch_setBufferSizeClearing(graphics_Batch* batch, int newsize);
 void graphics_Batch_setColor(graphics_Batch* batch, float r, float g, float b, float a);
 void graphics_Batch_clearColor(graphics_Batch* batch);

@@ -1,3 +1,4 @@
+#include <tgmath.h>
 #include <lauxlib.h>
 #include "graphics_batch.h"
 #include "graphics_image.h"

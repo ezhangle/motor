@@ -81,7 +81,7 @@ static int l_graphics_Canvas_renderTo(lua_State* state) {
 
 
   graphics_Canvas *canvas = l_graphics_toCanvas(state, 1);
-  graphics_Canvas *oldCanvas = graphics_getCanvas();
+  graphics_Canvas const *oldCanvas = graphics_getCanvas();
   graphics_setCanvas(canvas);
   lua_call(state, 0, 0);
   graphics_setCanvas(oldCanvas);

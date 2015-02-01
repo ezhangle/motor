@@ -8,13 +8,26 @@
 #include "../tools/utf8.h"
 #include "../math/minmax.h"
 #include "shader.h"
+#include "batch.h"
+#include "vera_ttf.c"
 
 #include FT_GLYPH_H
 
 static const int GlyphTexturePadding = 1;
 
+typedef struct {
+  char const* ptr;
+  int len;
+  int width;
+} Word;
+
 static struct {
   FT_Library ft;
+  Word *line;
+  int wordcount;
+  graphics_Batch *batches;
+  int batchcount;
+  int batchsize;
 } moduleData;
 
 
@@ -73,7 +86,7 @@ graphics_Glyph const* graphics_Font_findGlyph(graphics_Font *font, unsigned unic
   graphics_Glyph * newGlyphs = malloc(sizeof(graphics_Glyph) * (set->numGlyphs+1));
   memcpy(newGlyphs, set->glyphs, i * sizeof(graphics_Glyph));
   memcpy(newGlyphs + i + 1, set->glyphs + i, (set->numGlyphs - i) * sizeof(graphics_Glyph));
-  free(set->glyphs);
+  free((void*)set->glyphs);
   set->glyphs = newGlyphs;
   ++set->numGlyphs;
 
@@ -151,7 +164,14 @@ static int const TextureHeights[] = {128, 256, 256, 512, 512, 1024, 1024};
 static int const TextureSizeCount = sizeof(TextureWidths) / sizeof(int);
 
 int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
-  int error = FT_New_Face(moduleData.ft, filename, 0, &dst->face);
+  // TODO use error
+  int error;
+  if(filename) {
+    FT_New_Face(moduleData.ft, filename, 0, &dst->face);
+  } else {
+    FT_New_Memory_Face(moduleData.ft, defaultFontData, defaultFontSize, 0, &dst->face);
+  }
+  (void)error;
   FT_Set_Pixel_Sizes(dst->face, 0, ptsize);
 
   memset(&dst->glyphs, 0, sizeof(graphics_GlyphMap));
@@ -193,7 +213,8 @@ typedef struct {
 
 } WrappedLine;
 
-int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width, char ** wrapped) {
+int graphics_Font_getWrap(graphics_Font * font, char const* text, int width, char ** wrapped) {
+  #if 0
   // TODO with some brains this can be made even faster by removing strtok_r and parsing the text
   //      directly, without separating it into lines and words first.
   //      The current version scans the text up to 3x, once to split it into lines, once to split
@@ -255,13 +276,13 @@ int graphics_Font_getWrap(graphics_Font const* font, char const* text, int width
   }
 
   return linecount;
+  #endif
+  return 0;
 }
 
 void graphics_Font_render(graphics_Font* font, char const* text, int px, int py) {
-
-  char const* txt = text;
   py += font->height+1;
-  uint8_t cp;
+  uint32_t cp;
   graphics_Shader* shader = graphics_getShader();
   graphics_setDefaultShader();
   int x = px;
@@ -284,65 +305,182 @@ void graphics_Font_render(graphics_Font* font, char const* text, int px, int py)
 
     graphics_Image_draw(&img, &glyph->textureCoords, x+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
 
-    //printf("%c -> %d\n", cp, px);
     x += glyph->advance;
   }
   graphics_setShader(shader);
 }
 
-void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align) {
-  int linecount = 0;
-  int len = strlen(text);
-  char *wbuf = malloc(len+1);
-  char *out = wbuf;
+static void drawLine(graphics_Font* font, int x, int y, int start, int end, int rest, int spacewidth, float leftScale, float centerScale) {
+  if(rest < 0)
+    rest = 0;
+  x += rest * leftScale;
+  spacewidth += centerScale / (end - start - 1) * rest;
+  for(int i = start; i < end; ++i) {
+    for(int j = 0; j < moduleData.line[i].len; ++j) {
+      uint32_t cp = utf8_scan(&moduleData.line[i].ptr);
 
-  memcpy(wbuf, text, len+1);
+      graphics_Glyph const* glyph = graphics_Font_findGlyph(font, cp);
+      graphics_Batch_add(&moduleData.batches[glyph->textureIdx], &glyph->textureCoords, x+glyph->bearingX, y-glyph->bearingY, 0, 1, 1, 0,0, 0, 0);
 
-  char *line_save;
-  int spaceWidth;
-  graphics_Glyph const* glyph = graphics_Font_findGlyph(font, ' ')->advance;
-  char *line = strtok_r(wbuf, "\n", &line_save);
-  while(line) {
-    if(linecount != 0) {
-      *out = '\n';
-      ++out;
+      x += glyph->advance;
     }
-
-    ++linecount;
-    char *word_save;
-    char *word = strtok_r(line, " ", &word_save);
-    int curwidth = 0;
-    while(word) {
-      int wlen = strlen(word);
-      int ww = graphics_Font_getWidth(font, word);
-      if(curwidth == 0) {
-        curwidth = ww;
-      } else {
-        if(curwidth + ww + spaceWidth > width) {
-          *out = '\n';
-          ++linecount;
-          curwidth = ww;
-        } else {
-          curwidth += ww + spaceWidth;
-          *out = ' ';
-        }
-        ++out;
-      }
-      if(out != word) {
-        memmove(out, word, wlen + 1);
-      }
-      out += wlen;
-
-      word = strtok_r(NULL, " ", &word_save);
-    }
-
-    line = strtok_r(NULL, "\n", &line_save);
+    x += spacewidth;
   }
-  
+}
+
+static void prepareBatches(graphics_Font const* font, int chars) {
+  int newSize = max(chars, moduleData.batchsize);
+  if(font->glyphs.numTextures > moduleData.batchcount) {
+    moduleData.batches = realloc(moduleData.batches, font->glyphs.numTextures * sizeof(graphics_Batch));
+    for(int i = moduleData.batchcount; i < font->glyphs.numTextures; ++i) {
+      graphics_Image *img = malloc(sizeof(graphics_Image));
+      img->texID = font->glyphs.textures[i];
+      img->width = font->glyphs.textureWidth;
+      img->height = font->glyphs.textureHeight;
+      graphics_Batch_new(&moduleData.batches[i], img, newSize, graphics_BatchUsage_stream);
+      graphics_Batch_bind(&moduleData.batches[i]);
+    }
+  }
+  if(moduleData.batchsize < newSize) {
+    for(int i = 0; i < moduleData.batchcount; ++i) {
+      graphics_Batch_bind(&moduleData.batches[i]);
+      graphics_Batch_setBufferSizeClearing(&moduleData.batches[i], newSize);
+      ((graphics_Image*)moduleData.batches[i].texture)->texID = font->glyphs.textures[i];
+      ((graphics_Image*)moduleData.batches[i].texture)->width = font->glyphs.textureWidth;
+      ((graphics_Image*)moduleData.batches[i].texture)->height = font->glyphs.textureHeight;
+    }
+  } else {
+    for(int i = 0; i < moduleData.batchcount; ++i) {
+      graphics_Batch_bind(&moduleData.batches[i]);
+      graphics_Batch_clear(&moduleData.batches[i]);
+      ((graphics_Image*)moduleData.batches[i].texture)->texID = font->glyphs.textures[i];
+      ((graphics_Image*)moduleData.batches[i].texture)->width = font->glyphs.textureWidth;
+      ((graphics_Image*)moduleData.batches[i].texture)->height = font->glyphs.textureHeight;
+    }
+  }
+  moduleData.batchcount = font->glyphs.numTextures;
+  moduleData.batchsize = newSize;
+}
+
+void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align) {
+  // Very cheap estimate of upper limit for actual string length
+  int count = strlen(text);
+  prepareBatches(font, count);
+
+  int currentWord = 0;
+
+  char const *lastPos = text;
+  int c = utf8_scan(&text);
+  int currentWidth = 0;
+  int spaceWidth = graphics_Font_findGlyph(font, ' ')->advance;
+
+  graphics_Shader* shader = graphics_getShader();
+  graphics_setDefaultShader();
+  for(;;) {
+    // Find beginning of current word, process newlines
+    // in the process
+    while(c == ' ' || c == '\t' || c == '\n' || c == '\0') {
+
+      if(c == '\n' || c == '\0') {
+        if(currentWord > 0) {
+          // Print line, split if required
+
+          int xword = 1;
+          int width = moduleData.line[0].width;
+          int start = 0;
+          while(xword < currentWord) {
+            int newWidth = width + spaceWidth + moduleData.line[xword].width;
+            if(newWidth > limit) {
+              float leftScale = 0.0f;
+              float centerScale = 0.0f;
+              switch(align) {
+              case graphics_TextAlign_center:
+                leftScale = 0.5f;
+                break;
+              case graphics_TextAlign_right:
+                leftScale = 1.0f;
+                break;
+              case graphics_TextAlign_justify:
+                centerScale = 1.0f;
+                break;
+              default:
+                break;
+              }
+              drawLine(font, px, py, start, xword, limit - width, spaceWidth, leftScale, centerScale);
+              start = xword;
+              width = moduleData.line[xword].width;
+              py += floor(font->height * font->lineHeight + 0.5f);
+            } else {
+              width = newWidth;
+            }
+            ++xword;
+          }
+          float leftScale = 0.0f;
+          float centerScale = 0.0f;
+          switch(align) {
+          case graphics_TextAlign_center:
+            leftScale = 0.5f;
+            break;
+          case graphics_TextAlign_right:
+            leftScale = 1.0f;
+            break;
+          default:
+            break;
+          }
+          drawLine(font, px, py, start, xword, limit - width, spaceWidth, leftScale, centerScale);
+          py += floor(font->height * font->lineHeight + 0.5f);
+
+          currentWord = 0;
+          currentWidth = 0;
+        }
+
+        if(c == '\0') {
+          graphics_setShader(shader);
+          goto exitPreparation; // TODO evil? maybe, but fun!
+        }
+      }
+
+      lastPos = text;
+      c = utf8_scan(&text);
+    }
+
+    if(currentWord >= moduleData.wordcount) {
+      moduleData.wordcount *= 2;
+      moduleData.line = realloc(moduleData.line, moduleData.wordcount * sizeof(Word));
+    }
+    moduleData.line[currentWord].ptr = lastPos;
+    moduleData.line[currentWord].len = 0;
+    moduleData.line[currentWord].width = 0;
+
+    // Find end of current word, sum up length and width
+    while(c != ' ' && c != '\t' && c != '\n' && c != '\0') {
+      ++moduleData.line[currentWord].len;
+      graphics_Glyph const* g = graphics_Font_findGlyph(font, c);
+      moduleData.line[currentWord].width += g->advance;
+      c = utf8_scan(&text);
+    }
+
+    ++currentWord;
+  }
+
+exitPreparation:
+  for(int i = 0; i < moduleData.batchcount; ++i) {
+    graphics_Batch_unbind(&moduleData.batches[i]);
+    graphics_Batch_draw(&moduleData.batches[i], 0, 0, 0, 1, 1, 0, 0, 0, 0);
+  }
+
+  graphics_setShader(shader);
 }
 
 void graphics_font_init() {
+  // TODO use error
   int error = FT_Init_FreeType(&moduleData.ft);
+  (void)error;
+  moduleData.line = malloc(sizeof(Word) * 2);
+  moduleData.wordcount = 2;
+  moduleData.batchcount = 0;
+  moduleData.batches = NULL;
+  moduleData.batchsize = 0;
 }
 
 int graphics_Font_getHeight(graphics_Font const* font) {
@@ -361,7 +499,7 @@ int graphics_Font_getBaseline(graphics_Font const* font) {
   return floor(font->height / 1.25f + 0.5f);
 }
 
-int graphics_Font_getWidth(graphics_Font const* font, char const* line) {
+int graphics_Font_getWidth(graphics_Font * font, char const* line) {
   uint32_t uni;
   int width=0;
   while((uni = utf8_scan(&line))) {

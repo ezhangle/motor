@@ -70,7 +70,7 @@ void l_keyboard_keypressed(SDL_Keycode key, bool isrepeat) {
   if(isrepeat && !moduleData.keyRepeat) {
     return;
   }
-  lua_getglobal(moduleData.luaState, "motor");
+  lua_getglobal(moduleData.luaState, "love");
   lua_pushstring(moduleData.luaState, "keypressed");
   lua_rawget(moduleData.luaState, -2);
   lua_pushstring(moduleData.luaState, keyboard_getKeyName(key));
@@ -79,7 +79,7 @@ void l_keyboard_keypressed(SDL_Keycode key, bool isrepeat) {
 }
 
 void l_keyboard_keyreleased(SDL_Keycode key) {
-  lua_getglobal(moduleData.luaState, "motor");
+  lua_getglobal(moduleData.luaState, "love");
   lua_pushstring(moduleData.luaState, "keyreleased");
   lua_rawget(moduleData.luaState, -2);
   lua_pushstring(moduleData.luaState, keyboard_getKeyName(key));
@@ -87,7 +87,7 @@ void l_keyboard_keyreleased(SDL_Keycode key) {
 }
 
 void l_keyboard_textInput(char const* text) {
-  lua_getglobal(moduleData.luaState, "motor");
+  lua_getglobal(moduleData.luaState, "love");
   lua_pushstring(moduleData.luaState, "textinput");
   lua_rawget(moduleData.luaState, -2);
   lua_pushstring(moduleData.luaState, text);

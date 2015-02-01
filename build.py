@@ -99,8 +99,8 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-O2 --memory-init-file 0 --llvm-lto 3 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-LDFLAGS = '-O2 --llvm-lto 3 --memory-init-file 0'
+CFLAGS = '-O0 -g -g4 --memory-init-file 0 --llvm-lto 0 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+LDFLAGS = '-O0 -g4 --llvm-lto 0 --memory-init-file 0'
 #CFLAGS = '-DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 --profiling -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 #LDFLAGS = '--profiling'
 CC = 'emcc'
@@ -129,6 +129,27 @@ def newestDependency(filename, trace=[]):
   return newest
 
 
+def makeFontFile():
+  sourcefile = os.path.join(os.path.dirname(sys.argv[0]), "data", "vera.ttf")
+  compiled = os.path.exists("vera_ttf.c") and os.path.getmtime("vera_ttf.c") or 0
+  source   = os.path.getmtime(sourcefile)
+
+  if compiled > source:
+    return False
+  
+  with open(sourcefile, "rb") as datafile, open("vera_ttf.c", "w") as outputfile:
+    content = bytearray(datafile.read())
+    outputfile.write("static unsigned char const defaultFontData[] = {\n")
+
+    for i in range(len(content)):
+      outputfile.write("0x{:02x}, ".format(content[i]))
+      if i % 16 == 15:
+        outputfile.write("\n")
+
+    outputfile.write("}};\nstatic size_t defaultFontSize = {};".format(len(content)))
+  
+  return True
+
 
 def needsRebuild(filename):
   return not os.path.exists(getObjFilename(filename)) or \
@@ -155,6 +176,8 @@ def compile(filename):
 
 def build():
   needsLinking = False
+  fontChanged = makeFontFile()
+  needsLinking = needsLinking or fontChanged
   for i in sources:
     filename = i
     if needsRebuild(filename):
@@ -163,6 +186,7 @@ def build():
         sys.exit(1)
 
       needsLinking = True
+
 
   if needsLinking:
     print("Linking {output}".format(output=output))
