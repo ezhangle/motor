@@ -26,27 +26,23 @@ void m4x4_shear2d(mat4x4 *inout, float x, float y) {
 }
 
 void m4x4_new_transform2d(mat4x4 *out, float x, float y, float r, float sx, float sy,
-                      float ox, float oy, float kx, float ky, float w, float h) {
+                      float ox, float oy, float kx, float ky) {
 
   float sa = sin(r);
   float ca = cos(r);
-  float a = h * sa;
-  float b = h * ca;
-  float c = w * sa;
-  float d = w * ca;
   float e = ky * sy;
   float f = kx * sx;
   float g = -ky*ox-oy;
   float j = g * sy;
   float k = -kx*oy-ox;
 
-  out->m[0][0] = d*sx-c*e;
-  out->m[0][1] = c*sx+d*e;
+  out->m[0][0] = ca*sx-sa*e;
+  out->m[0][1] = sa*sx+ca*e;
   out->m[0][2] = 0.0f;
   out->m[0][3] = 0.0f;
 
-  out->m[1][0] = b*f-a*sy;
-  out->m[1][1] = b*sy+a*f;
+  out->m[1][0] = ca*f-sa*sy;
+  out->m[1][1] = ca*sy+sa*f;
   out->m[1][2] = 0.0f;
   out->m[1][3] = 0.0f;
 

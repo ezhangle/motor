@@ -280,36 +280,6 @@ int graphics_Font_getWrap(graphics_Font * font, char const* text, int width, cha
   return 0;
 }
 
-void graphics_Font_render(graphics_Font* font, char const* text, int px, int py) {
-  py += font->height+1;
-  uint32_t cp;
-  graphics_Shader* shader = graphics_getShader();
-  graphics_setDefaultShader();
-  int x = px;
-  while((cp = utf8_scan(&text))) {
-    if(cp == '\n') {
-      x = px;
-      py += floor(font->height * font->lineHeight + 0.5f);
-      continue;
-    }
-    // This will create the glyph if required
-    graphics_Glyph const* glyph = graphics_Font_findGlyph(font, cp);
-
-    // TODO This method is okay for now, but should use instanced rendering ASAP.
-    //      That means creating several instanced sets, one for each texture used,
-    //      and adding the instances accordingly, then rendering all with one draw
-    //      call per texture
-    graphics_Image img = {
-      font->glyphs.textures[glyph->textureIdx],
-      font->glyphs.textureWidth, font->glyphs.textureHeight };
-
-    graphics_Image_draw(&img, &glyph->textureCoords, x+glyph->bearingX, py-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
-
-    x += glyph->advance;
-  }
-  graphics_setShader(shader);
-}
-
 static void drawLine(graphics_Font* font, int x, int y, int start, int end, int rest, int spacewidth, float leftScale, float centerScale) {
   if(rest < 0)
     rest = 0;
@@ -362,13 +332,47 @@ static void prepareBatches(graphics_Font const* font, int chars) {
   moduleData.batchsize = newSize;
 }
 
-void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align) {
+void graphics_Font_render(graphics_Font* font, char const* text, int px, int py, float r, float sx, float sy, float ox, float oy, float kx, float ky) {
+  prepareBatches(font, strlen(text));
+  uint32_t cp;
+  graphics_Shader* shader = graphics_getShader();
+  graphics_setDefaultShader();
+  int x = 0;
+  //py += font->ascent;
+  int y = font->ascent;
+  while((cp = utf8_scan(&text))) {
+    if(cp == '\n') {
+      x = 0;
+      y += floor(font->height * font->lineHeight + 0.5f);
+      continue;
+    }
+    // This will create the glyph if required
+    graphics_Glyph const* glyph = graphics_Font_findGlyph(font, cp);
+
+    graphics_Batch_add(&moduleData.batches[glyph->textureIdx], &glyph->textureCoords, x+glyph->bearingX, y-glyph->bearingY, 0, 1, 1, 0, 0, 0, 0);
+
+    x += glyph->advance;
+  }
+
+  for(int i = 0; i < moduleData.batchcount; ++i) {
+    graphics_Batch_unbind(&moduleData.batches[i]);
+    graphics_Batch_draw(&moduleData.batches[i], px, py, r, sx, sy, ox, oy, kx, ky);
+  }
+
+  graphics_setShader(shader);
+}
+
+
+void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align, float r, float sx, float sy, float ox, float oy, float kx, float ky) {
   // Very cheap estimate of upper limit for actual string length
   int count = strlen(text);
   prepareBatches(font, count);
 
   int currentWord = 0;
 
+  //py += font->ascent;
+  int y = font->ascent;
+  int x = 0;
   char const *lastPos = text;
   int c = utf8_scan(&text);
   int currentWidth = 0;
@@ -406,10 +410,10 @@ void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py,
               default:
                 break;
               }
-              drawLine(font, px, py, start, xword, limit - width, spaceWidth, leftScale, centerScale);
+              drawLine(font, x, y, start, xword, limit - width, spaceWidth, leftScale, centerScale);
               start = xword;
               width = moduleData.line[xword].width;
-              py += floor(font->height * font->lineHeight + 0.5f);
+              y += floor(font->height * font->lineHeight + 0.5f);
             } else {
               width = newWidth;
             }
@@ -427,8 +431,8 @@ void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py,
           default:
             break;
           }
-          drawLine(font, px, py, start, xword, limit - width, spaceWidth, leftScale, centerScale);
-          py += floor(font->height * font->lineHeight + 0.5f);
+          drawLine(font, x, y, start, xword, limit - width, spaceWidth, leftScale, centerScale);
+          y += floor(font->height * font->lineHeight + 0.5f);
 
           currentWord = 0;
           currentWidth = 0;
@@ -466,7 +470,7 @@ void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py,
 exitPreparation:
   for(int i = 0; i < moduleData.batchcount; ++i) {
     graphics_Batch_unbind(&moduleData.batches[i]);
-    graphics_Batch_draw(&moduleData.batches[i], 0, 0, 0, 1, 1, 0, 0, 0, 0);
+    graphics_Batch_draw(&moduleData.batches[i], px, py, r, sx, sy, ox, oy, kx, ky);
   }
 
   graphics_setShader(shader);

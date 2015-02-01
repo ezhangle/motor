@@ -70,8 +70,8 @@ typedef enum {
   graphics_TextAlign_justify
 } graphics_TextAlign;
 
-void graphics_Font_render(graphics_Font* font, char const* text, int x, int y);
-void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align);
+void graphics_Font_render(graphics_Font* font, char const* text, int x, int y, float r, float sx, float sy, float ox, float oy, float kx, float ky);
+void graphics_Font_printf(graphics_Font* font, char const* text, int px, int py, int limit, graphics_TextAlign align, float r, float sx, float sy, float ox, float oy, float kx, float ky);
 
 void graphics_Font_setFilter(graphics_Font *font, graphics_Filter const* filter);
 void graphics_Font_getFilter(graphics_Font *font, graphics_Filter *filter);

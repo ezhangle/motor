@@ -123,7 +123,6 @@ int main() {
 
   keyboard_init();
   graphics_init(config.window.width, config.window.height);
-  l_graphics_font_init();
 
 
   if(luaL_dofile(lua, "/main.lua")) {
@@ -138,7 +137,6 @@ int main() {
 
   lua_pushcfunction(lua, lua_errorhandler);
   MainLoopData mainLoopData = {
-//    .lastTime = curtime(),
     .luaState = lua,
     .errhand = luaL_ref(lua, LUA_REGISTRYINDEX)
   };

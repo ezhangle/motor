@@ -42,7 +42,17 @@ static const l_tools_Enum l_graphics_AlignMode[] = {
   {NULL, 0}
 };
 
+static void l_graphics_loadDefaultFont() {
+  graphics_Font_new(&moduleData.defaultFont, NULL, 12);
+  moduleData.currentFont = &moduleData.defaultFont;
+}
+
+
 static int l_graphics_printf(lua_State* state) {
+  if(!moduleData.currentFont) {
+    l_graphics_loadDefaultFont();
+  }
+
   char const* text = l_tools_tostring_or_err(state, 1);
   int x = l_tools_tonumber_or_err(state, 2);
   int y = l_tools_tonumber_or_err(state, 3);
@@ -61,24 +71,28 @@ static int l_graphics_printf(lua_State* state) {
   float kx = luaL_optnumber(state, 11, 0);
   float ky = luaL_optnumber(state, 12, 0);
 
-  mat4x4 m;
-  m4x4_new_transform2d(&m, 0, 0, r, sx, sy, ox, oy, kx, ky, 1, 1);
-  
-  matrixstack_push();
-  matrixstack_multiply(&m);
+  graphics_Font_printf(moduleData.currentFont, text, x, y, limit, align, r, sx, sy, ox, oy, kx, ky);
 
-  graphics_Font_printf(moduleData.currentFont, text, x, y, limit, align);
-
-  matrixstack_pop();
   return 0;
 }
 
 static int l_graphics_print(lua_State* state) {
+  if(!moduleData.currentFont) {
+    l_graphics_loadDefaultFont();
+  }
   char const* text = l_tools_tostring_or_err(state, 1);
   int x = l_tools_tonumber_or_err(state, 2);
   int y = l_tools_tonumber_or_err(state, 3);
 
-  graphics_Font_render(moduleData.currentFont, text, x, y);
+  float r = luaL_optnumber(state, 4, 0);
+  float sx = luaL_optnumber(state, 5, 1.0f);
+  float sy = luaL_optnumber(state, 6, sx);
+  float ox = luaL_optnumber(state, 7, 0);
+  float oy = luaL_optnumber(state, 8, 0);
+  float kx = luaL_optnumber(state, 9, 0);
+  float ky = luaL_optnumber(state, 10, 0);
+
+  graphics_Font_render(moduleData.currentFont, text, x, y, r, sx, sy, ox, oy, kx, ky);
   return 0;
 }
 
@@ -257,11 +271,6 @@ static luaL_Reg const fontFreeFuncs[] = {
 
 l_check_type_fn(l_graphics_isFont, moduleData.fontMT)
 l_to_type_fn(l_graphics_toFont, graphics_Font)
-
-void l_graphics_font_init() {
-  graphics_Font_new(&moduleData.defaultFont, NULL, 12);
-  moduleData.currentFont = &moduleData.defaultFont;
-}
 
 void l_graphics_font_register(lua_State* state) {
   l_tools_register_funcs_in_module(state, "graphics", fontFreeFuncs);
