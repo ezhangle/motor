@@ -12,6 +12,7 @@
 #include "graphics_quad.h"
 #include "graphics_font.h"
 #include "graphics_shader.h"
+#include "graphics_window.h"
 
 static int l_graphics_setBackgroundColor(lua_State* state) {
   int red   = lua_tointeger(state, 1);
@@ -274,6 +275,11 @@ static int l_graphics_rectangle(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_reset(lua_State* state) {
+  graphics_reset();
+  return 0;
+}
+
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
@@ -297,6 +303,7 @@ static luaL_Reg const regFuncs[] = {
   {"getWidth",           l_graphics_getWidth},
   {"getHeight",          l_graphics_getHeight},
   {"rectangle",          l_graphics_rectangle},
+  {"reset",              l_graphics_reset},
   {NULL, NULL}
 };
 
@@ -312,6 +319,7 @@ int l_graphics_register(lua_State* state) {
   l_graphics_batch_register(state);
   l_graphics_canvas_register(state);
   l_graphics_shader_register(state);
+  l_graphics_window_register(state);
   
   return 0;
 }

@@ -1,3 +1,4 @@
+#include <lualib.h>
 #include "motor.h"
 #include "../motor.h"
 
@@ -18,6 +19,8 @@ int l_motor_register(lua_State* state) {
   lua_rawset(state, -3);
   
   lua_setglobal(state, "love");
+
+  luaL_openlibs(state);
 
   return 0;
 }

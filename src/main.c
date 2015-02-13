@@ -17,6 +17,7 @@
 #include "luaapi/keyboard.h"
 #include "luaapi/filesystem.h"
 #include "luaapi/timer.h"
+#include "luaapi/math.h"
 
 #include "graphics/graphics.h"
 
@@ -118,6 +119,7 @@ int main() {
   l_keyboard_register(lua);
   l_filesystem_register(lua);
   l_timer_register(lua);
+  l_math_register(lua);
 
   l_boot(lua, &config);
 

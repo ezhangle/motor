@@ -255,3 +255,13 @@ void graphics_rectangle(graphics_DrawMode mode, float x, float y, float w, float
   graphics_setShader(shader);
 }
 
+void graphics_reset() {
+  matrixstack_origin();
+  graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
+  graphics_setBackgroundColor(0.0f, 0.0f, 0.0f, 1.0f);
+  graphics_setBlendMode(graphics_BlendMode_alpha);
+  graphics_setDefaultShader();
+  graphics_setColorMask(true, true, true, true);
+  graphics_clearScissor();
+  graphics_setCanvas(NULL);
+}
