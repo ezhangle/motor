@@ -12,8 +12,8 @@ void m4x4_scale(mat4x4 *inout, float x, float y, float z) {
 
 void m4x4_translate(mat4x4 *inout, float x, float y, float z) {
   inout->m[3][0] += x * inout->m[0][0] + y * inout->m[1][0] + z * inout->m[2][0];
-  inout->m[3][1] += y * inout->m[0][1] + y * inout->m[1][1] + z * inout->m[2][1];
-  inout->m[3][2] += z * inout->m[0][2] + y * inout->m[1][2] + z * inout->m[2][2];
+  inout->m[3][1] += x * inout->m[0][1] + y * inout->m[1][1] + z * inout->m[2][1];
+  inout->m[3][2] += x * inout->m[0][2] + y * inout->m[1][2] + z * inout->m[2][2];
 }
 
 void m4x4_shear2d(mat4x4 *inout, float x, float y) {

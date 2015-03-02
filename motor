@@ -10,8 +10,7 @@ import zipfile
 
 motor_dir = os.path.dirname(sys.argv[0])
 
-search_path = [motor_dir + "/build"] 
-#, motor_dir + "/html"]
+search_path = [motor_dir + "/build"]
 
 def findNewestDataFile(directory):
   newest = 0
@@ -33,14 +32,13 @@ def repackage():
     os.mkdir('_build')
 
   datafilemtime = os.path.exists('_build/game.love') and os.path.getmtime('_build/game.love') or 0
-  print(datafilemtime, findNewestDataFile('.'))
+  print(datafilemtime - findNewestDataFile('.'))
   if datafilemtime < findNewestDataFile('.'):
     print("Rebuilding package")
     with zipfile.ZipFile("_build/game.love", "w", zipfile.ZIP_DEFLATED) as zip:
       for a,b,c in os.walk("."):
         if a.startswith("./_"):
           continue
-        print(a)
         if a != '.':
           zip.write(a)
         for i in c:

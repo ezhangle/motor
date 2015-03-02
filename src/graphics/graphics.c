@@ -107,7 +107,8 @@ void graphics_swap() {
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor, float ws, float hs) {
 
   mat4x4 tr;
-  m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
+  //m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
+  m4x4_mul_m4x4(&tr, tr2d, matrixstack_head());
 
   graphics_Shader_activate(
     &graphics_getCanvas()->projectionMatrix,
