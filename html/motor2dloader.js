@@ -1,13 +1,21 @@
   var engineReq = new XMLHttpRequest();
   var gameReq = new XMLHttpRequest();
 
-    function loadError(msg) {
-      engine_progress2.style.display="none";
-      engine_progress3.innerHTML = "<img style=\"top: 3px; position: relative\" src=\"" + errordata + "\"> " + msg;
-      engine_progress3.style.color = "#692828";
-      engine_progress3.style.height = "15px";
-    }
+  function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
 
+  var loveFile = getParameterByName('love') || 'game.love';
+
+  function loadError(msg) {
+    engine_progress2.style.display="none";
+    engine_progress3.innerHTML = "<img style=\"top: 3px; position: relative\" src=\"" + errordata + "\"> " + msg;
+    engine_progress3.style.color = "#692828";
+    engine_progress3.style.height = "15px";
+  }
 
   function loadGame() {
     Module['addRunDependency']("zip game.love");
@@ -191,7 +199,7 @@
         };
 
         engineReq.send();
-        gameReq.open('GET', 'game.love', true);
+        gameReq.open('GET', loveFile, true);
         gameReq.onload = function() {
           console.log("game loaded");
           bootEngine();
@@ -235,7 +243,7 @@
     };
     engineReq.send();
 
-    gameReq.open('HEAD', 'game.love', true);
+    gameReq.open('HEAD', loveFile, true);
     gameReq.onload = function() {
       gamesize = parseInt(gameReq.getResponseHeader('Content-Length') || "1");
       loadEngine();
