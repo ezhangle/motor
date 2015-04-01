@@ -1,6 +1,11 @@
+#include <stdlib.h>
 #include "graphics_geometry.h"
 #include "../graphics/geometry.h"
 #include "tools.h"
+
+static struct {
+  float * vertices;
+} moduleData;
 
 static const l_tools_Enum l_graphics_DrawMode[] = {
   {"fill", graphics_DrawMode_fill},
@@ -53,6 +58,34 @@ static int l_geometry_rectangle(lua_State* state) {
   return 0;
 }
 
+static int l_geometry_line(lua_State* state) {
+  graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
+
+  if(lua_istable(state, 2)) {
+    
+  } else {
+    int count = lua_gettop(state) - 1;
+    if(count % 2) {
+      lua_pushstring(state, "Need even number of values");
+      return lua_error(state);
+    }
+
+    if(count < 4) {
+      lua_pushstring(state, "Need at least two points for drawing lines");
+      return lua_error(state);
+    }
+
+    moduleData.vertices = realloc(moduleData.vertices, count * sizeof(float));
+
+    for(int i = 0; i < count; ++i) {
+      moduleData.vertices[i] = l_tools_toenum_or_err(state, 2 + i);
+    }
+  }
+
+  return 0;
+}
+
+
 static int l_geometry_setLineWidth(lua_State* state) {
   float width = l_tools_tonumber_or_err(state, 1);
   graphics_geometry_set_line_width(width);
@@ -68,6 +101,7 @@ static int l_geometry_getLineWidth(lua_State* state) {
 static luaL_Reg const geometryFreeFuncs[] = {
   {"circle",       l_geometry_circle},
   {"rectangle",    l_geometry_rectangle},
+  {"line",         l_geometry_line},
   {"setLineWidth", l_geometry_setLineWidth},
   {"getLineWidth", l_geometry_getLineWidth},
   {NULL, NULL}
