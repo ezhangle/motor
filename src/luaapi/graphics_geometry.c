@@ -46,7 +46,7 @@ static int l_geometry_rectangle(lua_State* state) {
     break;
 
   case graphics_DrawMode_line:
-    // TODO
+    graphics_geometry_draw_rectangle(x, y, w, h);
     break;
   }
 

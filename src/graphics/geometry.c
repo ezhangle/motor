@@ -82,20 +82,23 @@ void graphics_geometry_draw_circle(float x, float y, float radius, int segments)
   for(int i = 0; i < segments; ++i, ang += step) {
     float s = sin(ang);
     float c = cos(ang);
-    moduleData.data[12*i  ] = s * (radius+lwh) + x;
-    moduleData.data[12*i+1] = c * (radius+lwh) + y;
-    moduleData.data[12*i+2]  = 1.0f;
-    moduleData.data[12*i+3]  = 1.0f;
-    moduleData.data[12*i+4]  = 1.0f;
-    moduleData.data[12*i+5]  = 1.0f;
+    float * base = moduleData.data + 12*i;
 
-    moduleData.data[12*i+6] = s * (radius-lwh) + x;
-    moduleData.data[12*i+7] = c * (radius-lwh) + y;
+    // outer vertex
+    base[0] = s * (radius+lwh) + x;
+    base[1] = c * (radius+lwh) + y;
+    base[2]  = 1.0f;
+    base[3]  = 1.0f;
+    base[4]  = 1.0f;
+    base[5]  = 1.0f;
 
-    moduleData.data[12*i+8]  = 1.0f;
-    moduleData.data[12*i+9]  = 1.0f;
-    moduleData.data[12*i+10] = 1.0f;
-    moduleData.data[12*i+11] = 1.0f;
+    // inner vertex
+    base[6] = s * (radius-lwh) + x;
+    base[7] = c * (radius-lwh) + y;
+    base[8]  = 1.0f;
+    base[9]  = 1.0f;
+    base[10] = 1.0f;
+    base[11] = 1.0f;
 
     moduleData.index[2*i] = 2*i;
     moduleData.index[2*i+1] = 2*i+1;
@@ -118,12 +121,13 @@ void graphics_geometry_fill_circle(float x, float y, float radius, int segments)
   moduleData.index[0] = 0;
   moduleData.index[segments+1] = 1;
   for(int i = 0; i < segments; ++i, ang -= step) {
-    moduleData.data[6*(i+1)  ] = sin(ang) * radius + x;
-    moduleData.data[6*(i+1)+1] = cos(ang) * radius + y;
-    moduleData.data[6*(i+1)+2] = 1.0f;
-    moduleData.data[6*(i+1)+3] = 1.0f;
-    moduleData.data[6*(i+1)+4] = 1.0f;
-    moduleData.data[6*(i+1)+5] = 1.0f;
+    float * base = moduleData.data + 6*(i+1);
+    base[0] = sin(ang) * radius + x;
+    base[1] = cos(ang) * radius + y;
+    base[2] = 1.0f;
+    base[3] = 1.0f;
+    base[4] = 1.0f;
+    base[5] = 1.0f;
     moduleData.index[i+1] = i+1;
   }
 
@@ -141,6 +145,55 @@ void graphics_geometry_fill_rectangle(float x, float y, float w, float h) {
   graphics_Image_draw(&img, &q, x, y, 0, 1, 1, 0, 0, 0, 0);
 
   graphics_setShader(shader);
+}
+
+void graphics_geometry_draw_rectangle(float x, float y, float w, float h) {
+  growBuffers(8, 10);
+
+  float *buf = moduleData.data;
+  float lwh = moduleData.lineWidth / 2.0f;
+
+  // top left
+  buf[0] = x - lwh;
+  buf[1] = y - lwh;
+
+  buf[6] = x + lwh;
+  buf[7] = y + lwh;
+
+  float x2 = x + w;
+  float y2 = y + h;
+
+  // top right
+  buf[12] = x2 + lwh;
+  buf[13] = y  - lwh;
+
+  buf[18] = x2 - lwh;
+  buf[19] = y  + lwh;
+
+  // bottom right
+  buf[24] = x2 + lwh;
+  buf[25] = y2 + lwh;
+
+  buf[30] = x2 - lwh;
+  buf[31] = y2 - lwh;
+
+  // bottom left
+  buf[36] = x - lwh;
+  buf[37] = y2 + lwh;
+
+  buf[42] = x + lwh;
+  buf[43] = y2 - lwh;
+
+  for(int i = 0; i < 8; ++i) {
+    for(int j = 2; j < 6; ++j) {
+      buf[6*i+j] = 1.0f;
+    }
+    moduleData.index[i] = i;
+  }
+  moduleData.index[8] = 0;
+  moduleData.index[9] = 1;
+
+  drawBuffer(8, 10, GL_TRIANGLE_STRIP);
 }
 
 float graphics_geometry_get_line_width() {
