@@ -26,14 +26,14 @@ int l_geometry_circle(lua_State* state) {
     break;
 
   case graphics_DrawMode_line:
-    // TODO
+    graphics_geometry_draw_circle(x,y,r,segments);
     break;
   }
 
   return 0;
 }
 
-static int l_graphics_rectangle(lua_State* state) {
+static int l_geometry_rectangle(lua_State* state) {
   graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
   float x = l_tools_tonumber_or_err(state, 2);
   float y = l_tools_tonumber_or_err(state, 3);
@@ -53,10 +53,23 @@ static int l_graphics_rectangle(lua_State* state) {
   return 0;
 }
 
+static int l_geometry_setLineWidth(lua_State* state) {
+  float width = l_tools_tonumber_or_err(state, 1);
+  graphics_geometry_set_line_width(width);
+  return 0;
+}
+
+static int l_geometry_getLineWidth(lua_State* state) {
+  lua_pushnumber(state, graphics_geometry_get_line_width());
+  return 1;
+}
+
 
 static luaL_Reg const geometryFreeFuncs[] = {
-  {"circle",     l_geometry_circle},
-  {"rectangle",  l_graphics_rectangle},
+  {"circle",       l_geometry_circle},
+  {"rectangle",    l_geometry_rectangle},
+  {"setLineWidth", l_geometry_setLineWidth},
+  {"getLineWidth", l_geometry_getLineWidth},
   {NULL, NULL}
 };
 
