@@ -15,6 +15,7 @@ static struct {
   uint16_t *index;
   graphics_Shader plainColorShader;
   float lineWidth;
+  graphics_LineJoin join;
 } moduleData;
 
 void graphics_geometry_init() {
@@ -36,6 +37,7 @@ void graphics_geometry_init() {
     "}\n");
 
   moduleData.lineWidth = 1.0f;
+  moduleData.join = graphics_LineJoin_none;
 }
 
 static void growBuffers(int vertices, int indices) {
@@ -196,10 +198,82 @@ void graphics_geometry_draw_rectangle(float x, float y, float w, float h) {
   drawBuffer(8, 10, GL_TRIANGLE_STRIP);
 }
 
+static void makeLineJoinNone(int vertexCount, float const* vertices) {
+  for(int i = 0; i < vertexCount - 1; ++i) {
+    float px1 = vertices[2*i];
+    float py1 = vertices[2*i+1];
+    float px2 = vertices[2*i+2];
+    float py2 = vertices[2*i+3];
+    float dx = px2 - px1;
+    float dy = py2 - py1;
+    float l = 0.5f * moduleData.lineWidth / sqrt(dx*dx+dy*dy);
+    float nx = dy * l;
+    float ny = -dx * l;
+
+    float * base = moduleData.data + 24 * i;
+    base[0]  = px1 - nx;
+    base[1]  = py1 - ny;
+    base[6]  = px1 + nx;
+    base[7]  = py1 + ny;
+    base[12] = px2 - nx;
+    base[13] = py2 - ny;
+    base[18] = px2 + nx;
+    base[19] = py2 + ny;
+    
+
+    for(int j = 0; j < 4; ++j) {
+      for(int k = 0; k < 4; ++k) {
+        base[6*j + 2 + k] = 1.0f;
+      }
+    }
+  }
+}
+
+void graphics_geometry_draw_lines(int vertexCount, float const* vertices) {
+  int verts = 4*(vertexCount-1);
+  int indices = 6*(vertexCount-1);
+  growBuffers(verts, indices);
+
+  switch(moduleData.join) {
+  case graphics_LineJoin_none:
+    makeLineJoinNone(vertexCount, vertices);
+    break;
+
+  case graphics_LineJoin_miter:
+    //makeLineJoinMiter(vertexCount, vertices);
+    break;
+
+  case graphics_LineJoin_bevel:
+    //makeLineJoinBevel(vertexCount, vertices);
+    break;
+  }
+
+  for(int i = 0; i < vertexCount-1; ++i) {
+    uint16_t * base = moduleData.index + i * 6;
+
+    base[0] = 4*i;
+    base[1] = 4*i+1;
+    base[2] = 4*i+2;
+    base[3] = 4*i+1;
+    base[4] = 4*i+2;
+    base[5] = 4*i+3;
+  }
+
+  drawBuffer(verts, indices, GL_TRIANGLES);
+}
+
 float graphics_geometry_get_line_width() {
   return moduleData.lineWidth;
 }
 
 void graphics_geometry_set_line_width(float width) {
   moduleData.lineWidth = width;
+}
+
+void graphics_geometry_set_line_join(graphics_LineJoin join) {
+  moduleData.join = join;
+}
+
+graphics_LineJoin graphics_geometry_get_line_join() {
+  return moduleData.join;
 }

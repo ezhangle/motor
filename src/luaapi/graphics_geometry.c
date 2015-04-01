@@ -5,6 +5,7 @@
 
 static struct {
   float * vertices;
+  int vertSize;
 } moduleData;
 
 static const l_tools_Enum l_graphics_DrawMode[] = {
@@ -59,28 +60,43 @@ static int l_geometry_rectangle(lua_State* state) {
 }
 
 static int l_geometry_line(lua_State* state) {
-  graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
+  bool table = lua_istable(state, 1);
 
-  if(lua_istable(state, 2)) {
-    
+  int count;
+  if(table) {
+    count = lua_objlen(state, 1);
   } else {
-    int count = lua_gettop(state) - 1;
-    if(count % 2) {
-      lua_pushstring(state, "Need even number of values");
-      return lua_error(state);
-    }
+    count = lua_gettop(state);
+  }
 
-    if(count < 4) {
-      lua_pushstring(state, "Need at least two points for drawing lines");
-      return lua_error(state);
-    }
+  if(count % 2) {
+    lua_pushstring(state, "Need even number of values");
+    return lua_error(state);
+  }
 
+  if(count < 4) {
+    lua_pushstring(state, "Need at least two points for drawing lines");
+    return lua_error(state);
+  }
+
+  if(count > moduleData.vertSize) {
     moduleData.vertices = realloc(moduleData.vertices, count * sizeof(float));
+    moduleData.vertSize = count;
+  }
 
+  if(table) {
     for(int i = 0; i < count; ++i) {
-      moduleData.vertices[i] = l_tools_toenum_or_err(state, 2 + i);
+      lua_rawgeti(state, -1, i);
+      moduleData.vertices[i] = l_tools_tonumber_or_err(state, -1);
+      lua_pop(state, 1);
+    }
+  } else {
+    for(int i = 0; i < count; ++i) {
+      moduleData.vertices[i] = l_tools_tonumber_or_err(state, 1 + i);
     }
   }
+
+  graphics_geometry_draw_lines(count/2, moduleData.vertices);
 
   return 0;
 }

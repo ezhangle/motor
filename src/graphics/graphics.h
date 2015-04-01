@@ -18,10 +18,6 @@ typedef enum {
   graphics_BlendMode_screen
 } graphics_BlendMode;
 
-typedef enum {
-  graphics_DrawMode_fill,
-  graphics_DrawMode_line
-} graphics_DrawMode;
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha);
 void graphics_setColor(float red, float green, float blue, float alpha);
