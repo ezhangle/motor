@@ -13,12 +13,13 @@
 #include "graphics_font.h"
 #include "graphics_shader.h"
 #include "graphics_window.h"
+#include "graphics_geometry.h"
 
 static int l_graphics_setBackgroundColor(lua_State* state) {
   int red   = lua_tointeger(state, 1);
   int green = lua_tointeger(state, 2);
   int blue  = lua_tointeger(state, 3);
-  int alpha = lua_tointeger(state, 4);
+  int alpha = luaL_optinteger(state, 4, 255);
 
   float scale = 1.0f / 255.0f;
 
@@ -257,24 +258,6 @@ static int l_graphics_getHeight(lua_State* state) {
   return 1;
 }
 
-static const l_tools_Enum l_graphics_DrawMode[] = {
-  {"fill", graphics_DrawMode_fill},
-  {"line", graphics_DrawMode_line},
-  {NULL, 0}
-};
-
-static int l_graphics_rectangle(lua_State* state) {
-  graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
-  float x = l_tools_tonumber_or_err(state, 2);
-  float y = l_tools_tonumber_or_err(state, 3);
-  float w = l_tools_tonumber_or_err(state, 4);
-  float h = l_tools_tonumber_or_err(state, 5);
-
-
-  graphics_rectangle(mode, x, y, w, h);
-  return 0;
-}
-
 static int l_graphics_reset(lua_State* state) {
   graphics_reset();
   return 0;
@@ -302,12 +285,9 @@ static luaL_Reg const regFuncs[] = {
   {"newShader",          l_graphics_newShader},
   {"getWidth",           l_graphics_getWidth},
   {"getHeight",          l_graphics_getHeight},
-  {"rectangle",          l_graphics_rectangle},
   {"reset",              l_graphics_reset},
   {NULL, NULL}
 };
-
-
 
 
 int l_graphics_register(lua_State* state) {
@@ -320,6 +300,7 @@ int l_graphics_register(lua_State* state) {
   l_graphics_canvas_register(state);
   l_graphics_shader_register(state);
   l_graphics_window_register(state);
+  l_graphics_geometry_register(state);
   
   return 0;
 }

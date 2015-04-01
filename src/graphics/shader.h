@@ -24,3 +24,5 @@ void graphics_shader_init();
 void graphics_Shader_free(graphics_Shader* shader);
 void graphics_setDefaultShader();
 void graphics_setShader(graphics_Shader* shader);
+void graphics_Shader_compileAndAttachShaderRaw(GLuint program, GLenum shaderType, char const* code);
+void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, char const* code);

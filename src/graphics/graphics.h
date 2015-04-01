@@ -38,5 +38,4 @@ void graphics_setBlendMode(graphics_BlendMode mode);
 void graphics_clearScissor();
 void graphics_setScissor(int x, int y, int w, int h);
 bool graphics_getScissor(int *x, int *y, int *w, int *h);
-void graphics_rectangle(graphics_DrawMode mode, float x, float y, float w, float h);
 void graphics_reset();

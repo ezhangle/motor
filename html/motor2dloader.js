@@ -102,7 +102,7 @@
 
     layer2.style.marginLeft = "auto";
     layer2.style.marginRight = "auto";
-    layer2.style.width="400px";
+    //layer2.style.width="400px";
     layer3.appendChild(layer2);
 
 

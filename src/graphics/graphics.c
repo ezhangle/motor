@@ -9,6 +9,7 @@
 #include "quad.h"
 #include "canvas.h"
 #include "shader.h"
+#include "geometry.h"
 
 // TODO remove when rectangle is cleaned up
 #include "image.h"
@@ -37,7 +38,6 @@ static struct {
   
   // TODO cleanup and use abstraction layer above this and graphics_Shader
 
-  graphics_Shader rectangleShader;
   
 } moduleData;
 
@@ -57,6 +57,7 @@ void graphics_init(int width, int height) {
 
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+  graphics_geometry_init();
   graphics_font_init();
   graphics_batch_init();
   graphics_image_init();
@@ -74,11 +75,6 @@ void graphics_init(int width, int height) {
   glBindVertexArray(moduleData.polygonVAO);
   glGenBuffers(1, &moduleData.polygonVBO);
   glGenBuffers(1, &moduleData.polygonIBO);
-
-  graphics_Shader_new(&moduleData.rectangleShader, NULL,
-    "vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_cords ) {\n"
-    "  return color;\n"
-    "}\n");
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
@@ -232,28 +228,6 @@ bool graphics_getScissor(int *x, int *y, int *w, int *h) {
   *h = moduleData.scissorBox[3];
 
   return true;
-}
-
-void graphics_rectangle(graphics_DrawMode mode, float x, float y, float w, float h) {
-  graphics_Shader *shader = graphics_getShader();
-
-  switch(mode) {
-  case graphics_DrawMode_line:
-    break;
-
-  case graphics_DrawMode_fill:
-    {
-      graphics_Image img = {
-        0, w, h
-      };
-      graphics_Quad q = {0,0,1,1};
-      graphics_setShader(&moduleData.rectangleShader);
-      graphics_Image_draw(&img, &q, x, y, 0, 1, 1, 0, 0, 0, 0);
-      break;
-    }
-  }
-
-  graphics_setShader(shader);
 }
 
 void graphics_reset() {

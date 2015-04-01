@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import os
@@ -10,6 +10,7 @@ sources = [
   'graphics/batch.c',
   'graphics/canvas.c',
   'graphics/font.c',
+  'graphics/geometry.c',
   'graphics/graphics.c',
   'graphics/image.c',
   'graphics/matrixstack.c',
@@ -26,6 +27,7 @@ sources = [
   'luaapi/graphics_batch.c',
   'luaapi/graphics_canvas.c',
   'luaapi/graphics_font.c',
+  'luaapi/graphics_geometry.c',
   'luaapi/graphics_image.c',
   'luaapi/graphics_quad.c',
   'luaapi/graphics_shader.c',
@@ -102,8 +104,8 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-O3 --memory-init-file 0 --llvm-lto 3 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-LDFLAGS = '-O3 --llvm-lto 3 --memory-init-file 0'
+CFLAGS = '-O0 --memory-init-file 0 --llvm-lto 0 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+LDFLAGS = '-O0 --llvm-lto 0 --memory-init-file 0'
 #CFLAGS = '-DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 --profiling -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 #LDFLAGS = '--profiling'
 CC = 'emcc'
@@ -199,11 +201,16 @@ def build():
 
 def buildLoader():
   closure = os.path.join(os.path.dirname(os.path.realpath(shutil.which("emcc"))), "third_party", "closure-compiler", "compiler.jar")
-  java = shutil.which("java");
+  if not os.path.exists(closure):
+    closure = shutil.which('closure-compiler')
+  else:
+    java = shutil.which("java")
+    closure = "{java} -jar {closure}".format(java=java, closure=closure)
+
   htmlpath = os.path.join(os.path.dirname(sys.argv[0]), "html")
   os.system("echo \"var logodata = 'data:image/png;base64,$(base64 -w 0 {logo})';\" >logo.js".format(logo=os.path.join(htmlpath, "motor.png")))
   os.system("echo \"var errordata = 'data:image/png;base64,$(base64 -w 0 {logo})';\" >error.js".format(logo=os.path.join(htmlpath, "error.png")))
-  cmd = "{java} -jar {closure} --language_in ECMASCRIPT5 --js=logo.js --js=error.js --js={html}/zip.js --js={html}/inflate.js --js={html}/zip-ext.js --js={html}/motor2dloader.js --js_output_file=motor2dloader.js".format(java=java, html=htmlpath, closure=closure)
+  cmd = "{closure} --language_in ECMASCRIPT5 --js=logo.js --js=error.js --js={html}/zip.js --js={html}/inflate.js --js={html}/zip-ext.js --js={html}/motor2dloader.js --js_output_file=motor2dloader.js".format(html=htmlpath, closure=closure)
 #  cmd = "cat logo.js error.js {html}/zip.js {html}/inflate.js {html}/zip-ext.js {html}/motor2dloader.js >motor2dloader.js".format(html=htmlpath)
   os.system(cmd)
   for i in ["motor2d.html"]:

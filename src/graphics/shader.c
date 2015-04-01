@@ -54,8 +54,16 @@ static GLchar const fragmentFooter[] =
   "  gl_FragColor = effect(color * fColor, tex, fUV, vec2(0.0, 0.0));\n"
   "}\n";
 
+void graphics_Shader_compileAndAttachShaderRaw(GLuint program, GLenum shaderType, char const* code) {
+  GLuint shader = glCreateShader(shaderType);
+  glShaderSource(shader, 1, (GLchar const **)&code, 0);
+  glCompileShader(shader);
 
-static void compileAndAttachShader(GLuint program, GLenum shaderType, char const* code) {
+  glAttachShader(program, shader);
+  glDeleteShader(shader);
+}
+
+void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, char const* code) {
   GLchar const* header;
   GLchar const* footer;
   int headerlen;
@@ -80,12 +88,7 @@ static void compileAndAttachShader(GLuint program, GLenum shaderType, char const
   memcpy(combinedCode + headerlen, (GLchar const*)code, codelen);
   memcpy(combinedCode + headerlen + codelen, footer, footerlen+1); // include zero terminator
 
-  GLuint shader = glCreateShader(shaderType);
-  glShaderSource(shader, 1, (GLchar const **)&combinedCode, 0);
-  glCompileShader(shader);
-
-  glAttachShader(program, shader);
-  glDeleteShader(shader);
+  graphics_Shader_compileAndAttachShaderRaw(program, shaderType, combinedCode);
 
   free(combinedCode);
 }
@@ -112,8 +115,8 @@ void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char c
   glAttachShader(shader->program, fragmentShader);
   */
 
-  compileAndAttachShader(shader->program, GL_VERTEX_SHADER, vertexCode);
-  compileAndAttachShader(shader->program, GL_FRAGMENT_SHADER, fragmentCode);
+  graphics_Shader_compileAndAttachShader(shader->program, GL_VERTEX_SHADER, vertexCode);
+  graphics_Shader_compileAndAttachShader(shader->program, GL_FRAGMENT_SHADER, fragmentCode);
 
   glBindAttribLocation(shader->program, 0, "vPos");
   glBindAttribLocation(shader->program, 1, "vUV");

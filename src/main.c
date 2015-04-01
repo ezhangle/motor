@@ -44,7 +44,17 @@ int lua_curtime(lua_State *state) {
 int lua_errorhandler(lua_State *state) {
   // TODO
   //const char* msg = lua_tostring(state, 1);
-  //luaL_traceback(state, state, msg, 1);
+  lua_Debug debug;
+  int level = 0;
+  while(lua_getstack(state, level, &debug)) {
+    lua_getinfo(state, "Sl", &debug);
+    lua_pushstring(state, debug.short_src);
+    lua_pushstring(state, ":");
+    lua_pushnumber(state, debug.currentline);
+    lua_pushstring(state, "\n");
+    ++level;
+  }
+  lua_concat(state, 4*level+1);
   return 1;
 }
 
