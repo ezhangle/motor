@@ -14,6 +14,13 @@ static const l_tools_Enum l_graphics_DrawMode[] = {
   {NULL, 0}
 };
 
+static const l_tools_Enum l_graphics_LineJoin[] = {
+  {"none",  graphics_LineJoin_none},
+  {"bevel", graphics_LineJoin_bevel},
+  {"miter", graphics_LineJoin_miter},
+  {NULL, 0}
+};
+
 int l_geometry_circle(lua_State* state) {
   graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
   float x = l_tools_tonumber_or_err(state, 2);
@@ -113,6 +120,16 @@ static int l_geometry_getLineWidth(lua_State* state) {
   return 1;
 }
 
+static int l_geometry_setLineJoin(lua_State* state) {
+  graphics_LineJoin join = l_tools_toenum_or_err(state, 1, l_graphics_LineJoin);
+  graphics_geometry_set_line_join(join);
+  return 0;
+}
+
+static int l_geometry_getLineJoin(lua_State* state) {
+  l_tools_pushenum(state, graphics_geometry_get_line_join(), l_graphics_LineJoin);
+  return 1;
+}
 
 static luaL_Reg const geometryFreeFuncs[] = {
   {"circle",       l_geometry_circle},
@@ -120,6 +137,8 @@ static luaL_Reg const geometryFreeFuncs[] = {
   {"line",         l_geometry_line},
   {"setLineWidth", l_geometry_setLineWidth},
   {"getLineWidth", l_geometry_getLineWidth},
+  {"setLineJoin",  l_geometry_setLineJoin},
+  {"getLineJoin",  l_geometry_getLineJoin},
   {NULL, NULL}
 };
 
