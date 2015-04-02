@@ -4,7 +4,24 @@
 #include "../math/vector.h"
 #include "quad.h"
 
+typedef enum {
+  graphics_ShaderUniformType_float,
+  graphics_ShaderUniformType_int,
+  graphics_ShaderUniformType_bool,
+  graphics_ShaderUniformType_sampler,
+  graphics_ShaderUniformType_none
+} graphics_ShaderUniformType;
+
 typedef struct {
+  char *name;
+  graphics_ShaderUniformType type;
+  int components;
+  int elements;
+} graphics_ShaderUniformInfo;
+
+typedef struct {
+  // These are regularly needed on a per-drawcall basis.
+  // This way we can access them real quick
   struct {
     GLuint transform;
     GLuint projection;
@@ -13,6 +30,9 @@ typedef struct {
     GLuint color;
     GLuint size;
   } uniformLocations;
+
+  int uniformCount;
+  graphics_ShaderUniformInfo *uniforms;
 
   GLuint program;
 } graphics_Shader;
