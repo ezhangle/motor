@@ -122,6 +122,11 @@ static int l_geometry_getLineWidth(lua_State* state) {
 
 static int l_geometry_setLineJoin(lua_State* state) {
   graphics_LineJoin join = l_tools_toenum_or_err(state, 1, l_graphics_LineJoin);
+  if(join == graphics_LineJoin_bevel) {
+    lua_pushstring(state, "'bevel' line join mode not supported yet");
+    return lua_error(state);
+  }
+
   graphics_geometry_set_line_join(join);
   return 0;
 }
