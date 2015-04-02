@@ -25,7 +25,7 @@ int l_keyboard_isDown(lua_State* state) {
   for(int i = 0; i < top; ++i) {
     any = any || keyboard_ispressed(
                   keyboard_getKeycode(
-                    l_tools_tostring_or_err(state, i + 1)));
+                    l_tools_toStringOrError(state, i + 1)));
     if(any) {
       break;
     }
@@ -63,7 +63,7 @@ void l_keyboard_register(lua_State* state) {
   moduleData.luaState = state;
   moduleData.keyRepeat = false;
 
-  l_tools_register_module(state, "keyboard", regFuncs);
+  l_tools_registerModule(state, "keyboard", regFuncs);
 }
 
 void l_keyboard_keypressed(SDL_Keycode key, bool isrepeat) {

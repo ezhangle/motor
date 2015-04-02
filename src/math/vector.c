@@ -25,7 +25,7 @@ void m4x4_shear2d(mat4x4 *inout, float x, float y) {
   inout->m[1][2] += y * inout->m[0][2];
 }
 
-void m4x4_new_transform2d(mat4x4 *out, float x, float y, float r, float sx, float sy,
+void m4x4_newTransform2d(mat4x4 *out, float x, float y, float r, float sx, float sy,
                       float ox, float oy, float kx, float ky) {
 
   float sa = sin(r);
@@ -57,7 +57,7 @@ void m4x4_new_transform2d(mat4x4 *out, float x, float y, float r, float sx, floa
   out->m[3][3] = 1.0f;
 }
 
-void m3x3_new_transform2d(mat3x3 *out, float x, float y, float r, float sx, float sy,
+void m3x3_newTransform2d(mat3x3 *out, float x, float y, float r, float sx, float sy,
                       float ox, float oy, float kx, float ky, float w, float h) {
 
   float sa = sin(r);
@@ -85,7 +85,7 @@ void m3x3_new_transform2d(mat3x3 *out, float x, float y, float r, float sx, floa
   out->m[2][2] = 1.0f;
 }
 
-void m4x4_rotate_z(mat4x4 *inout, float a) {
+void m4x4_rotateZ(mat4x4 *inout, float a) {
   float ca = cos(a);
   float sa = sin(a);
   float m00 = inout->m[0][0];
@@ -103,7 +103,7 @@ void m4x4_rotate_z(mat4x4 *inout, float a) {
   inout->m[1][2] = -sa * m02 + ca * m12;
 }
 
-void m4x4_new_identity(mat4x4 *out) {
+void m4x4_newIdentity(mat4x4 *out) {
   out->m[0][0] = 1.0f;
   out->m[0][1] = 0.0f;
   out->m[0][2] = 0.0f;
@@ -122,7 +122,7 @@ void m4x4_new_identity(mat4x4 *out) {
   out->m[3][3] = 1.0f;
 }
 
-void m4x4_new_scaling(mat4x4 *out, float x, float y, float z) {
+void m4x4_newScaling(mat4x4 *out, float x, float y, float z) {
   out->m[0][0] = x;
   out->m[0][1] = 0.0f;
   out->m[0][2] = 0.0f;
@@ -141,7 +141,7 @@ void m4x4_new_scaling(mat4x4 *out, float x, float y, float z) {
   out->m[3][3] = 1.0f;
 }
 
-void m4x4_new_translation(mat4x4 *out, float x, float y, float z) {
+void m4x4_newTranslation(mat4x4 *out, float x, float y, float z) {
   out->m[0][0] = 1.0f;
   out->m[0][1] = 0.0f;
   out->m[0][2] = 0.0f;
@@ -160,13 +160,13 @@ void m4x4_new_translation(mat4x4 *out, float x, float y, float z) {
   out->m[3][3] = 1.0f;
 }
 
-void m4x4_new_rotation_x(mat4x4 *out, float a) {
+void m4x4_newRotationX(mat4x4 *out, float a) {
 }
 
-void m4x4_new_rotation_y(mat4x4 *out, float a) {
+void m4x4_newRotationY(mat4x4 *out, float a) {
 }
 
-void m4x4_new_rotation_z(mat4x4 *out, float a) {
+void m4x4_newRotationZ(mat4x4 *out, float a) {
   float ca = cos(a);
   float sa = sin(a);
 
@@ -188,7 +188,7 @@ void m4x4_new_rotation_z(mat4x4 *out, float a) {
   out->m[3][3] = 1.0f;
 }
 
-void m4x4_mul_m4x4(mat4x4 *out, mat4x4 const* a, mat4x4 const* b) {
+void m4x4_mulM4x4(mat4x4 *out, mat4x4 const* a, mat4x4 const* b) {
   // TODO pretty naive approach. Someday I'll have to check whether
   // a more cache friendly version is required
   for(int i = 0; i < 4; ++i) {
@@ -201,10 +201,10 @@ void m4x4_mul_m4x4(mat4x4 *out, mat4x4 const* a, mat4x4 const* b) {
   }
 }
 
-void m4x4_mul_v4(vec4 *out, mat4x4 const* m, vec4 const* v) {
+void m4x4_mulV4(vec4 *out, mat4x4 const* m, vec4 const* v) {
 }
 
-void m3x3_mul_v2(vec2 *out, mat3x3 const* m, vec2 const* v) {
+void m3x3_mulV2(vec2 *out, mat3x3 const* m, vec2 const* v) {
   out->x = m->m[0][0] * v->x + m->m[1][0] * v->y + m->m[2][0];
   out->y = m->m[0][1] * v->x + m->m[1][1] * v->y + m->m[2][1];
 }

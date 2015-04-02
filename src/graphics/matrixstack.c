@@ -15,7 +15,7 @@ inline mat4x4* matrixstack_head() {
 
 void matrixstack_init() {
   moduleData.head = 0;
-  m4x4_new_identity(matrixstack_head());
+  m4x4_newIdentity(matrixstack_head());
 }
 
 int matrixstack_push() {
@@ -46,15 +46,15 @@ void matrixstack_scale(float x, float y) {
 }
 
 void matrixstack_origin() {
-  m4x4_new_identity(matrixstack_head());
+  m4x4_newIdentity(matrixstack_head());
 }
 
 void matrixstack_rotate(float a) {
-  m4x4_rotate_z(matrixstack_head(), a);
+  m4x4_rotateZ(matrixstack_head(), a);
 }
 
 void matrixstack_multiply(mat4x4 const* matrix) {
   mat4x4 m;
   memcpy(&m, matrixstack_head(), sizeof(mat4x4));
-  m4x4_mul_m4x4(matrixstack_head(), matrix, &m);
+  m4x4_mulM4x4(matrixstack_head(), matrix, &m);
 }

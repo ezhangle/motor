@@ -21,6 +21,6 @@ static luaL_Reg const windowFreeFuncs[] = {
 };
 
 void l_graphics_window_register(lua_State* state) {
-  l_tools_register_module(state, "window", windowFreeFuncs);
+  l_tools_registerModule(state, "window", windowFreeFuncs);
 }
 

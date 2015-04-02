@@ -2,7 +2,7 @@
 #include <string.h>
 #include "tools.h"
 
-void l_tools_register_funcs_in_module(lua_State* state, char const* module, luaL_Reg const* funcs) {
+void l_tools_registerFuncsInModule(lua_State* state, char const* module, luaL_Reg const* funcs) {
   lua_getglobal(state, "love");
   lua_pushstring(state, module);
   lua_gettable(state, -2);
@@ -11,7 +11,7 @@ void l_tools_register_funcs_in_module(lua_State* state, char const* module, luaL
   lua_pop(state, 2);
 }
 
-void l_tools_register_module(lua_State* state, char const* moduleName, luaL_Reg const * funcs) {
+void l_tools_registerModule(lua_State* state, char const* moduleName, luaL_Reg const * funcs) {
   lua_getglobal(state, "love");
   lua_pushstring(state, moduleName);
   //luaL_newlib(state, funcs);
@@ -22,7 +22,7 @@ void l_tools_register_module(lua_State* state, char const* moduleName, luaL_Reg 
 }
 
 
-int l_tools_make_type_mt(lua_State* state, luaL_Reg const* funcs) {
+int l_tools_makeTypeMetatable(lua_State* state, luaL_Reg const* funcs) {
   int mtref;
 //  luaL_newlib(state, funcs);
   lua_newtable(state);
@@ -42,7 +42,7 @@ int l_tools_make_type_mt(lua_State* state, luaL_Reg const* funcs) {
 }
 
 
-void l_tools_pushenum(lua_State* state, int value, l_tools_Enum const* values) {
+void l_tools_pushEnum(lua_State* state, int value, l_tools_Enum const* values) {
   while(values->name) {
     if(values->value == value) {
       lua_pushstring(state, values->name);
@@ -54,6 +54,6 @@ void l_tools_pushenum(lua_State* state, int value, l_tools_Enum const* values) {
   // C code has to make sure the enum value is valid!
 }
 
-extern inline float l_tools_tonumber_or_err(lua_State* state, int index);
-extern inline char const* l_tools_tostring_or_err(lua_State* state, int index);
-extern inline int l_tools_toenum_or_err(lua_State* state, int index, l_tools_Enum const* values);
+extern inline float l_tools_toNumberOrError(lua_State* state, int index);
+extern inline char const* l_tools_toStringOrError(lua_State* state, int index);
+extern inline int l_tools_toEnumOrError(lua_State* state, int index, l_tools_Enum const* values);

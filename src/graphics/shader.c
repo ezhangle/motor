@@ -103,17 +103,6 @@ void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char c
   }
 
   shader->program = glCreateProgram();
-  /*
-  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexCode, 0);
-  glCompileShader(vertexShader);
-  glAttachShader(shader->program, vertexShader);
-
-  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentCode, 0);
-  glCompileShader(fragmentShader);
-  glAttachShader(shader->program, fragmentShader);
-  */
 
   graphics_Shader_compileAndAttachShader(shader->program, GL_VERTEX_SHADER, vertexCode);
   graphics_Shader_compileAndAttachShader(shader->program, GL_FRAGMENT_SHADER, fragmentCode);

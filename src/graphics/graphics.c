@@ -11,9 +11,6 @@
 #include "shader.h"
 #include "geometry.h"
 
-// TODO remove when rectangle is cleaned up
-#include "image.h"
-
 typedef struct {
   float red;
   float green;
@@ -34,26 +31,16 @@ static struct {
   GLuint polygonVBO;
   GLuint polygonIBO;
   GLuint polygonVAO;
-
-  
-  // TODO cleanup and use abstraction layer above this and graphics_Shader
-
-  
 } moduleData;
-
-
-
 
 void graphics_init(int width, int height) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   moduleData.surface = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
   glViewport(0,0,width,height);
 
-
   matrixstack_init();
 
   graphics_canvas_init(width, height);
-
 
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -104,7 +91,7 @@ void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint va
 
   mat4x4 tr;
   //m4x4_mul_m4x4(&tr, matrixstack_head(), tr2d);
-  m4x4_mul_m4x4(&tr, tr2d, matrixstack_head());
+  m4x4_mulM4x4(&tr, tr2d, matrixstack_head());
 
   graphics_Shader_activate(
     &graphics_getCanvas()->projectionMatrix,

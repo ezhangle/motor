@@ -24,7 +24,7 @@ void graphics_Canvas_new(graphics_Canvas *canvas, int width, int height) {
   glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
   glBindTexture(GL_TEXTURE_2D, oldTex);
 
-  m4x4_new_translation(&canvas->projectionMatrix, -1.0f, -1.0f, 0.0f);
+  m4x4_newTranslation(&canvas->projectionMatrix, -1.0f, -1.0f, 0.0f);
   m4x4_scale(&canvas->projectionMatrix, 2.0f / width, 2.0f / height, 0.0f);
   canvas->image.width = width;
   canvas->image.height = height;
@@ -54,7 +54,7 @@ void graphics_setCanvas(graphics_Canvas const* canvas) {
 }
 
 void graphics_canvas_init(int width, int height) {
-  m4x4_new_translation(&moduleData.defaultCanvas.projectionMatrix, -1.0f, 1.0f, 0.0f);
+  m4x4_newTranslation(&moduleData.defaultCanvas.projectionMatrix, -1.0f, 1.0f, 0.0f);
   m4x4_scale(&moduleData.defaultCanvas.projectionMatrix, 2.0f / width, -2.0f / height, 0.0f);
   moduleData.defaultCanvas.fbo = 0;
   moduleData.defaultCanvas.image.width = width;

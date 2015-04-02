@@ -65,7 +65,7 @@ static void drawBuffer(int vertices, int indices, GLenum type) {
   graphics_Shader *shader = graphics_getShader();
   graphics_setShader(&moduleData.plainColorShader);
   mat4x4 tr;
-  m4x4_new_identity(&tr);
+  m4x4_newIdentity(&tr);
   graphics_Quad quad = {0,0,1,1};
 
   graphics_drawArray(&quad, &tr, moduleData.dataVAO, moduleData.dataIBO, indices, type, GL_UNSIGNED_SHORT, graphics_getColorPtr(), 1, 1);
@@ -73,7 +73,7 @@ static void drawBuffer(int vertices, int indices, GLenum type) {
   graphics_setShader(shader);
 }
 
-void graphics_geometry_draw_circle(float x, float y, float radius, int segments) {
+void graphics_geometry_drawCircle(float x, float y, float radius, int segments) {
   growBuffers(segments*2, segments*2+2);
 
   float step = 2*M_PI / segments;
@@ -109,7 +109,7 @@ void graphics_geometry_draw_circle(float x, float y, float radius, int segments)
   drawBuffer(segments*2, segments*2+2, GL_TRIANGLE_STRIP);
 }
 
-void graphics_geometry_fill_circle(float x, float y, float radius, int segments) {
+void graphics_geometry_fillCircle(float x, float y, float radius, int segments) {
   growBuffers(segments+1, segments+2);
 
   float step = 2*M_PI / segments;
@@ -136,7 +136,7 @@ void graphics_geometry_fill_circle(float x, float y, float radius, int segments)
   drawBuffer(segments+1, segments+2, GL_TRIANGLE_FAN);
 }
 
-void graphics_geometry_fill_rectangle(float x, float y, float w, float h) {
+void graphics_geometry_fillRectangle(float x, float y, float w, float h) {
   graphics_Shader *shader = graphics_getShader();
 
   graphics_Image img = {
@@ -149,7 +149,7 @@ void graphics_geometry_fill_rectangle(float x, float y, float w, float h) {
   graphics_setShader(shader);
 }
 
-void graphics_geometry_draw_rectangle(float x, float y, float w, float h) {
+void graphics_geometry_drawRectangle(float x, float y, float w, float h) {
   growBuffers(8, 10);
 
   float *buf = moduleData.data;
@@ -333,7 +333,7 @@ static void drawLineJoinMiter(int vertexCount, float const* vertices) {
   drawBuffer(vertexCount * 2, vertexCount * 2, GL_TRIANGLE_STRIP);
 }
 
-void graphics_geometry_draw_lines(int vertexCount, float const* vertices) {
+void graphics_geometry_drawLines(int vertexCount, float const* vertices) {
   switch(moduleData.join) {
   case graphics_LineJoin_none:
     drawLineJoinNone(vertexCount, vertices);
@@ -350,18 +350,18 @@ void graphics_geometry_draw_lines(int vertexCount, float const* vertices) {
 
 }
 
-float graphics_geometry_get_line_width() {
+float graphics_geometry_getLineWidth() {
   return moduleData.lineWidth;
 }
 
-void graphics_geometry_set_line_width(float width) {
+void graphics_geometry_setLineWidth(float width) {
   moduleData.lineWidth = width;
 }
 
-void graphics_geometry_set_line_join(graphics_LineJoin join) {
+void graphics_geometry_setLineJoin(graphics_LineJoin join) {
   moduleData.join = join;
 }
 
-graphics_LineJoin graphics_geometry_get_line_join() {
+graphics_LineJoin graphics_geometry_getLineJoin() {
   return moduleData.join;
 }

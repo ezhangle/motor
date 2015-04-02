@@ -49,7 +49,7 @@ static int l_graphics_gcImage(lua_State* state) {
 }
 
 static int l_graphics_Image_getDimensions(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   lua_pushinteger(state, img->image.width);
@@ -58,7 +58,7 @@ static int l_graphics_Image_getDimensions(lua_State* state) {
 }
 
 static int l_graphics_Image_getWidth(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   lua_pushinteger(state, img->image.width);
@@ -66,7 +66,7 @@ static int l_graphics_Image_getWidth(lua_State* state) {
 }
 
 static int l_graphics_Image_getHeight(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   lua_pushinteger(state, img->image.height);
@@ -74,26 +74,26 @@ static int l_graphics_Image_getHeight(lua_State* state) {
 }
 
 static int l_graphics_Image_getWrap(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
   graphics_Wrap wrap;
   graphics_Image_getWrap(&img->image, &wrap);
 
-  l_tools_pushenum(state, wrap.horMode, l_graphics_WrapMode);
-  l_tools_pushenum(state, wrap.verMode, l_graphics_WrapMode);
+  l_tools_pushEnum(state, wrap.horMode, l_graphics_WrapMode);
+  l_tools_pushEnum(state, wrap.verMode, l_graphics_WrapMode);
 
   return 2;
 }
 
 static int l_graphics_Image_setWrap(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   graphics_Wrap wrap;
-  wrap.horMode = l_tools_toenum_or_err(state, 2, l_graphics_WrapMode);
-  wrap.verMode = l_tools_toenum_or_err(state, 3, l_graphics_WrapMode);
+  wrap.horMode = l_tools_toEnumOrError(state, 2, l_graphics_WrapMode);
+  wrap.verMode = l_tools_toEnumOrError(state, 3, l_graphics_WrapMode);
 
   graphics_Image_setWrap(&img->image, &wrap);
 
@@ -101,7 +101,7 @@ static int l_graphics_Image_setWrap(lua_State* state) {
 }
 
 static int l_graphics_Image_getFilter(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -109,21 +109,21 @@ static int l_graphics_Image_getFilter(lua_State* state) {
 
   graphics_Image_getFilter(&img->image, &filter);
 
-  l_tools_pushenum(state, filter.minMode, l_graphics_FilterMode);
-  l_tools_pushenum(state, filter.magMode, l_graphics_FilterMode);
+  l_tools_pushEnum(state, filter.minMode, l_graphics_FilterMode);
+  l_tools_pushEnum(state, filter.magMode, l_graphics_FilterMode);
   lua_pushnumber(state, filter.maxAnisotropy);
 
   return 3;
 }
 
 static int l_graphics_Image_setFilter(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
   graphics_Filter newFilter;
   graphics_Image_getFilter(&img->image, &newFilter);
-  newFilter.minMode = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
-  newFilter.magMode = l_tools_toenum_or_err(state, 3, l_graphics_FilterMode);
+  newFilter.minMode = l_tools_toEnumOrError(state, 2, l_graphics_FilterMode);
+  newFilter.magMode = l_tools_toEnumOrError(state, 3, l_graphics_FilterMode);
   newFilter.maxAnisotropy = luaL_optnumber(state, 4, 1.0f);
   graphics_Image_setFilter(&img->image, &newFilter);
 
@@ -131,7 +131,7 @@ static int l_graphics_Image_setFilter(lua_State* state) {
 }
 
 static int l_graphics_Image_setMipmapFilter(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -142,7 +142,7 @@ static int l_graphics_Image_setMipmapFilter(lua_State* state) {
     newFilter.mipmapMode  = graphics_FilterMode_none; 
     newFilter.mipmapLodBias = 0.0f;
   } else {
-    newFilter.mipmapMode  = l_tools_toenum_or_err(state, 2, l_graphics_FilterMode);
+    newFilter.mipmapMode  = l_tools_toEnumOrError(state, 2, l_graphics_FilterMode);
     // param 2 is supposed to be "sharpness", which is exactly opposite to LOD,
     // therefore we use the negative value
     newFilter.mipmapLodBias = -luaL_optnumber(state, 3, 0.0f);
@@ -153,7 +153,7 @@ static int l_graphics_Image_setMipmapFilter(lua_State* state) {
 }
 
 static int l_graphics_Image_getMipmapFilter(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -161,14 +161,14 @@ static int l_graphics_Image_getMipmapFilter(lua_State* state) {
 
   graphics_Image_getFilter(&img->image, &filter);
 
-  l_tools_pushenum(state, filter.mipmapMode, l_graphics_FilterMode);
+  l_tools_pushEnum(state, filter.mipmapMode, l_graphics_FilterMode);
   lua_pushnumber(state, filter.mipmapLodBias);
 
   return 2;
 }
 
 static int l_graphics_Image_getData(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
 
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
@@ -178,7 +178,7 @@ static int l_graphics_Image_getData(lua_State* state) {
 }
 
 static int l_graphics_Image_refresh(lua_State* state) {
-  l_assert_type(state, 1, l_graphics_isImage);
+  l_assertType(state, 1, l_graphics_isImage);
   l_graphics_Image* img = l_graphics_toImage(state, 1);
 
   lua_rawgeti(state, LUA_REGISTRYINDEX, img->imageDataRef);
@@ -211,9 +211,9 @@ static luaL_Reg const imageFreeFuncs[] = {
 };
 
 void l_graphics_image_register(lua_State* state) {
-  l_tools_register_funcs_in_module(state, "graphics", imageFreeFuncs);
-  moduleData.imageMT  = l_tools_make_type_mt(state, imageMetatableFuncs);
+  l_tools_registerFuncsInModule(state, "graphics", imageFreeFuncs);
+  moduleData.imageMT  = l_tools_makeTypeMetatable(state, imageMetatableFuncs);
 }
 
-l_check_type_fn(l_graphics_isImage, moduleData.imageMT)
-l_to_type_fn(l_graphics_toImage, l_graphics_Image)
+l_checkTypeFn(l_graphics_isImage, moduleData.imageMT)
+l_toTypeFn(l_graphics_toImage, l_graphics_Image)

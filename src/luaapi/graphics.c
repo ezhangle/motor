@@ -117,8 +117,8 @@ static int l_graphics_pop(lua_State* state) {
 }
 
 static int l_graphics_translate(lua_State* state) {
-  float x = l_tools_tonumber_or_err(state, 1);
-  float y = l_tools_tonumber_or_err(state, 2);
+  float x = l_tools_toNumberOrError(state, 1);
+  float y = l_tools_toNumberOrError(state, 2);
 
   //printf(")) Translate %f, %f\n", x, y);
 
@@ -127,8 +127,8 @@ static int l_graphics_translate(lua_State* state) {
 }
 
 static int l_graphics_scale(lua_State* state) {
-  float x = l_tools_tonumber_or_err(state, 1);
-  float y = l_tools_tonumber_or_err(state, 2);
+  float x = l_tools_toNumberOrError(state, 1);
+  float y = l_tools_toNumberOrError(state, 2);
 
 
   matrixstack_scale(x, y);
@@ -147,7 +147,7 @@ static int l_graphics_shear(lua_State* state) {
 }
 
 static int l_graphics_rotate(lua_State* state) {
-  float a = l_tools_tonumber_or_err(state, 1);
+  float a = l_tools_toNumberOrError(state, 1);
 
   matrixstack_rotate(a);
   return 0;
@@ -199,13 +199,13 @@ static const l_tools_Enum l_graphics_BlendMode[] = {
 };
 
 static int l_graphics_setBlendMode(lua_State* state) {
-  graphics_BlendMode mode = l_tools_toenum_or_err(state, 1, l_graphics_BlendMode);
+  graphics_BlendMode mode = l_tools_toEnumOrError(state, 1, l_graphics_BlendMode);
   graphics_setBlendMode(mode);
   return 0;
 }
 
 static int l_graphics_getBlendMode(lua_State* state) {
-  l_tools_pushenum(state, graphics_getBlendMode(), l_graphics_BlendMode);
+  l_tools_pushEnum(state, graphics_getBlendMode(), l_graphics_BlendMode);
   return 1;
 }
 
@@ -222,10 +222,10 @@ static int l_graphics_setScissor(lua_State* state) {
     }
   }
 
-  int x = l_tools_tonumber_or_err(state, 1);
-  int y = l_tools_tonumber_or_err(state, 2);
-  int w = l_tools_tonumber_or_err(state, 3);
-  int h = l_tools_tonumber_or_err(state, 4);
+  int x = l_tools_toNumberOrError(state, 1);
+  int y = l_tools_toNumberOrError(state, 2);
+  int w = l_tools_toNumberOrError(state, 3);
+  int h = l_tools_toNumberOrError(state, 4);
 
   graphics_setScissor(x,y,w,h);
 
@@ -291,7 +291,7 @@ static luaL_Reg const regFuncs[] = {
 
 
 int l_graphics_register(lua_State* state) {
-  l_tools_register_module(state, "graphics", regFuncs);
+  l_tools_registerModule(state, "graphics", regFuncs);
   
   l_graphics_image_register(state);
   l_graphics_quad_register(state);

@@ -15,16 +15,16 @@ typedef enum {
 
 void graphics_geometry_init();
 
-void graphics_geometry_fill_rectangle(float x, float y, float w, float h);
-void graphics_geometry_draw_rectangle(float x, float y, float w, float h);
+void graphics_geometry_fillRectangle(float x, float y, float w, float h);
+void graphics_geometry_drawRectangle(float x, float y, float w, float h);
 
-void graphics_geometry_fill_circle(float x, float y, float radius, int segments);
-void graphics_geometry_draw_circle(float x, float y, float radius, int segments);
+void graphics_geometry_fillCircle(float x, float y, float radius, int segments);
+void graphics_geometry_drawCircle(float x, float y, float radius, int segments);
 
-void graphics_geometry_draw_lines(int vertexCount, float const* vertices);
+void graphics_geometry_drawLines(int vertexCount, float const* vertices);
 
-void graphics_geometry_set_line_join(graphics_LineJoin join);
-graphics_LineJoin graphics_geometry_get_line_join();
+void graphics_geometry_setLineJoin(graphics_LineJoin join);
+graphics_LineJoin graphics_geometry_getLineJoin();
 
-float graphics_geometry_get_line_width();
-void  graphics_geometry_set_line_width(float width);
+float graphics_geometry_getLineWidth();
+void  graphics_geometry_setLineWidth(float width);

@@ -100,7 +100,7 @@ void graphics_Image_draw(graphics_Image const* image, graphics_Quad const* quad,
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, image->texID);
   mat4x4 tr2d;
-  m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky);
+  m4x4_newTransform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky);
   graphics_drawArray(quad, &tr2d, moduleData.imageVAO, moduleData.imageIBO, 4, GL_TRIANGLE_STRIP, GL_UNSIGNED_BYTE, graphics_getColorPtr(), image->width * quad->w, image->height * quad->h);
   
 }

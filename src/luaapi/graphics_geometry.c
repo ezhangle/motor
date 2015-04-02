@@ -22,24 +22,24 @@ static const l_tools_Enum l_graphics_LineJoin[] = {
 };
 
 int l_geometry_circle(lua_State* state) {
-  graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
-  float x = l_tools_tonumber_or_err(state, 2);
-  float y = l_tools_tonumber_or_err(state, 3);
-  float r = l_tools_tonumber_or_err(state, 4);
+  graphics_DrawMode mode = l_tools_toEnumOrError(state, 1, l_graphics_DrawMode);
+  float x = l_tools_toNumberOrError(state, 2);
+  float y = l_tools_toNumberOrError(state, 3);
+  float r = l_tools_toNumberOrError(state, 4);
   int segments;
   if(lua_isnoneornil(state, 5)) {
     segments = r > 10 ? (int)r : 10;
   } else  {
-    segments = l_tools_tonumber_or_err(state, 5);
+    segments = l_tools_toNumberOrError(state, 5);
   }
 
   switch(mode) {
   case graphics_DrawMode_fill:
-    graphics_geometry_fill_circle(x,y,r,segments);
+    graphics_geometry_fillCircle(x,y,r,segments);
     break;
 
   case graphics_DrawMode_line:
-    graphics_geometry_draw_circle(x,y,r,segments);
+    graphics_geometry_drawCircle(x,y,r,segments);
     break;
   }
 
@@ -47,19 +47,19 @@ int l_geometry_circle(lua_State* state) {
 }
 
 static int l_geometry_rectangle(lua_State* state) {
-  graphics_DrawMode mode = l_tools_toenum_or_err(state, 1, l_graphics_DrawMode);
-  float x = l_tools_tonumber_or_err(state, 2);
-  float y = l_tools_tonumber_or_err(state, 3);
-  float w = l_tools_tonumber_or_err(state, 4);
-  float h = l_tools_tonumber_or_err(state, 5);
+  graphics_DrawMode mode = l_tools_toEnumOrError(state, 1, l_graphics_DrawMode);
+  float x = l_tools_toNumberOrError(state, 2);
+  float y = l_tools_toNumberOrError(state, 3);
+  float w = l_tools_toNumberOrError(state, 4);
+  float h = l_tools_toNumberOrError(state, 5);
 
   switch(mode) {
   case graphics_DrawMode_fill:
-    graphics_geometry_fill_rectangle(x, y, w, h);
+    graphics_geometry_fillRectangle(x, y, w, h);
     break;
 
   case graphics_DrawMode_line:
-    graphics_geometry_draw_rectangle(x, y, w, h);
+    graphics_geometry_drawRectangle(x, y, w, h);
     break;
   }
 
@@ -94,45 +94,45 @@ static int l_geometry_line(lua_State* state) {
   if(table) {
     for(int i = 0; i < count; ++i) {
       lua_rawgeti(state, -1, i);
-      moduleData.vertices[i] = l_tools_tonumber_or_err(state, -1);
+      moduleData.vertices[i] = l_tools_toNumberOrError(state, -1);
       lua_pop(state, 1);
     }
   } else {
     for(int i = 0; i < count; ++i) {
-      moduleData.vertices[i] = l_tools_tonumber_or_err(state, 1 + i);
+      moduleData.vertices[i] = l_tools_toNumberOrError(state, 1 + i);
     }
   }
 
-  graphics_geometry_draw_lines(count/2, moduleData.vertices);
+  graphics_geometry_drawLines(count/2, moduleData.vertices);
 
   return 0;
 }
 
 
 static int l_geometry_setLineWidth(lua_State* state) {
-  float width = l_tools_tonumber_or_err(state, 1);
-  graphics_geometry_set_line_width(width);
+  float width = l_tools_toNumberOrError(state, 1);
+  graphics_geometry_setLineWidth(width);
   return 0;
 }
 
 static int l_geometry_getLineWidth(lua_State* state) {
-  lua_pushnumber(state, graphics_geometry_get_line_width());
+  lua_pushnumber(state, graphics_geometry_getLineWidth());
   return 1;
 }
 
 static int l_geometry_setLineJoin(lua_State* state) {
-  graphics_LineJoin join = l_tools_toenum_or_err(state, 1, l_graphics_LineJoin);
+  graphics_LineJoin join = l_tools_toEnumOrError(state, 1, l_graphics_LineJoin);
   if(join == graphics_LineJoin_bevel) {
     lua_pushstring(state, "'bevel' line join mode not supported yet");
     return lua_error(state);
   }
 
-  graphics_geometry_set_line_join(join);
+  graphics_geometry_setLineJoin(join);
   return 0;
 }
 
 static int l_geometry_getLineJoin(lua_State* state) {
-  l_tools_pushenum(state, graphics_geometry_get_line_join(), l_graphics_LineJoin);
+  l_tools_pushEnum(state, graphics_geometry_getLineJoin(), l_graphics_LineJoin);
   return 1;
 }
 
@@ -148,6 +148,6 @@ static luaL_Reg const geometryFreeFuncs[] = {
 };
 
 void l_graphics_geometry_register(lua_State* state) {
-  l_tools_register_funcs_in_module(state, "graphics", geometryFreeFuncs);
+  l_tools_registerFuncsInModule(state, "graphics", geometryFreeFuncs);
 }
 

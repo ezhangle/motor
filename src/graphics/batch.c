@@ -89,12 +89,12 @@ int graphics_Batch_add(graphics_Batch* batch, graphics_Quad const* q, float x, f
   }
 
   mat3x3 transform;
-  m3x3_new_transform2d(&transform, x, y, r, sx, sy, ox, oy, kx, ky, q->w * batch->texture->width, q->h * batch->texture->height);
+  m3x3_newTransform2d(&transform, x, y, r, sx, sy, ox, oy, kx, ky, q->w * batch->texture->width, q->h * batch->texture->height);
 
   graphics_Vertex *v = batch->vertexData+ 4*batch->insertPos;
   
   for(int i = 0; i < 4; ++i) {
-    m3x3_mul_v2(&v[i].pos, &transform, batchQuadPts+i);
+    m3x3_mulV2(&v[i].pos, &transform, batchQuadPts+i);
     v[i].color = batch->color;
   }
 
@@ -151,12 +151,12 @@ void graphics_Batch_set(graphics_Batch* batch, int id, graphics_Quad const* q, f
   }
 
   mat3x3 transform;
-  m3x3_new_transform2d(&transform, x, y, r, sx, sy, ox, oy, kx, ky, q->w * batch->texture->width, q->h * batch->texture->height);
+  m3x3_newTransform2d(&transform, x, y, r, sx, sy, ox, oy, kx, ky, q->w * batch->texture->width, q->h * batch->texture->height);
 
   graphics_Vertex *v = batch->vertexData + 4*id;
   
   for(int i = 0; i < 4; ++i) {
-    m3x3_mul_v2(&v[i].pos, &transform, batchQuadPts+i);
+    m3x3_mulV2(&v[i].pos, &transform, batchQuadPts+i);
     float* c = (float*)(&v[i].color);
     for(int j = 0; j < 4; ++j) {
       c[j] = 1.0f;
@@ -193,7 +193,7 @@ void graphics_Batch_draw(graphics_Batch const* batch,
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, batch->texture->texID);
   mat4x4 tr2d;
-  m4x4_new_transform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky);
+  m4x4_newTransform2d(&tr2d, x, y, r, sx, sy, ox, oy, kx, ky);
   float const * color = batch->colorUsed ? defaultColor : graphics_getColorPtr();
 
   graphics_drawArray(&fullQuad, &tr2d, batch->vao, moduleData.sharedIndexBuffer, batch->insertPos*6, GL_TRIANGLES, GL_UNSIGNED_SHORT, color, 1.0f, 1.0f);

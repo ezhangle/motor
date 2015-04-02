@@ -7,7 +7,7 @@
   
 static int l_filesystem_read(lua_State* state) {
   // TODO implement max length
-  char const* filename = l_tools_tostring_or_err(state, 1);
+  char const* filename = l_tools_toStringOrError(state, 1);
   char* data = NULL;
   int len = filesystem_read(filename, &data);
   if(len < 0) {
@@ -27,6 +27,6 @@ static luaL_Reg const regFuncs[] = {
 };
 
 int l_filesystem_register(lua_State* state) {
-  l_tools_register_module(state, "filesystem", regFuncs);
+  l_tools_registerModule(state, "filesystem", regFuncs);
   return 0;
 }

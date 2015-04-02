@@ -7,12 +7,12 @@ int l_math_random(lua_State* state) {
   int t = lua_gettop(state);
   switch(t) {
   case 1:
-    hi = l_tools_tonumber_or_err(state, 1);
+    hi = l_tools_toNumberOrError(state, 1);
     break;
 
   case 2:
-    lo = l_tools_tonumber_or_err(state, 1);
-    hi = l_tools_tonumber_or_err(state, 2);
+    lo = l_tools_toNumberOrError(state, 1);
+    hi = l_tools_toNumberOrError(state, 2);
     break;
   }
 
@@ -27,5 +27,5 @@ static luaL_Reg const mathFreeFuncs[] = {
 };
 
 void l_math_register(lua_State* state) {
-  l_tools_register_module(state, "math", mathFreeFuncs);
+  l_tools_registerModule(state, "math", mathFreeFuncs);
 }

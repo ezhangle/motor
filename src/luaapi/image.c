@@ -37,8 +37,8 @@ static luaL_Reg const regFuncs[] = {
   {NULL, NULL}
 };
 
-l_check_type_fn(l_image_isImageData, moduleData.imageDataMT)
-l_to_type_fn(l_image_toImageData, image_ImageData)
+l_checkTypeFn(l_image_isImageData, moduleData.imageDataMT)
+l_toTypeFn(l_image_toImageData, image_ImageData)
 
 static luaL_Reg const imageDataMetatableFuncs[] = {
   {"__gc", l_image_gcImageData},
@@ -46,9 +46,9 @@ static luaL_Reg const imageDataMetatableFuncs[] = {
 };
 
 int l_image_register(lua_State* state) {
-  l_tools_register_module(state, "image", regFuncs);
+  l_tools_registerModule(state, "image", regFuncs);
 
-  moduleData.imageDataMT = l_tools_make_type_mt(state, imageDataMetatableFuncs);
+  moduleData.imageDataMT = l_tools_makeTypeMetatable(state, imageDataMetatableFuncs);
   
   return 0;
 }

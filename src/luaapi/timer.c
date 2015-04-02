@@ -43,5 +43,5 @@ static luaL_Reg const regFuncs[] = {
 };
 
 void l_timer_register(lua_State* state) {
-  l_tools_register_module(state, "timer", regFuncs);
+  l_tools_registerModule(state, "timer", regFuncs);
 }

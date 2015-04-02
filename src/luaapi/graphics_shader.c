@@ -27,7 +27,7 @@ bool static isSingleFragmentShader(char const* str) {
 }
 
 int l_graphics_newShader(lua_State* state) {
-  char const* vertexSrc = l_tools_tostring_or_err(state, 1);
+  char const* vertexSrc = l_tools_toStringOrError(state, 1);
   char const* fragmentSrc = NULL;
   char * loadedFile1 = NULL;
   char * loadedFile2 = NULL;
@@ -102,8 +102,8 @@ int l_graphics_newShader(lua_State* state) {
   return 1;
 }
 
-l_check_type_fn(l_graphics_isShader, moduleData.shaderMT)
-l_to_type_fn(l_graphics_toShader, l_graphics_Shader)
+l_checkTypeFn(l_graphics_isShader, moduleData.shaderMT)
+l_toTypeFn(l_graphics_toShader, l_graphics_Shader)
 
 int l_graphics_gcShader(lua_State* state) {
   l_graphics_Shader *shader = l_graphics_toShader(state, 1);
@@ -143,8 +143,8 @@ static luaL_Reg const shaderFreeFuncs[] = {
 
 void l_graphics_shader_register(lua_State *state) {
   moduleData.currentShaderRef = LUA_NOREF;
-  l_tools_register_funcs_in_module(state, "graphics", shaderFreeFuncs);
-  moduleData.shaderMT  = l_tools_make_type_mt(state, shaderMetatableFuncs);
+  l_tools_registerFuncsInModule(state, "graphics", shaderFreeFuncs);
+  moduleData.shaderMT  = l_tools_makeTypeMetatable(state, shaderMetatableFuncs);
 
   slre_compile(&moduleData.fragmentSingleShaderDetectRegex, fragmentSingleShaderDetectRegexSrc);
   slre_compile(&moduleData.vertexShaderDetectRegex, vertexShaderDetectRegexSrc);

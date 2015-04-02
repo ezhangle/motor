@@ -28,24 +28,24 @@ typedef struct {
   float m[3][3];
 } mat3x3;
 
-void m4x4_new_identity(mat4x4 *out);
-void m4x4_new_scaling(mat4x4 *out, float x, float y, float z);
-void m4x4_new_translation(mat4x4 *out, float x, float y, float z);
-void m4x4_new_rotation_x(mat4x4 *out, float a);
-void m4x4_new_rotation_y(mat4x4 *out, float a);
-void m4x4_new_rotation_z(mat4x4 *out, float a);
-void m4x4_new_transform2d(mat4x4 *out, float x, float y, float r, float sx, float sy,
+void m4x4_newIdentity(mat4x4 *out);
+void m4x4_newScaling(mat4x4 *out, float x, float y, float z);
+void m4x4_newTranslation(mat4x4 *out, float x, float y, float z);
+void m4x4_newRotationX(mat4x4 *out, float a);
+void m4x4_newRotationY(mat4x4 *out, float a);
+void m4x4_newRotationZ(mat4x4 *out, float a);
+void m4x4_newTransform2d(mat4x4 *out, float x, float y, float r, float sx, float sy,
                       float ox, float oy, float kx, float ky);
-void m4x4_mul_m4x4(mat4x4 *out, mat4x4 const* a, mat4x4 const* b);
-void m4x4_mul_v4(vec4 *out, mat4x4 const* m, vec4 const* v);
+void m4x4_mulM4x4(mat4x4 *out, mat4x4 const* a, mat4x4 const* b);
+void m4x4_mulV4(vec4 *out, mat4x4 const* m, vec4 const* v);
 void m4x4_scale(mat4x4 *inout, float x, float y, float z);
 void m4x4_translate(mat4x4 *inout, float x, float y, float z);
-void m4x4_rotate_z(mat4x4 *inout, float a);
+void m4x4_rotateZ(mat4x4 *inout, float a);
 void m4x4_shear2d(mat4x4 *inout, float x, float y);
 
-void m3x3_new_transform2d(mat3x3 *out, float x, float y, float r, float sx, float sy,
+void m3x3_newTransform2d(mat3x3 *out, float x, float y, float r, float sx, float sy,
                       float ox, float oy, float kx, float ky, float w, float h);
 
 // Assumes that v is a 2d point (homogeneous coord == 1).
 // This allows much faster multiplication
-void m3x3_mul_v2(vec2 *out, mat3x3 const* m, vec2 const* v);
+void m3x3_mulV2(vec2 *out, mat3x3 const* m, vec2 const* v);
