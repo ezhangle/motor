@@ -1,0 +1,1867 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      width: 50%;
+    }
+    .yes {
+      background-color: #A4C75C;
+    }
+    .no {
+      background-color: #CC8B70;
+    }
+    .partial {
+      background-color: #E3DB73;
+    }
+    .header {
+      font-weight: bold;
+    }
+  </style>
+  <title>
+  Motor2D - Bringing Löve2D to the Web
+  </title>
+</head>
+<body>
+
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAAA0BAMAAAC5oI3hAAAAMFBMVEWjQ0JoaWdwcm9/gX6MjovCgX+dn5y3ubbfurvNz8vX2dbz3uHq5+Xw8u/2+PT9//wYI7m7AAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB98BEBEAH9IpvscAAAORSURBVEjHxdZNaBNBFAfwuRSEEkoVWlpqexD0pvTSnrQg4kloLoWASOgHQk+h4sWL7aXnUA96DNFbqTQXQYhlaW+KMfUk1IbFevBmgv1KNjsZZ9682XmTrBoVcQ/Z+bs7v8y+zL7K8ueFOYL+qviDg+UHovFJV0Q9yXqyLjHrm/H2rEN8iAWbLFVcZZ5D7GTMeD7vTMrHEit35Mdxr0N8GcFhONQFwXvglPQp8fWiKcVUF8RxH5x2s5SoLpWxFLkuiFpaS2mHOMBizIsuiIL++nqfQzRGsBR6Uuvx+IVFIPr7cyQGo637E6LgGaLGWM9MygNCTGApNPFscuP13C1FlCpVEoPRR4vvxAs/IuA84wGxtqlLAURjUNV9rowPYmMwNET2FxKi3gvE4bQKC3rSzjIs6RoSNgZnc05Va1gcXxHBsCrFsJ50Ay60JpGwMRigGyxriHqamWkn0zApwI22VgWCxIA8R1NuMCR4Aoi8LMb7TSBkUeE40JUhMbCvtNhNRIRIAaFWsKB3wuEybtUMECQGo5ZIepZYBULWgQ9r4hPW7FT/xCQSAt4yQxSAkEtQC1GTtnG3N64AQSIhkllC7GpiO6dKoSbl8RVsjAFBoiWOzwhC1DRxMnVXuIScQAkZLbGSjiH44Ihoe5Ax90HIKuq6ZbQRYimDBDyQqp+uBYkRUUg7BJZTfC4j8Q1/AlledYVEQzSZcIhVRruCHB9h85AbQl0h0RCFhEuk2onTy9jCNoEgEQluurchetuJ1iXTwoAgEYmoebuvGW1196Aq6p2CKzYikcy6RMHrII6uqtHTDBI2akJvK0tgy3GI1vWH8g/ZgGm/Nmpi5XYRDk8TL7HxuT37dPzm/Llc1MGjCESd4ZFQ7ZcxaL+dfT548qD84xjzl1389RFD8P3ST2IMsUcCjMP1jTfrvkk2cvW68GLRlLOpTluxhLo/3IiIKAIhPkZ1acISizFECHfulc2aoqiJcMshBPc6CZ35cxzZqAlRdAl56iCe6+FbnG0jEk3PJXi5neD4rIEPBIlIRMtAQnhsnxByHOKc0FeJRqOZZRiiwkJ9i/kMfbM++DcShfktXrkER2LfN4RwCdFJNP1YolTunhAlsvCI4H6ljRAuISjByaciuI54ii4IH4YkCvtfTT+GqMh1/AbBYwi8oVvC3IxvKtzoCzOB2y+iBBcO4b7s5kbnO90F/Yr4J13rPxDfAew1TNBhkvCaAAAAAElFTkSuQmCC">
+<h1>Bringing Löve2D to the Web</h1>
+<h2>What is this?</h2>
+
+<p>
+<a href="http://love2d.org">Löve2D</a> is an awesome framework that provides an OpenGL backed 2D game engine programmable in the <a href="http://lua.org">Lua</a> scripting language.
+</p>
+
+<p> A lot of great games have been made using Löve2D and the number is steadily
+growing. The only downside of Löve2D is, that it cannot be embedded in websites
+for people to play.  This is what Motor2D is trying to solve: A version of
+Löve2D that can run on any modern WebGL-enabled browser.  </p>
+
+<h2>How is it done?</h2>
+
+<p>
+Motor2D is a reimplementation of Löve2D's Lua interface in C, which is then
+compiled to JavaScript using the unbelievable <a href="http://kripken.github.io/emscripten-site">emscripten</a> toolset.  </p>
+
+<h2>Why a Reimplementation Instead of a Port?</h2>
+
+<p>
+In fact, there are several reasons for this. The most important one is, that I just wanted to do it like this and it just felt right. But there are also some more rational thoughts:
+</p>
+
+<ul>
+<li>
+  <strong>Löve2D is written in C++ and makes extensive use of exceptions.</strong> While there is absolutely no problem with this on real computers, exceptions are very costly to implement in asm.js (the highly optimizable subset of JavaScript that emscripten compiles to), even if no exception is thrown at all. So all error handling would either have to be slowing down the whole framework, rewritten or stripped out, neither of which was an option.
+</li>
+<li>
+  <strong>Löve2D requires some external libraries that are not readily available on emscripten.</strong> Löve2D is built around SDL2, which in itself is a great library, but is not included in emscripten (only through emscripten ports) and adds a bit of extra weight to the final executable. I also couldn't find information an how much browser functionality is reused by SDL2, while emscripten's SDL1 implementation tries to use the browsers built in functionality for as much stuff as possible (image loading for example). The same goes for OpenAL and PhysicsFS.
+</li>
+<li>
+  <strong>Emscripten brings its own virtual filesystem</strong>, so using Löve's integrated PhysicsFS is not only unnecessary, it also cannot provide preloading of image data.
+</li>
+<li>
+  <strong>I feel much more comfortable using "dirty" hacks or shortcuts in C than in C++.</strong> Code size and execution speed are very important when running on the browser, and C++ code usually tends to ask for a much cleaner design than C. I admit that this may just be my personal opinion, but in C++ I tend to "feel bad" about every typecast in the code, especially if it's from one type to another, technically unrelated type. In C, this is often the only way to achieve certain things, so I feel much more comfortable doing it.
+</li>
+<li>
+  <strong>Löve2D aims to be compatible to old hardware</strong> and therefore uses a lot of runtime polymorphy to select the correct implementation of certain things for several different OpenGL versions. While this is fine and a good thing on real hardware, on the web there is really only WebGL 1.0 to care about at the moment. So all runtime selectable implementation stuff is just useless overhead for a system that is only going to support one single target platform.
+</li>
+</ul>
+
+<p> All these points together felt like a good reason to use C for this project
+and reimplement everything. When developing for a "real computer" instead of a
+browser, I wouldn't care too much about the slight overhead of a virtual
+function call to the graphics system, but even though emscripten generates
+incredibly fast JavaScript, it is still JavaScript. Also, Löve2D uses LuaJIT,
+an equally incredibly fast Lua VM. But we can't use it in the browser, so we
+are stuck with plain old vanilla Lua, which is still a pretty fast scripting
+language and VM, but several times slower than LuaJIT. Therefore, every bit of
+time that can be saved is good thing. Motor2D will be slow enough anyway.
+</p>
+
+<h2>Building</h2>
+To build Motor, you need Emscripten, the Closure compiler (usually included in the Emscripten package), a Java VM (for Closure), Python 3 and some Linux standard tools (this is why Motor2D cannot be compiled on plain Windows at the moment). When all these requirements are met and Emscripten and Python can be found in the PATH, you just create an empty directory "build" in the motor2d directory and cd into it.
+
+<pre>
+  motor2d$ mkdir build
+  motor2d$ cd build
+  build$
+</pre>
+
+From there you can just call the build.py script, which will automatically build Motor2D and the loader:
+
+<pre>
+  build% ../build.py
+</pre>
+
+When everything goes according to plan, you will find in this directory the following files:
+<ul>
+  <li>motor2d.html</li>
+  <li>motor2d.js</li>
+  <li>motor2dloader.js</li>
+</ul>
+
+Those make up the framework.
+
+<h2>Usage</h2>
+
+There are two ways to use the framework: Either with the development server included in the package or by putting it on a webserver. Please note that the framework <strong>cannot</strong> be served from a local filesystem, because it uses XMLHttpRequests to load the game file (.love) and engine.
+
+<h3>Direct Usage on Webserver</h3>
+
+Copy the files mentionen in section Building to your webserver.
+The file motor2d.html may adopted to your needs or completely replaced and renamed, as long as it has an empty <div> element with id "motor_output" and it loads motor2dloader.js.
+
+Put your .love file into the same directory and call it game.love. When opening motor2d.html in a browser, it should load and start your game.
+
+You can use a different name for the .love file if you open the page with query option motor2d.html?love=yourfilename.love
+
+<h3>Using the Built-In Development Server</h3>
+
+The development server has one big advantage: It saves you from having to package your .love file before each run (as long as the filename remains game.love).
+
+To use it, do the following: Add the motor2d base directory to your PATH environment variable:
+
+<pre>
+  # bash syntax:
+  gamedir$ export PATH=<motor2ddirectory>:$PATH
+</pre>
+
+When your Lua source files and data files are in the directory gamedir, you can just start "motor serve" in this directory:
+
+<pre>
+  gamedir$ motor serve
+</pre>
+
+Whenever /game.love is requested by the web browser, the whole gamedir will be zipped into the file _build/game.love and served from there.
+
+<h2>Compatibility</h2>
+<p>
+The following table gives an overview of the availability of some of Löve2D's functions and classes in Motor2D. Classes are left out if support for them is not available at all (especially if the appropriate newXY function is still missing).
+</p>
+
+<p>
+Green functions are already available and should work as expected. Yellow functions are there but may behave differently or be only partially implemented. In this case, the third column of the table sums up the differences. Red functions are missing completely.
+</p>
+
+<p>
+I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is still a lot of work to get there and even then some minor incompatibilities will not be avoidable.
+</p>
+
+<table>
+<tr class="header">
+  <td>Element</td>
+  <td>Vers.</td>
+  <td>Notes </td>
+</tr>
+<tr class="no">
+  <td>Canvas:clear()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:getDimensions()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:getFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:getFormat()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:getFSAA</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:getHeight()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:getImageData()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:getPixel()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:getType()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:getWidth()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:getWrap()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:renderTo()</td>
+  <td>0.0.1</td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:setFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Canvas:setWrap()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:type()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Canvas:typeOf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Font:getAscent()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Font:getBaseline()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Font:getDescent()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:getFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Font:getHeight()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:getLineHeight()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Font:getWidth()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Font:getWrap()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:hasGlyphs()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:setFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:setLineHeight()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:type()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Font:typeOf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getData()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getDimensions()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getFilter()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getHeight()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getMipmapFilter()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getWidth()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:getWrap()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Image:isCompressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:refresh()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:setFilter()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:setMipmapFilter()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Image:setWrap()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Image:type()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Image:typeOf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.arg.getLow()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.arg.parse_option()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.arg.parse_options()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.getDistanceModel()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.getOrientation()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.getPosition()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.getSourceCount()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.getVelocity()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.getVolume()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.newSource()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.pause()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.play()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.resume()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.rewind()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.setDistanceModel()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.setOrientation()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.setPosition()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.setVelocity()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.setVolume()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.audio.stop()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.boot()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.createhandlers()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.draw()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.errhand()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.event.clear()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.event.poll()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.event.pump()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.event.push()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.event.quit()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.event.wait()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.append()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.createDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.exists()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getAppdataDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getDirectoryItems()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getIdentity()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getLastModified()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getSaveDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getSize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getSource()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getSourceBaseDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getUserDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getWorkingDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.init()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.isDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.isFile()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.isFused()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.lines()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.load()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.mount()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.newFile()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.newFileData()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.filesystem.read()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.remove()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.setFused()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.setIdentity()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.setSource()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.unmount()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.write()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.font.newGlyphData()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.font.newRasterizer()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.getVersion()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.arc()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="partial">
+  <td>love.graphics.circle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.clear()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.draw()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getBackgroundColor()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getBlendMode()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getCanvas()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getColor()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getColorMask()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getDefaultFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getDefaultMipmapFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getDimensions()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getFont()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getHeight()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getLineJoin()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getLineStyle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getLineWidth()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getMaxImageSize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getMaxPointSize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getPointSize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getPointStyle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getRendererInfo()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getScissor()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getShader()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getSystemLimit()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.getWidth()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.isCreated()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.isSupported()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.isWireframe()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="partial">
+  <td>love.graphics.line()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.newCanvas()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="partial">
+  <td>love.graphics.newFont()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.newImage()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.newImageFont()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.newMesh()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.newParticleSystem()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.newQuad()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.newScreenshot()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.newShader()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.newSpriteBatch()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.origin()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.point()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.polygon()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.pop()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.present()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.print()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.printf()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.push()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.rectangle()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.reset()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.rotate()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.scale()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setBackgroundColor()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setBlendMode()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setCanvas()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setColor()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setColorMask()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setDefaultFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setDefaultMipmapFilter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setFont()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setInvertedStencil()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="partial">
+  <td>love.graphics.setLineJoin()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setLineStyle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setLineWidth()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setNewFont()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setPointSize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setPointStyle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setScissor()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.setShader()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setStencil()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.setWireframe()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.shear()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.graphics.translate()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.focus()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.gamepadaxis()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.gamepadpressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.gamepadreleased()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.joystickadded()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.joystickaxis()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.joystickhat()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.joystickpressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.joystickreleased()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.joystickremoved()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.keypressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.keyreleased()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.mousefocus()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.mousepressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.mousereleased()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.quit()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.resize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.textedit()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.textinput()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.threaderror()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.handlers.visible()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.image.isCompressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.image.newCompressedData()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.image.newImageData()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.init()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.joystick.getGamepadMapping()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.joystick.getJoystickCount()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.joystick.getJoysticks()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.joystick.setGamepadMapping()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keyboard.hasKeyRepeat()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keyboard.hasTextInput()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keyboard.isDown()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keyboard.setKeyRepeat()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keyboard.setTextInput()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keypressed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.keyreleased()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.load()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.gammaToLinear()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.getRandomSeed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.getRandomState()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.isConvex()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.linearToGamma()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.newBezierCurve()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.newRandomGenerator()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.noise()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="partial">
+  <td>love.math.random()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.randomNormal()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.setRandomSeed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.setRandomState()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.math.triangulate()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.getCursor()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.getPosition()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.getSystemCursor()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.getX</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.getY</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.isDown()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.isGrabbed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.isVisible()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.newCursor()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setCursor()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setGrabbed()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setPosition()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setVisible()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setX</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setY</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.nogame()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.path.abs()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.path.endslash()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.path.getfull()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.path.leaf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.path.normalslashes()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.getDistance()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.getMeter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newBody()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newChainShape()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newCircleShape()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newDistanceJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newEdgeShape()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newFixture()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newFrictionJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newGearJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newMotorJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newMouseJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newPolygonShape()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newPrismaticJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newPulleyJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newRectangleShape()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newRevoluteJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newRopeJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newWeldJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newWheelJoint()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.newWorld()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.physics.setMeter()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.run()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.sound.newDecoder()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.sound.newSoundData()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.system.getClipboardText()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.system.getOS</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.system.getPowerInfo()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.system.getProcessorCount()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.system.openURL</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.system.setClipboardText()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.textinput()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.thread.getChannel()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.thread.newChannel()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.thread.newThread()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.timer.getAverageDelta()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.timer.getDelta()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.timer.getFPS</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.timer.getTime()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.timer.sleep()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.timer.step()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.update()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getDesktopDimensions()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getDimensions()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getDisplayCount()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getFullscreen()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getFullscreenModes()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.window.getHeight()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getIcon()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getMode()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getPixelScale()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getTitle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>love.window.getWidth()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.hasFocus()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.hasMouseFocus()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.isCreated()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.isVisible()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.setFullscreen()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.setIcon()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.setMode()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.setTitle()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Quad.getViewport()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>Quad.setViewport()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Quad.type()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Quad.typeOf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.getWarnings()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="partial">
+  <td>Shader.send()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendBoolean()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendCanvas()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendFloat()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendImage()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendInt()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendMatrix()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.sendTexture()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.type()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>Shader.typeOf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.add()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.bind()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.clear()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.getBufferSize()</td>
+  <td> 0.0.1</td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.getColor()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.getCount()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.getImage()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.getTexture()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.set()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.setBufferSize()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.setColor()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.setImage()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.setTexture()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>SpriteBatch.type()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>SpriteBatch.typeOf()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="yes">
+  <td>SpriteBatch.unbind()</td>
+  <td>0.0.1 </td>
+  <td> </td>
+</tr>
+</table>
+</body>
+</html>
