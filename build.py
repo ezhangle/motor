@@ -5,6 +5,9 @@ import os
 import re
 import shutil
 
+optimize = 0
+link_time_optimize = 0
+
 sources = [
   'filesystem/filesystem.c',
   'graphics/batch.c',
@@ -104,10 +107,8 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-CFLAGS = '-O0 --memory-init-file 0 --llvm-lto 0 -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-LDFLAGS = '-O0 --llvm-lto 0 --memory-init-file 0'
-#CFLAGS = '-DMOTOR_SKIP_SAFETY_CHECKS -DFT2_BUILD_LIBRARY -Wall -std=c11 --profiling -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-#LDFLAGS = '--profiling'
+CFLAGS = '-O{optimize} --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+LDFLAGS = '-O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
 CC = 'emcc'
 LD = 'emcc'
 
@@ -231,7 +232,10 @@ def clean():
       remove(extra_output)
 
 
-if len(sys.argv) == 1 or sys.argv[1] == 'build':
+if len(sys.argv) == 1:
+  build()
+  buildLoader()
+elif sys.argv[1] == 'build':
   build()
 elif sys.argv[1] == 'buildloader':
   buildLoader()

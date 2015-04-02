@@ -155,3 +155,18 @@ void graphics_shader_init() {
   graphics_Shader_new(&moduleData.defaultShader, NULL, NULL);
   moduleData.activeShader = &moduleData.defaultShader;
 }
+
+void graphics_Shader_sendNumbers(graphics_Shader* shader, char const* name, int count, float const* numbers) {
+  GLint loc = glGetUniformLocation(shader->program, name);
+  glUseProgram(shader->program);
+  glUniform1fv(loc, count, numbers);
+}
+
+/*
+  love2d's ShaderVariableType enum:
+{"float", Shader::UNIFORM_FLOAT},
+{"int", Shader::UNIFORM_INT},
+{"bool", Shader::UNIFORM_BOOL},
+{"image", Shader::UNIFORM_SAMPLER},
+{"unknown", Shader::UNIFORM_UNKNOWN},
+*/

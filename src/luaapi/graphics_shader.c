@@ -3,6 +3,8 @@
 #include <lauxlib.h>
 #include "tools.h"
 #include "graphics_shader.h"
+#include "graphics_image.h"
+#include "graphics_canvas.h"
 #include "../graphics/shader.h"
 #include "../3rdparty/slre/slre.h"
 #include "../filesystem/filesystem.h"
@@ -12,6 +14,8 @@ static struct {
   int currentShaderRef;
   struct slre fragmentSingleShaderDetectRegex;
   struct slre vertexShaderDetectRegex;
+  void * sendValueBuffer;
+  int sendValueBufferSize;
 } moduleData;
 
 static char const * fragmentSingleShaderDetectRegexSrc = "vec4\\s*effect\\s*\\(";
@@ -26,7 +30,7 @@ bool static isSingleFragmentShader(char const* str) {
   return slre_match(&moduleData.fragmentSingleShaderDetectRegex, str, strlen(str), NULL);
 }
 
-int l_graphics_newShader(lua_State* state) {
+int static l_graphics_newShader(lua_State* state) {
   char const* vertexSrc = l_tools_toStringOrError(state, 1);
   char const* fragmentSrc = NULL;
   char * loadedFile1 = NULL;
@@ -105,13 +109,13 @@ int l_graphics_newShader(lua_State* state) {
 l_checkTypeFn(l_graphics_isShader, moduleData.shaderMT)
 l_toTypeFn(l_graphics_toShader, l_graphics_Shader)
 
-int l_graphics_gcShader(lua_State* state) {
+static int l_graphics_gcShader(lua_State* state) {
   l_graphics_Shader *shader = l_graphics_toShader(state, 1);
   graphics_Shader_free(&shader->shader);
   return 0;
 }
 
-int l_graphics_setShader(lua_State *state) {
+static int l_graphics_setShader(lua_State *state) {
   if(lua_isnoneornil(state, 1)) {
     graphics_setDefaultShader();
     luaL_unref(state, LUA_REGISTRYINDEX, moduleData.currentShaderRef);
@@ -130,8 +134,108 @@ int l_graphics_setShader(lua_State *state) {
   }
 }
 
+static void growBuffer(int size) {
+  if(size > moduleData.sendValueBufferSize) {
+    free(moduleData.sendValueBuffer);
+    moduleData.sendValueBuffer = malloc(size);
+    moduleData.sendValueBufferSize = size;
+  }
+}
+
+static void sendNumbers(graphics_Shader* shader, char const* name, lua_State *state) {
+  int count = lua_gettop(state) - 2;
+  growBuffer(sizeof(float) * count);
+  float * numbers = (float*)moduleData.sendValueBuffer;
+
+  for(int i = 0; i < count; ++i) {
+    numbers[i] = l_tools_toNumberOrError(state, 3 + i);
+  }
+
+  graphics_Shader_sendNumbers(shader, name, count, numbers);
+}
+
+static void sendBooleans(graphics_Shader* shader, char const* name, lua_State *state) {
+#if 0
+  int count = lua_gettop(state) - 2;
+  growBuffer(sizeof(GLuint) * count);
+  GLuint * numbers = (GLuint*)moduleData.sendValueBuffer;
+
+  for(int i = 0; i < count; ++i) {
+    numbers[i] = l_tools_toBooleanOrError(state, 3 + i);
+  }
+
+  graphics_Shader_sendBooleans(shader, name, count, numbers);
+#endif
+}
+
+static void sendVectors(graphics_Shader* shader, char const* name, lua_State *state) {
+
+}
+
+static void sendMatrices(graphics_Shader* shader, char const* name, lua_State *state) {
+
+}
+
+static void sendImage(graphics_Shader* shader, char const* name, lua_State *state) {
+
+}
+
+static void sendCanvas(graphics_Shader* shader, char const* name, lua_State *state) {
+
+}
+
+static int l_graphics_Shader_send(lua_State *state) {
+  l_assertType(state, 1, l_graphics_isShader); 
+  l_graphics_Shader* shader = l_graphics_toShader(state, 1);
+
+  char const* name = l_tools_toStringOrError(state, 2);
+
+  int type = lua_type(state, 3);
+  switch(type) {
+  case LUA_TNUMBER:
+    sendNumbers(&shader->shader, name, state);
+    break;
+  case LUA_TBOOLEAN:
+    sendBooleans(&shader->shader, name, state);
+    break;
+  case LUA_TTABLE:
+    {
+      lua_rawgeti(state, 3, 1);
+      int type2 = lua_type(state, 3);
+      lua_pop(state, 1);
+      switch(type2) {
+      case LUA_TNUMBER:
+        sendVectors(&shader->shader, name, state);
+        break;
+      case LUA_TTABLE:
+        sendMatrices(&shader->shader, name, state);
+        break;
+      default:
+        // TODO error
+        break;
+      };
+    }
+    break;
+  case LUA_TUSERDATA:
+    if(l_graphics_isImage(state, 3)) {
+      sendImage(&shader->shader, name, state);
+    } else if(l_graphics_isCanvas(state, 3)) {
+      sendCanvas(&shader->shader, name, state);
+    } else {
+      // TODO error
+    }
+    break;
+  default:
+    // TODO error
+    break;
+  };
+
+  return 0;
+}
+
 static luaL_Reg const shaderMetatableFuncs[] = {
   {"__gc",   l_graphics_gcShader},
+  {"send",   l_graphics_Shader_send},
   {NULL, NULL}
 };
 

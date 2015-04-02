@@ -7,8 +7,6 @@
 
 void l_tools_registerFuncsInModule(lua_State* state, char const* module, luaL_Reg const* funcs);
 void l_tools_registerModule(lua_State* state, char const* moduleName, luaL_Reg const * funcs);
-//float l_tools_tonumber_or_err(lua_State* state, int index);
-//char const* l_tools_tostring_or_err(lua_State* state, int index);
 int l_tools_makeTypeMetatable(lua_State* state, luaL_Reg const* funcs);
 
 

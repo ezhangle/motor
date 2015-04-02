@@ -282,7 +282,6 @@ static luaL_Reg const regFuncs[] = {
   {"getBlendMode",       l_graphics_getBlendMode},
   {"setScissor",         l_graphics_setScissor},
   {"getScissor",         l_graphics_getScissor},
-  {"newShader",          l_graphics_newShader},
   {"getWidth",           l_graphics_getWidth},
   {"getHeight",          l_graphics_getHeight},
   {"reset",              l_graphics_reset},
