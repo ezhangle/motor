@@ -97,7 +97,7 @@ static int compareUniformInfo(graphics_ShaderUniformInfo const* a, graphics_Shad
   return strcmp(a->name, b->name);
 }
 
-static int toMotorComponents(GLenum type) {
+int graphics_shader_toMotorComponents(GLenum type) {
   switch(type) {
   case GL_BOOL:
   case GL_INT:
@@ -128,7 +128,7 @@ static int toMotorComponents(GLenum type) {
   };
 }
 
-static graphics_ShaderUniformType toMotorType(GLenum type) {
+graphics_ShaderUniformType graphics_shader_toMotorType(GLenum type) {
   switch(type) {
   case GL_BOOL:
   case GL_BOOL_VEC2:
@@ -176,11 +176,8 @@ static void readShaderUniforms(graphics_Shader *shader) {
   for(int i = 0; i < shader->uniformCount; ++i) {
     graphics_ShaderUniformInfo* info = shader->uniforms+i;
     info->name = (char*)malloc(maxLength);
-    GLenum type;
-    glGetActiveUniform(shader->program, i, maxLength, NULL, &info->elements, &type, info->name);
+    glGetActiveUniform(shader->program, i, maxLength, NULL, &info->elements, &info->type, info->name);
 
-    info->type = toMotorType(type);
-    info->components = toMotorComponents(type);
 
     char *suffix = strstr(info->name, "[0]");
     if(suffix) {

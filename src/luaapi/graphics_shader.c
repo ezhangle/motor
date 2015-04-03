@@ -233,7 +233,7 @@ static int l_graphics_Shader_send(lua_State *state) {
   return 0;
 }
 
-static const l_tools_Enum l_graphics_ShaderUniformInfo[] = {
+static const l_tools_Enum l_graphics_ShaderUniformType[] = {
   {"int",   graphics_ShaderUniformType_int},
   {"float", graphics_ShaderUniformType_float},
   {"bool",  graphics_ShaderUniformType_bool},
@@ -248,14 +248,25 @@ static int l_graphics_Shader_getExternVariable(lua_State* state) {
 
   graphics_ShaderUniformInfo const* info = graphics_Shader_getUniform(&shader->shader, name);
 
-  if(!info || info->type == graphics_ShaderUniformType_none) {
-    return 0;
+  if(!info) {
+    goto errout;
+  }
+  
+  graphics_ShaderUniformType type =  graphics_shader_toMotorType(info->type);
+  if(type == graphics_ShaderUniformType_none) {
+    goto errout;
   }
 
-  l_tools_pushEnum(state, info->type, l_graphics_ShaderUniformInfo);
-  lua_pushnumber(state, info->components);
+  l_tools_pushEnum(state, type, l_graphics_ShaderUniformType);
+  lua_pushnumber(state, graphics_shader_toMotorComponents(info->type));
   lua_pushnumber(state, info->elements);
 
+  return 3;
+
+errout:
+  lua_pushnil(state);
+  lua_pushnil(state);
+  lua_pushnil(state);
   return 3;
 }
 
