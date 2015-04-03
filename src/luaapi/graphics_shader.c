@@ -233,9 +233,37 @@ static int l_graphics_Shader_send(lua_State *state) {
   return 0;
 }
 
+static const l_tools_Enum l_graphics_ShaderUniformInfo[] = {
+  {"int",   graphics_ShaderUniformType_int},
+  {"float", graphics_ShaderUniformType_float},
+  {"bool",  graphics_ShaderUniformType_bool},
+  {"image", graphics_ShaderUniformType_sampler}
+};
+
+static int l_graphics_Shader_getExternVariable(lua_State* state) {
+  l_assertType(state, 1, l_graphics_isShader); 
+  l_graphics_Shader const* shader = l_graphics_toShader(state, 1);
+
+  char const* name = l_tools_toStringOrError(state, 2);
+
+  graphics_ShaderUniformInfo const* info = graphics_Shader_getUniform(&shader->shader, name);
+
+  if(!info || info->type == graphics_ShaderUniformType_none) {
+    return 0;
+  }
+
+  l_tools_pushEnum(state, info->type, l_graphics_ShaderUniformInfo);
+  lua_pushnumber(state, info->components);
+  lua_pushnumber(state, info->elements);
+
+  return 3;
+}
+
+
 static luaL_Reg const shaderMetatableFuncs[] = {
-  {"__gc",   l_graphics_gcShader},
-  {"send",   l_graphics_Shader_send},
+  {"__gc",              l_graphics_gcShader},
+  {"send",              l_graphics_Shader_send},
+  {"getExternVariable", l_graphics_Shader_getExternVariable},
   {NULL, NULL}
 };
 

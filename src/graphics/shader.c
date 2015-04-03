@@ -261,6 +261,11 @@ void graphics_Shader_sendNumbers(graphics_Shader* shader, char const* name, int 
   glUniform1fv(loc, count, numbers);
 }
 
+graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name) {
+
+  // Dirty trick to avoid duplicate code: Name will be treated as graphics_ShaderUniformInfo.
+  return bsearch(&name, shader->uniforms, shader->uniformCount, sizeof(graphics_ShaderUniformInfo), (int(*)(void const*, void const*))compareUniformInfo);
+}
 /*
   love2d's ShaderVariableType enum:
 {"float", Shader::UNIFORM_FLOAT},

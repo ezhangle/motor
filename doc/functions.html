@@ -528,6 +528,26 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td> </td>
 </tr>
 <tr class="no">
+  <td>love.filesystem.isSymLink()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.setSymlinksEnabled()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.areSymlinksEnabled()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.filesystem.getRealDirectory()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
   <td>love.filesystem.createDirectory()</td>
   <td> </td>
   <td> </td>
@@ -681,6 +701,21 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td>love.getVersion()</td>
   <td>0.0.1 </td>
   <td> </td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getStats()</td>
+  <td></td>
+  <td></td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getCanvasFormats()</td>
+  <td></td>
+  <td></td>
+</tr>
+<tr class="no">
+  <td>love.graphics.getCompressedImageFormats()</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr class="no">
   <td>love.graphics.arc()</td>
@@ -1123,6 +1158,11 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td> </td>
 </tr>
 <tr class="no">
+  <td>love.handlers.mousemoved()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
   <td>love.handlers.quit()</td>
   <td> </td>
   <td> </td>
@@ -1189,6 +1229,16 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
 </tr>
 <tr class="no">
   <td>love.joystick.setGamepadMapping()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.keyboard.getKeyFromScancode()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.keyboard.getScancodeFromKey()</td>
   <td> </td>
   <td> </td>
 </tr>
@@ -1294,6 +1344,16 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
 </tr>
 <tr class="no">
   <td>love.math.triangulate()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.setRelativeMode()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.mouse.getRelativeMode()</td>
   <td> </td>
   <td> </td>
 </tr>
@@ -1613,6 +1673,46 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td> </td>
 </tr>
 <tr class="no">
+  <td>love.window.getDisplayName()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.minimize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.maximize()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.showMessageBox()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.toPixels()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.fromPixels()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.setPosition()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
+  <td>love.window.getPosition()</td>
+  <td> </td>
+  <td> </td>
+</tr>
+<tr class="no">
   <td>love.window.getDesktopDimensions()</td>
   <td> </td>
   <td> </td>
@@ -1787,10 +1887,15 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td>0.0.1 </td>
   <td> </td>
 </tr>
+<tr class="no">
+  <td>SpriteBatch:flush()</td>
+  <td></td>
+  <td></td>
+</tr>
 <tr class="yes">
-  <td>SpriteBatch.bind()</td>
+  <td>* SpriteBatch.bind()</td>
   <td>0.0.1 </td>
-  <td> </td>
+  <td>Deprecated in Löve2D 0.9.2 </td>
 </tr>
 <tr class="yes">
   <td>SpriteBatch.clear()</td>
@@ -1858,9 +1963,9 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td> </td>
 </tr>
 <tr class="yes">
-  <td>SpriteBatch.unbind()</td>
+  <td>* SpriteBatch.unbind()</td>
   <td>0.0.1 </td>
-  <td> </td>
+  <td>Deprecated in Löve2D 0.9.2</td>
 </tr>
 </table>
 </body>

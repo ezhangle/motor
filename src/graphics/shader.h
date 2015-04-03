@@ -47,3 +47,4 @@ void graphics_setShader(graphics_Shader* shader);
 void graphics_Shader_compileAndAttachShaderRaw(GLuint program, GLenum shaderType, char const* code);
 void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, char const* code);
 void graphics_Shader_sendNumbers(graphics_Shader *shader, char const* name, int count, float const* numbers);
+graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name);
