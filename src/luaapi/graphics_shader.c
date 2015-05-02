@@ -8,6 +8,7 @@
 #include "../graphics/shader.h"
 #include "../3rdparty/slre/slre.h"
 #include "../filesystem/filesystem.h"
+#include "../math/minmax.h"
 
 static struct {
   int shaderMT;
@@ -142,45 +143,69 @@ static void growBuffer(int size) {
   }
 }
 
-static void sendNumbers(graphics_Shader* shader, char const* name, lua_State *state) {
-  int count = lua_gettop(state) - 2;
-  growBuffer(sizeof(float) * count);
-  float * numbers = (float*)moduleData.sendValueBuffer;
-
-  for(int i = 0; i < count; ++i) {
-    numbers[i] = l_tools_toNumberOrError(state, 3 + i);
+#define mkScalarSendFunc(name, type, totypefunc) \
+  static void name(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) { \
+    int count = min(lua_gettop(state) - 2, info->elements);         \
+                                                                    \
+    growBuffer(sizeof(type) * count);                               \
+    type * numbers = (type*)moduleData.sendValueBuffer;             \
+                                                                    \
+    for(int i = 0; i < count; ++i) {                                \
+      numbers[i] = totypefunc(state, 3 + i);                        \
+    }                                                               \
+                                                                    \
+    graphics_Shader_ ## name(&shader->shader, info, count, numbers);\
   }
 
-  graphics_Shader_sendNumbers(shader, name, count, numbers);
-}
+mkScalarSendFunc(sendIntegers, GLint,   l_tools_toNumberOrError)
+mkScalarSendFunc(sendFloats,   GLfloat, l_tools_toNumberOrError)
+mkScalarSendFunc(sendBooleans, GLint,   l_tools_toBooleanOrError)
 
-static void sendBooleans(graphics_Shader* shader, char const* name, lua_State *state) {
-#if 0
-  int count = lua_gettop(state) - 2;
-  growBuffer(sizeof(GLuint) * count);
-  GLuint * numbers = (GLuint*)moduleData.sendValueBuffer;
+#undef mkScalarSendFunc
 
-  for(int i = 0; i < count; ++i) {
-    numbers[i] = l_tools_toBooleanOrError(state, 3 + i);
+#define mkVectorSendFunc(name, valuetype, totypefunc) \
+  static void name(lua_State *state, l_graphics_Shader *shader, graphics_ShaderUniformInfo const* info) { \
+    int components = graphics_shader_toMotorComponents(info->type); \
+    int count = min(lua_gettop(state) - 2, info->elements);         \
+                                                                    \
+    growBuffer(sizeof(valuetype) * count * components);             \
+    valuetype* numbers = (valuetype*)moduleData.sendValueBuffer;    \
+                                                                    \
+    for(int i = 0; i < count; ++i) {                                \
+      for(int j = 0; j < components; ++j) {                         \
+        lua_rawgeti(state, i + 3, j + 1);                           \
+        numbers[i*components+j] = totypefunc(state, -1);            \
+      }                                                             \
+    }                                                               \
+                                                                    \
+    graphics_Shader_ ## name(&shader->shader, info, count, numbers);\
   }
 
-  graphics_Shader_sendBooleans(shader, name, count, numbers);
-#endif
+mkVectorSendFunc(sendIntegerVectors, GLint,   l_tools_toNumberOrError)
+mkVectorSendFunc(sendFloatVectors,   GLfloat, l_tools_toNumberOrError)
+mkVectorSendFunc(sendBooleanVectors, GLint,   l_tools_toBooleanOrError)
+
+#undef mkVectorSendFunc
+
+static void sendFloatMatrices(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) {
+  int components = graphics_shader_toMotorComponents(info->type);
+  int count = min(lua_gettop(state) - 2, info->elements);
+  growBuffer(sizeof(float) * components * components * count);
+
+  float* numbers = (float*)moduleData.sendValueBuffer;
+
+  for(int i = 0; i < count; ++i) {
+    for(int j = 0; j < components; ++j) {
+      for(int k = 0; k < components; ++k) {
+        lua_rawgeti(state, i + 3, j + 1);
+        numbers[i*components+j] = totypefunc(state, -1);
+      }
+    }
+  }
+
 }
 
-static void sendVectors(graphics_Shader* shader, char const* name, lua_State *state) {
-
-}
-
-static void sendMatrices(graphics_Shader* shader, char const* name, lua_State *state) {
-
-}
-
-static void sendImage(graphics_Shader* shader, char const* name, lua_State *state) {
-
-}
-
-static void sendCanvas(graphics_Shader* shader, char const* name, lua_State *state) {
+static void sendSamplers(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) {
 
 }
 
@@ -190,6 +215,74 @@ static int l_graphics_Shader_send(lua_State *state) {
 
   char const* name = l_tools_toStringOrError(state, 2);
 
+  graphics_ShaderUniformInfo const* info = graphics_Shader_getUniform(&shader->shader, name);
+
+  switch(info->type) {
+  case GL_INT:
+    sendIntegers(state, shader, info);
+    break;
+
+  case GL_FLOAT:
+    sendFloats(state, shader, info);
+    break;
+
+  case GL_BOOL:
+    sendBooleans(state, shader, info);
+    break;
+
+  case GL_INT_VEC2:
+  case GL_INT_VEC3:
+  case GL_INT_VEC4:
+    sendIntegerVectors(state, shader, info);
+    break;
+
+  case GL_FLOAT_VEC2:
+  case GL_FLOAT_VEC3:
+  case GL_FLOAT_VEC4:
+    sendFloatVectors(state, shader, info);
+    break;
+
+  case GL_BOOL_VEC2:
+  case GL_BOOL_VEC3:
+  case GL_BOOL_VEC4:
+    sendBooleanVectors(state, shader, info);
+    break;
+
+  case GL_FLOAT_MAT2:
+  case GL_FLOAT_MAT3:
+  case GL_FLOAT_MAT4:
+    sendFloatMatrices(state, shader, info);
+    break;
+
+  case GL_SAMPLER_2D:
+    sendSamplers(state, shader, info);
+    break;
+
+  };
+
+#if 0
+  graphics_ShaderUniformType type = graphics_shader_toMotorType(info);
+
+  switch(type) {
+  case graphics_ShaderUniformType_int:
+    sendInteger(state, shader, info);
+    break;
+
+  case graphics_ShaderUniformType_float:
+    sendFloat(state, shader, info);
+    break;
+
+  case graphics_ShaderUniformType_bool:
+    sendBoolean(state, shader, info);
+    break;
+
+  case graphics_ShaderUniformType_sampler:
+    sendSampler(state, shader, info);
+    break;
+  }
+#endif
+
+#if 0
   int type = lua_type(state, 3);
   switch(type) {
   case LUA_TNUMBER:
@@ -229,7 +322,7 @@ static int l_graphics_Shader_send(lua_State *state) {
     // TODO error
     break;
   };
-
+#endif
   return 0;
 }
 

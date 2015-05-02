@@ -178,6 +178,7 @@ static void readShaderUniforms(graphics_Shader *shader) {
     info->name = (char*)malloc(maxLength);
     glGetActiveUniform(shader->program, i, maxLength, NULL, &info->elements, &info->type, info->name);
 
+    info->location = glGetUniformLocation(shader->program, info->name);
 
     char *suffix = strstr(info->name, "[0]");
     if(suffix) {
@@ -252,22 +253,41 @@ void graphics_shader_init() {
   moduleData.activeShader = &moduleData.defaultShader;
 }
 
-void graphics_Shader_sendNumbers(graphics_Shader* shader, char const* name, int count, float const* numbers) {
-  GLint loc = glGetUniformLocation(shader->program, name);
-  glUseProgram(shader->program);
-  glUniform1fv(loc, count, numbers);
-}
+#define mkScalarSendFunc(name, type, glfunc) \
+  void graphics_Shader_ ## name(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, type const* numbers) {  \
+    glUseProgram(shader->program); \
+    glfunc(info->location, count, numbers); \
+  }
+
+mkScalarSendFunc(sendIntegers, GLint,   glUniform1iv)
+mkScalarSendFunc(sendBooleans, GLint,   glUniform1iv)
+mkScalarSendFunc(sendFloats,   GLfloat, glUniform1fv)
+
+#undef mkScalarSendFunc
+
+#define mkVectorSendFunc(name, valuetype, abbr) \
+  void graphics_Shader_ ## name(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, valuetype const* numbers) {  \
+    glUseProgram(shader->program);                                \
+    switch(graphics_shader_toMotorComponents(info->type)) {       \
+    case 2:                                                       \
+      glUniform2 ## abbr ## v(info->location, count, numbers);    \
+      break;                                                      \
+    case 3:                                                       \
+      glUniform3 ## abbr ## v(info->location, count, numbers);    \
+      break;                                                      \
+    case 4:                                                       \
+      glUniform4 ## abbr ## v(info->location, count, numbers);    \
+      break;                                                      \
+    }                                                             \
+  }
+
+mkVectorSendFunc(sendIntegerVectors, GLint,   i)
+mkVectorSendFunc(sendBooleanVectors, GLint,   i)
+mkVectorSendFunc(sendFloatVectors,   GLfloat, f)
+
+#undef mkVectorSendFunc
 
 graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name) {
-
   // Dirty trick to avoid duplicate code: Name will be treated as graphics_ShaderUniformInfo.
   return bsearch(&name, shader->uniforms, shader->uniformCount, sizeof(graphics_ShaderUniformInfo), (int(*)(void const*, void const*))compareUniformInfo);
 }
-/*
-  love2d's ShaderVariableType enum:
-{"float", Shader::UNIFORM_FLOAT},
-{"int", Shader::UNIFORM_INT},
-{"bool", Shader::UNIFORM_BOOL},
-{"image", Shader::UNIFORM_SAMPLER},
-{"unknown", Shader::UNIFORM_UNKNOWN},
-*/

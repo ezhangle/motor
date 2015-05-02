@@ -28,6 +28,15 @@ inline char const* l_tools_toStringOrError(lua_State* state, int index) {
 
   return lua_tostring(state, index);
 }
+
+inline int l_tools_toBooleanOrError(lua_State* state, int index) {
+  if(lua_type(state, index) != LUA_TBOOLEAN) {
+    lua_pushstring(state, "expected boolean");
+    lua_error(state);
+  }
+
+  return lua_toboolean(state, index);
+}
 #else
 inline float l_tools_toNumberOrError(lua_State* state, int index) {
   return lua_tonumber(state, index);
@@ -35,6 +44,10 @@ inline float l_tools_toNumberOrError(lua_State* state, int index) {
 
 inline char const* l_tools_toStringOrError(lua_State* state, int index) {
   return lua_tostring(state, index);
+}
+
+inline int l_tools_toBooleanOrError(lua_State* state, int index) {
+  return lua_toboolean(state, index);
 }
 #endif
 

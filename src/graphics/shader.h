@@ -16,6 +16,7 @@ typedef struct {
   char *name;
   GLenum type;
   int elements;
+  GLint location;
 } graphics_ShaderUniformInfo;
 
 typedef struct {
@@ -45,7 +46,13 @@ void graphics_setDefaultShader();
 void graphics_setShader(graphics_Shader* shader);
 void graphics_Shader_compileAndAttachShaderRaw(GLuint program, GLenum shaderType, char const* code);
 void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, char const* code);
-void graphics_Shader_sendNumbers(graphics_Shader *shader, char const* name, int count, float const* numbers);
 graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name);
 graphics_ShaderUniformType graphics_shader_toMotorType(GLenum type);
 int graphics_shader_toMotorComponents(GLenum type);
+
+void graphics_Shader_sendIntegers(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
+void graphics_Shader_sendBooleans(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
+void graphics_Shader_sendFloats(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLfloat const* numbers);
+void graphics_Shader_sendIntegerVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
+void graphics_Shader_sendFloatVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLfloat const* numbers);
+void graphics_Shader_sendBooleanVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
