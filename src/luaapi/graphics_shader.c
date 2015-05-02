@@ -195,10 +195,15 @@ static void sendFloatMatrices(lua_State *state, l_graphics_Shader* shader, graph
 
   for(int i = 0; i < count; ++i) {
     for(int j = 0; j < components; ++j) {
+      // Get j-th inner table (== matrix column) of i-th outer table (== matrix)
+      lua_rawgeti(state, i + 3, j + 1);
       for(int k = 0; k < components; ++k) {
-        lua_rawgeti(state, i + 3, j + 1);
-        numbers[i*components+j] = l_tools_toNumberOrError(state, -1);
+        // Get k-th entry (== matrix row) of j-th inner table (== matrix column)
+        lua_rawgeti(state, -1, k + 1);
+        numbers[i*components*components+j*components+k] = l_tools_toNumberOrError(state, -1);
+        lua_pop(state, 1);
       }
+      lua_settop(state, count + 2);
     }
   }
 
