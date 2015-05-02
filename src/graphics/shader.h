@@ -56,3 +56,4 @@ void graphics_Shader_sendFloats(graphics_Shader *shader, graphics_ShaderUniformI
 void graphics_Shader_sendIntegerVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
 void graphics_Shader_sendFloatVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLfloat const* numbers);
 void graphics_Shader_sendBooleanVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
+void graphics_Shader_sendFloatMatrices(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, float const* numbers);

@@ -185,7 +185,6 @@ mkVectorSendFunc(sendIntegerVectors, GLint,   l_tools_toNumberOrError)
 mkVectorSendFunc(sendFloatVectors,   GLfloat, l_tools_toNumberOrError)
 mkVectorSendFunc(sendBooleanVectors, GLint,   l_tools_toBooleanOrError)
 
-#undef mkVectorSendFunc
 
 static void sendFloatMatrices(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) {
   int components = graphics_shader_toMotorComponents(info->type);
@@ -198,11 +197,12 @@ static void sendFloatMatrices(lua_State *state, l_graphics_Shader* shader, graph
     for(int j = 0; j < components; ++j) {
       for(int k = 0; k < components; ++k) {
         lua_rawgeti(state, i + 3, j + 1);
-        numbers[i*components+j] = totypefunc(state, -1);
+        numbers[i*components+j] = l_tools_toNumberOrError(state, -1);
       }
     }
   }
 
+  graphics_Shader_sendFloatMatrices(&shader->shader, info, count, numbers);
 }
 
 static void sendSamplers(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) {

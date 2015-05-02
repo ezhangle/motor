@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "shader.h"
@@ -286,6 +287,24 @@ mkVectorSendFunc(sendBooleanVectors, GLint,   i)
 mkVectorSendFunc(sendFloatVectors,   GLfloat, f)
 
 #undef mkVectorSendFunc
+
+void graphics_Shader_sendFloatMatrices(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, float const* numbers) {
+  glUseProgram(shader->program);
+
+  switch(graphics_shader_toMotorComponents(info->type)) {
+  case 2:
+    glUniformMatrix2fv(info->location, count, false, numbers);
+    break;
+
+  case 3:
+    glUniformMatrix3fv(info->location, count, false, numbers);
+    break;
+
+  case 4:
+    glUniformMatrix4fv(info->location, count, false, numbers);
+    break;
+  }
+}
 
 graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name) {
   // Dirty trick to avoid duplicate code: Name will be treated as graphics_ShaderUniformInfo.
