@@ -4,6 +4,7 @@
 
 typedef struct {
   graphics_Shader shader;
+  int *referencedTextures;
 } l_graphics_Shader;
 
 //int l_graphics_newShader(lua_State* state);

@@ -104,6 +104,12 @@ int static l_graphics_newShader(lua_State* state) {
   free(loadedFile1);
   free(loadedFile2);
 
+  int const textureUnits = shader->shader.textureUnitCount;
+  shader->referencedTextures = malloc(textureUnits * sizeof(int));
+  for(int i = 0; i < textureUnits; ++i) {
+    shader->referencedTextures[i] = LUA_NOREF;
+  }
+
   return 1;
 }
 
@@ -112,6 +118,13 @@ l_toTypeFn(l_graphics_toShader, l_graphics_Shader)
 
 static int l_graphics_gcShader(lua_State* state) {
   l_graphics_Shader *shader = l_graphics_toShader(state, 1);
+  free(shader->referencedTextures);
+
+  // Unref textures to allow gc'ing them
+  for(int i = 0; i < shader->shader.textureUnitCount; ++i) {
+    luaL_unref(state, LUA_REGISTRYINDEX, shader->referencedTextures[i]);
+  }
+  
   graphics_Shader_free(&shader->shader);
   return 0;
 }
@@ -210,8 +223,24 @@ static void sendFloatMatrices(lua_State *state, l_graphics_Shader* shader, graph
   graphics_Shader_sendFloatMatrices(&shader->shader, info, count, numbers);
 }
 
-static void sendSamplers(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) {
+static void referenceAndSendTexture(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info, GLuint texture) {
+  int index = (graphics_ShaderTextureUnitInfo*) info->extra - shader->shader.textureUnits;
+  lua_settop(state, 3);
+  shader->referencedTextures[index] = luaL_ref(state, LUA_REGISTRYINDEX);
+  graphics_Shader_sendTexture(&shader->shader, info, texture);
+}
 
+static void sendSamplers(lua_State *state, l_graphics_Shader* shader, graphics_ShaderUniformInfo const* info) {
+  if(l_graphics_isCanvas(state, 3)) {
+    graphics_Canvas * canvas = l_graphics_toCanvas(state, 3);
+    referenceAndSendTexture(state, shader, info, canvas->image.texID);
+  } else if(l_graphics_isImage(state,3)) {
+    l_graphics_Image * image = l_graphics_toImage(state, 3);
+    referenceAndSendTexture(state, shader, info, image->image.texID);
+  } else {
+    lua_pushstring(state, "Expected texture");
+    lua_error(state);
+  }
 }
 
 static int l_graphics_Shader_send(lua_State *state) {
@@ -265,69 +294,6 @@ static int l_graphics_Shader_send(lua_State *state) {
 
   };
 
-#if 0
-  graphics_ShaderUniformType type = graphics_shader_toMotorType(info);
-
-  switch(type) {
-  case graphics_ShaderUniformType_int:
-    sendInteger(state, shader, info);
-    break;
-
-  case graphics_ShaderUniformType_float:
-    sendFloat(state, shader, info);
-    break;
-
-  case graphics_ShaderUniformType_bool:
-    sendBoolean(state, shader, info);
-    break;
-
-  case graphics_ShaderUniformType_sampler:
-    sendSampler(state, shader, info);
-    break;
-  }
-#endif
-
-#if 0
-  int type = lua_type(state, 3);
-  switch(type) {
-  case LUA_TNUMBER:
-    sendNumbers(&shader->shader, name, state);
-    break;
-  case LUA_TBOOLEAN:
-    sendBooleans(&shader->shader, name, state);
-    break;
-  case LUA_TTABLE:
-    {
-      lua_rawgeti(state, 3, 1);
-      int type2 = lua_type(state, 3);
-      lua_pop(state, 1);
-      switch(type2) {
-      case LUA_TNUMBER:
-        sendVectors(&shader->shader, name, state);
-        break;
-      case LUA_TTABLE:
-        sendMatrices(&shader->shader, name, state);
-        break;
-      default:
-        // TODO error
-        break;
-      };
-    }
-    break;
-  case LUA_TUSERDATA:
-    if(l_graphics_isImage(state, 3)) {
-      sendImage(&shader->shader, name, state);
-    } else if(l_graphics_isCanvas(state, 3)) {
-      sendCanvas(&shader->shader, name, state);
-    } else {
-      // TODO error
-    }
-    break;
-  default:
-    // TODO error
-    break;
-  };
-#endif
   return 0;
 }
 

@@ -7,6 +7,7 @@
 static struct {
   graphics_Shader *activeShader;
   graphics_Shader defaultShader;
+  int maxTextureUnits;
 } moduleData;
 
 GLchar const *defaultVertexSource = 
@@ -39,6 +40,8 @@ static GLchar const *defaultFragmentSource =
   "  return Texel(texture, texture_coords) * color;\n"
   "}\n";
 
+#define DEFAULT_SAMPLER "tex"
+
 static GLchar const fragmentHeader[] = 
   "precision mediump float;\n"
   "#define Image sampler2D\n"
@@ -46,7 +49,7 @@ static GLchar const fragmentHeader[] =
   "#define extern uniform\n"
   "varying vec2 fUV;\n"
   "varying vec4 fColor;\n"
-  "uniform sampler2D tex;\n"
+  "uniform sampler2D " DEFAULT_SAMPLER ";\n"
   "uniform vec4 color;\n"
   "#line 0\n";
 
@@ -164,7 +167,7 @@ static void readShaderUniforms(graphics_Shader *shader) {
   shader->uniformLocations.transform   = glGetUniformLocation(shader->program, "transform");
   shader->uniformLocations.projection  = glGetUniformLocation(shader->program, "projection");
   shader->uniformLocations.textureRect = glGetUniformLocation(shader->program, "textureRect");
-  shader->uniformLocations.tex         = glGetUniformLocation(shader->program, "tex");
+  shader->uniformLocations.tex         = glGetUniformLocation(shader->program, DEFAULT_SAMPLER);
   shader->uniformLocations.color       = glGetUniformLocation(shader->program, "color");
   shader->uniformLocations.size        = glGetUniformLocation(shader->program, "size");
 
@@ -180,6 +183,7 @@ static void readShaderUniforms(graphics_Shader *shader) {
     glGetActiveUniform(shader->program, i, maxLength, NULL, &info->elements, &info->type, info->name);
 
     info->location = glGetUniformLocation(shader->program, info->name);
+    info->extra = 0;
 
     char *suffix = strstr(info->name, "[0]");
     if(suffix) {
@@ -189,6 +193,35 @@ static void readShaderUniforms(graphics_Shader *shader) {
 
   qsort(shader->uniforms, shader->uniformCount, sizeof(graphics_ShaderUniformInfo), (int(*)(void const*,void const*))compareUniformInfo);
 }
+
+
+static void allocateTextureUnits(graphics_Shader *shader) {
+  shader->textureUnitCount = 0;
+  for(int i = 0; i < shader->uniformCount; ++i) {
+    if(shader->uniforms[i].type == GL_SAMPLER_2D) {
+      if(strcmp(shader->uniforms[i].name, DEFAULT_SAMPLER)) {
+        ++shader->textureUnitCount;
+      }
+    }
+  }  
+
+  shader->textureUnits = malloc(sizeof(graphics_ShaderTextureUnitInfo) * shader->textureUnitCount);
+
+  int currentUnit = 0;
+  glUseProgram(shader->program);
+  for(int i = 0; i < shader->uniformCount; ++i) {
+    if(shader->uniforms[i].type == GL_SAMPLER_2D) {
+      if(strcmp(shader->uniforms[i].name, DEFAULT_SAMPLER)) {
+        glUniform1i(shader->uniforms[i].location, currentUnit+1);
+        shader->uniforms[i].extra = shader->textureUnits + currentUnit;
+        shader->textureUnits[currentUnit].unit = currentUnit + 1;
+        shader->textureUnits[currentUnit].boundTexture = 0;
+        ++currentUnit;
+      }
+    }
+  }
+}
+
 
 void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char const* fragmentCode) {
   if(!vertexCode) {
@@ -210,6 +243,8 @@ void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char c
   glLinkProgram(shader->program);
 
   readShaderUniforms(shader);
+
+  allocateTextureUnits(shader);
 }
 
 
@@ -219,13 +254,13 @@ void graphics_Shader_free(graphics_Shader* shader) {
   for(int i = 0; i < shader->uniformCount; ++i) {
     free(shader->uniforms[i].name);
   }
+  free(shader->textureUnits);
   free(shader->uniforms);
 }
 
 void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor, float ws, float hs) {
 
   glUseProgram(moduleData.activeShader->program);
-  //printf("Using shader %d\n", moduleData.activeShader->program);
 
   float s[2] = { ws, hs };
 
@@ -235,6 +270,11 @@ void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform,
   glUniform4fv(      moduleData.activeShader->uniformLocations.color,       1,                    useColor);
   glUniform2fv(      moduleData.activeShader->uniformLocations.size,        1,                    s);
   glUniformMatrix4fv(moduleData.activeShader->uniformLocations.transform,   1, 0, (GLfloat const*)transform);
+
+  for(int i = 0; i < moduleData.activeShader->textureUnitCount; ++i) {
+    glActiveTexture(GL_TEXTURE0 + moduleData.activeShader->textureUnits[i].unit);
+    glBindTexture(GL_TEXTURE_2D, moduleData.activeShader->textureUnits[i].boundTexture);
+  }
 }
 
 void graphics_setDefaultShader() {
@@ -252,6 +292,7 @@ graphics_Shader* graphics_getShader() {
 void graphics_shader_init() {
   graphics_Shader_new(&moduleData.defaultShader, NULL, NULL);
   moduleData.activeShader = &moduleData.defaultShader;
+  glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &moduleData.maxTextureUnits);
 }
 
 #define mkScalarSendFunc(name, type, glfunc) \
@@ -305,6 +346,13 @@ void graphics_Shader_sendFloatMatrices(graphics_Shader *shader, graphics_ShaderU
     break;
   }
 }
+
+
+void graphics_Shader_sendTexture(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, GLuint texture) {
+  graphics_ShaderTextureUnitInfo *unit = (graphics_ShaderTextureUnitInfo*)info->extra;
+  unit->boundTexture = texture;
+}
+
 
 graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name) {
   // Dirty trick to avoid duplicate code: Name will be treated as graphics_ShaderUniformInfo.

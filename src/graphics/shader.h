@@ -13,11 +13,17 @@ typedef enum {
 } graphics_ShaderUniformType;
 
 typedef struct {
-  char *name;
-  GLenum type;
-  int elements;
-  GLint location;
+  char    *name;
+  GLenum   type;
+  int      elements;
+  GLint    location;
+  void    *extra;
 } graphics_ShaderUniformInfo;
+
+typedef struct {
+  int unit;
+  GLuint boundTexture;
+} graphics_ShaderTextureUnitInfo;
 
 typedef struct {
   // These are regularly needed on a per-drawcall basis.
@@ -33,6 +39,9 @@ typedef struct {
 
   int uniformCount;
   graphics_ShaderUniformInfo *uniforms;
+
+  int textureUnitCount;
+  graphics_ShaderTextureUnitInfo *textureUnits;
 
   GLuint program;
 } graphics_Shader;
@@ -57,3 +66,4 @@ void graphics_Shader_sendIntegerVectors(graphics_Shader *shader, graphics_Shader
 void graphics_Shader_sendFloatVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLfloat const* numbers);
 void graphics_Shader_sendBooleanVectors(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, GLint const* numbers);
 void graphics_Shader_sendFloatMatrices(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, int count, float const* numbers);
+void graphics_Shader_sendTexture(graphics_Shader *shader, graphics_ShaderUniformInfo const* info, GLuint texture);
