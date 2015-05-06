@@ -135,6 +135,11 @@ static int l_graphics_gcShader(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_getShader(lua_State *state) {
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.currentShaderRef);
+  return 1;
+}
+
 static int l_graphics_setShader(lua_State *state) {
   if(lua_isnoneornil(state, 1)) {
     graphics_setDefaultShader();
@@ -386,6 +391,7 @@ static luaL_Reg const shaderMetatableFuncs[] = {
 static luaL_Reg const shaderFreeFuncs[] = {
   {"newShader", l_graphics_newShader},
   {"setShader", l_graphics_setShader},
+  {"getShader", l_graphics_getShader},
   {NULL, NULL}
 };
 
