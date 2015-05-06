@@ -10,6 +10,8 @@
 #include "../filesystem/filesystem.h"
 #include "../math/minmax.h"
 
+static void pushShaderInfoLog(lua_State *state, graphics_Shader const* shader);
+
 static struct {
   int shaderMT;
   int currentShaderRef;
@@ -96,7 +98,11 @@ int static l_graphics_newShader(lua_State* state) {
   }
 
   l_graphics_Shader * shader = lua_newuserdata(state, sizeof(l_graphics_Shader));
-  graphics_Shader_new(&shader->shader, vertexSrc, fragmentSrc);
+  graphics_ShaderCompileStatus status = graphics_Shader_new(&shader->shader, vertexSrc, fragmentSrc);
+  if(status != graphics_ShaderCompileStatus_okay) {
+    pushShaderInfoLog(state, &shader->shader);
+    return lua_error(state);
+  }
 
   lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.shaderMT);
   lua_setmetatable(state, -2);
@@ -334,11 +340,46 @@ errout:
   return 3;
 }
 
+static char const vertexName[] = "vertex shader:\n";
+static char const fragmentName[] = "\npixel shader:\n";
+static char const programName[] = "\nprogram:\n";
+
+static void pushShaderInfoLog(lua_State *state, graphics_Shader const* shader) {
+  int len = strlen(shader->warnings.fragment)
+            + strlen(shader->warnings.vertex)
+            + strlen(shader->warnings.program)
+            + strlen(vertexName)
+            + strlen(fragmentName)
+            + strlen(programName);
+
+  char * fullLog = malloc(len + 1);
+  strcpy(fullLog, vertexName);
+  strcat(fullLog, shader->warnings.vertex);
+  strcat(fullLog, fragmentName);
+  strcat(fullLog, shader->warnings.fragment);
+  strcat(fullLog, programName);
+  strcat(fullLog, shader->warnings.program);
+ 
+  lua_pushstring(state, fullLog);
+
+  free(fullLog);
+}
+
+static int l_graphics_Shader_getWarnings(lua_State *state) {
+  l_assertType(state, 1, l_graphics_isShader); 
+  l_graphics_Shader const* shader = l_graphics_toShader(state, 1);
+
+  pushShaderInfoLog(state, &shader->shader);
+
+  return 1;
+}
+
 
 static luaL_Reg const shaderMetatableFuncs[] = {
   {"__gc",              l_graphics_gcShader},
   {"send",              l_graphics_Shader_send},
   {"getExternVariable", l_graphics_Shader_getExternVariable},
+  {"getWarnings",       l_graphics_Shader_getWarnings},
   {NULL, NULL}
 };
 

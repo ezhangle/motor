@@ -58,16 +58,37 @@ static GLchar const fragmentFooter[] =
   "  gl_FragColor = effect(color * fColor, tex, fUV, vec2(0.0, 0.0));\n"
   "}\n";
 
-void graphics_Shader_compileAndAttachShaderRaw(GLuint program, GLenum shaderType, char const* code) {
+bool graphics_Shader_compileAndAttachShaderRaw(graphics_Shader *program, GLenum shaderType, char const* code) {
   GLuint shader = glCreateShader(shaderType);
   glShaderSource(shader, 1, (GLchar const **)&code, 0);
   glCompileShader(shader);
 
-  glAttachShader(program, shader);
+  glAttachShader(program->program, shader);
+
+  int state;
+  int infolen;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
+  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolen);
+
+  char *info = malloc(infolen);
+  glGetShaderInfoLog(shader, infolen, 0, info);
+  switch(shaderType) {
+  case GL_VERTEX_SHADER:
+    free(program->warnings.vertex);
+    program->warnings.vertex = info;
+    break;
+
+  case GL_FRAGMENT_SHADER:
+    free(program->warnings.fragment);
+    program->warnings.fragment = info;
+    break;
+  }
+
   glDeleteShader(shader);
+  return state;
 }
 
-void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, char const* code) {
+bool graphics_Shader_compileAndAttachShader(graphics_Shader *shader, GLenum shaderType, char const* code) {
   GLchar const* header;
   GLchar const* footer;
   int headerlen;
@@ -92,9 +113,11 @@ void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, c
   memcpy(combinedCode + headerlen, (GLchar const*)code, codelen);
   memcpy(combinedCode + headerlen + codelen, footer, footerlen+1); // include zero terminator
 
-  graphics_Shader_compileAndAttachShaderRaw(program, shaderType, combinedCode);
+  bool state = graphics_Shader_compileAndAttachShaderRaw(shader, shaderType, combinedCode);
 
   free(combinedCode);
+
+  return state;
 }
 
 static int compareUniformInfo(graphics_ShaderUniformInfo const* a, graphics_ShaderUniformInfo const* b) {
@@ -223,7 +246,14 @@ static void allocateTextureUnits(graphics_Shader *shader) {
 }
 
 
-void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char const* fragmentCode) {
+graphics_ShaderCompileStatus graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char const* fragmentCode) {
+
+  memset(shader, 0, sizeof(*shader));
+  shader->warnings.vertex = malloc(1);
+  shader->warnings.fragment = malloc(1);
+  shader->warnings.program = malloc(1);
+  *shader->warnings.vertex = *shader->warnings.fragment = *shader->warnings.program = 0;
+
   if(!vertexCode) {
     vertexCode = defaultVertexSource;
   }
@@ -234,17 +264,35 @@ void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char c
 
   shader->program = glCreateProgram();
 
-  graphics_Shader_compileAndAttachShader(shader->program, GL_VERTEX_SHADER, vertexCode);
-  graphics_Shader_compileAndAttachShader(shader->program, GL_FRAGMENT_SHADER, fragmentCode);
+  if(!graphics_Shader_compileAndAttachShader(shader, GL_VERTEX_SHADER, vertexCode)) {
+    return graphics_ShaderCompileStatus_vertexError;
+  }
+
+  if(!graphics_Shader_compileAndAttachShader(shader, GL_FRAGMENT_SHADER, fragmentCode)) {
+    return graphics_ShaderCompileStatus_fragmentError;
+  }
 
   glBindAttribLocation(shader->program, 0, "vPos");
   glBindAttribLocation(shader->program, 1, "vUV");
   glBindAttribLocation(shader->program, 2, "vColor");
   glLinkProgram(shader->program);
 
+  int linkState;
+  int linkInfoLen;
+  glGetProgramiv(shader->program, GL_LINK_STATUS, &linkState);
+  glGetProgramiv(shader->program, GL_INFO_LOG_LENGTH, &linkInfoLen);
+  shader->warnings.program = realloc(shader->warnings.program, linkInfoLen);
+  glGetProgramInfoLog(shader->program, linkInfoLen, 0, shader->warnings.program);
+
+  if(!linkState) {
+    return graphics_ShaderCompileStatus_linkError;
+  }
+
   readShaderUniforms(shader);
 
   allocateTextureUnits(shader);
+
+  return graphics_ShaderCompileStatus_okay;
 }
 
 
