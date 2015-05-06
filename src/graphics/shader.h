@@ -43,18 +43,31 @@ typedef struct {
   int textureUnitCount;
   graphics_ShaderTextureUnitInfo *textureUnits;
 
+  struct {
+    char * fragment;
+    char * vertex;
+    char * program;
+  } warnings;
+
   GLuint program;
 } graphics_Shader;
 
-void graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char const* fragmentCode);
+typedef enum {
+  graphics_ShaderCompileStatus_okay,
+  graphics_ShaderCompileStatus_linkError,
+  graphics_ShaderCompileStatus_vertexError,
+  graphics_ShaderCompileStatus_fragmentError
+} graphics_ShaderCompileStatus;
+
+graphics_ShaderCompileStatus graphics_Shader_new(graphics_Shader *shader, char const* vertexCode, char const* fragmentCode);
 void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform, graphics_Quad const* textureRect, float const* useColor, float ws,float hs);
 graphics_Shader* graphics_getShader();
 void graphics_shader_init();
 void graphics_Shader_free(graphics_Shader* shader);
 void graphics_setDefaultShader();
 void graphics_setShader(graphics_Shader* shader);
-void graphics_Shader_compileAndAttachShaderRaw(GLuint program, GLenum shaderType, char const* code);
-void graphics_Shader_compileAndAttachShader(GLuint program, GLenum shaderType, char const* code);
+bool graphics_Shader_compileAndAttachShaderRaw(graphics_Shader *shader, GLenum shaderType, char const* code);
+bool graphics_Shader_compileAndAttachShader(graphics_Shader *shader, GLenum shaderType, char const* code);
 graphics_ShaderUniformInfo const* graphics_Shader_getUniform(graphics_Shader const* shader, char const* name);
 graphics_ShaderUniformType graphics_shader_toMotorType(GLenum type);
 int graphics_shader_toMotorComponents(GLenum type);
