@@ -9,6 +9,7 @@ optimize = 3
 link_time_optimize = 3
 
 sources = [
+  'audio/audio.c',
   'filesystem/filesystem.c',
   'graphics/batch.c',
   'graphics/canvas.c',

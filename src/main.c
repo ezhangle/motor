@@ -21,6 +21,8 @@
 
 #include "graphics/graphics.h"
 
+#include "audio/audio.h"
+
 #include "keyboard.h"
 #include "timer/timer.h"
 
@@ -135,6 +137,7 @@ int main() {
 
   keyboard_init();
   graphics_init(config.window.width, config.window.height);
+  audio_init();
 
 
   if(luaL_dofile(lua, "/main.lua")) {
