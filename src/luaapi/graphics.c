@@ -15,6 +15,27 @@
 #include "graphics_window.h"
 #include "graphics_geometry.h"
 
+
+static int l_graphics_getBackgroundColor(lua_State* state) {
+  float * colors = graphics_getBackgroundColor();
+
+  for(int i = 0; i < 4; ++i) {
+    lua_pushnumber(state, (int)(colors[i] * 255));
+  }
+
+  return 4;
+}
+
+static int l_graphics_getColor(lua_State* state) {
+  float * colors = graphics_getColor();
+
+  for(int i = 0; i < 4; ++i) {
+    lua_pushnumber(state, (int)(colors[i] * 255));
+  }
+
+  return 4;
+}
+
 static int l_graphics_setBackgroundColor(lua_State* state) {
   int red   = lua_tointeger(state, 1);
   int green = lua_tointeger(state, 2);
@@ -266,7 +287,9 @@ static int l_graphics_reset(lua_State* state) {
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
+  {"getBackgroundColor", l_graphics_getBackgroundColor},
   {"setColor",           l_graphics_setColor},
+  {"getColor",           l_graphics_getColor},
   {"clear",              l_graphics_clear},
   {"draw",               l_graphics_draw},
   {"push",               l_graphics_push},

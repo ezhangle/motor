@@ -115,8 +115,12 @@ int graphics_getHeight() {
   return moduleData.surface->h;
 }
 
-float* graphics_getColorPtr() {
+float* graphics_getColor() {
   return (float*)(&moduleData.foregroundColor);
+}
+
+float* graphics_getBackgroundColor() {
+  return (float*)(&moduleData.backgroundColor);
 }
 
 void graphics_setColorMask(bool r, bool g, bool b, bool a) {
