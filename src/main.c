@@ -16,6 +16,7 @@
 #include "luaapi/motor.h"
 #include "luaapi/boot.h"
 #include "luaapi/keyboard.h"
+#include "luaapi/mouse.h"
 #include "luaapi/filesystem.h"
 #include "luaapi/timer.h"
 #include "luaapi/math.h"
@@ -25,6 +26,7 @@
 #include "audio/audio.h"
 
 #include "keyboard.h"
+#include "mouse.h"
 #include "timer/timer.h"
 
 double curtime() {
@@ -114,9 +116,21 @@ void main_loop(void *data) {
     case SDL_TEXTINPUT:
       keyboard_textInput(event.text.text);
       break;
-
+    case SDL_MOUSEMOTION:
+      mouse_mousemoved(event.motion.x, event.motion.y);
+      break;
+    case SDL_MOUSEBUTTONDOWN:
+      mouse_mousepressed(event.button.x, event.button.y,
+      event.button.button);
+      break;
+    case SDL_MOUSEBUTTONUP:
+      mouse_mousereleased(event.button.x, event.button.y,
+      event.button.button);
+      break;
     }
   }
+
+  audio_updateStreams();
   //lua_gc(loopData->luaState, LUA_GCCOLLECT, 0);
 }
 
@@ -131,6 +145,7 @@ int main() {
   l_graphics_register(lua);
   l_image_register(lua);
   l_keyboard_register(lua);
+  l_mouse_register(lua);
   l_filesystem_register(lua);
   l_timer_register(lua);
   l_math_register(lua);
