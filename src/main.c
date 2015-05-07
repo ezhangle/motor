@@ -9,6 +9,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "luaapi/audio.h"
 #include "luaapi/graphics.h"
 #include "luaapi/graphics_font.h"
 #include "luaapi/image.h"
@@ -126,6 +127,7 @@ int main() {
 
   motor_Config config;
   l_motor_register(lua);
+  l_audio_register(lua);
   l_graphics_register(lua);
   l_image_register(lua);
   l_keyboard_register(lua);

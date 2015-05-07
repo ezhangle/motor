@@ -10,6 +10,7 @@ link_time_optimize = 3
 
 sources = [
   'audio/audio.c',
+  'audio/vorbis_decoder.c',
   'filesystem/filesystem.c',
   'graphics/batch.c',
   'graphics/canvas.c',
@@ -22,6 +23,7 @@ sources = [
   'graphics/shader.c',
   'graphics/gltools.c',
   'image/imagedata.c',
+  'luaapi/audio.c',
   'luaapi/boot.c',
   'luaapi/math.c',
   'luaapi/filesystem.c',
