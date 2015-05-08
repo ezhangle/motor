@@ -16,10 +16,10 @@ typedef struct {
   int  (*getChannelCount)(void *decoderData);
   int  (*getSampleRate)(void *decoderData);
   bool (*closeFile)(void **decoderData);
-  int  (*loadStreamSamples)(void *decoderData, ALshort *buffer, int maxSamples);
+  int  (*loadStreamSamples)(void *decoderData, ALuint buffer, int sampleCount);
 } audio_StreamSourceDecoder;
 
-static int const AUDIO_BUFFERS_PER_STREAM = 3;
+static int const AUDIO_BUFFERS_PER_STREAM = 8;
 
 typedef struct {
   audio_StreamSourceDecoder const* decoder;

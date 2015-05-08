@@ -34,10 +34,11 @@ void audio_StaticSource_play(audio_StaticSource const *source) {
 static void audio_loadStreamSamples(audio_StreamSource const * source, ALuint buffer) {
   int readSamples = source->decoder->loadStreamSamples(
     source->decoderData,
-    source->bufferData,
-    source->bufferSamples
+    buffer,
+    8000
   );
 
+/*
   alBufferData(
     buffer,
     source->channels >= 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
@@ -45,6 +46,7 @@ static void audio_loadStreamSamples(audio_StreamSource const * source, ALuint bu
     readSamples * sizeof(short),
     source->sampleRate
   );
+*/
 }
 
 bool audio_loadStream(audio_StreamSource *source, char const * filename) {
@@ -106,7 +108,11 @@ void audio_updateStreams() {
     for(int j = 0; j < count; ++j) {
       ALuint buf;
       alSourceUnqueueBuffers(src, 1, &buf);
+      extern double curtime();
+      double t1 = curtime();
       audio_loadStreamSamples(source, buf);
+      double t2 = curtime();
+  //    printf("Load time: %0.6fs\n", t2 - t1);
       alSourceQueueBuffers(src, 1, &buf);
     }
   }

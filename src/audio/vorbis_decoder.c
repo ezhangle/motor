@@ -5,28 +5,43 @@
 #include "audio.h"
 
 static struct {
-  short *streamReadBuffer;
+  ALshort *streamReadBuffer;
   int currentStreamReadBufferSize;
 } moduleData;
 
+typedef struct {
+  stb_vorbis *vorbis;
+  ALshort    *readBuffer;
+  int         readBufferSize;
+  int         carryCount;
+} audio_vorbis_DecoderData;
+
 bool audio_vorbis_openStream(char const * filename, void **decoderData) {
   int err;
-  stb_vorbis *vorbis = stb_vorbis_open_filename(filename, &err, NULL);
+  audio_vorbis_DecoderData* data = malloc(sizeof(audio_vorbis_DecoderData));
+  data->vorbis = stb_vorbis_open_filename(filename, &err, NULL);
 
-  stb_vorbis_info info = stb_vorbis_get_info(vorbis);
+  stb_vorbis_info info = stb_vorbis_get_info(data->vorbis);
 
-  *decoderData = vorbis;
+  data->readBufferSize = info.channels * info.sample_rate + 4096;
+  data->readBuffer     = malloc(sizeof(ALshort) * data->readBufferSize);
+  data->carryCount     = 0;
 
+  *decoderData = data;
+
+/*
   if(moduleData.currentStreamReadBufferSize < info.max_frame_size) {
     free(moduleData.streamReadBuffer);
     moduleData.streamReadBuffer = malloc(sizeof(short) * info.max_frame_size);
     moduleData.currentStreamReadBufferSize = info.max_frame_size;
   }
+*/
 
   return true;
 }
 
 
+/*
 int audio_vorbis_loadStreamSamples(void *decoderData, ALshort *buffer, int maxSamples) {
   stb_vorbis * vorbis = (stb_vorbis*)decoderData;
   stb_vorbis_info info = stb_vorbis_get_info(vorbis);
@@ -43,6 +58,52 @@ int audio_vorbis_loadStreamSamples(void *decoderData, ALshort *buffer, int maxSa
     }
 
     readSamples += channels * samples;
+  }
+
+  return readSamples;
+}
+*/
+
+int audio_vorbis_loadStreamSamples(void* decoderData, ALuint buffer, int sampleCount) {
+  audio_vorbis_DecoderData * data = (audio_vorbis_DecoderData*)decoderData;
+  stb_vorbis_info info = stb_vorbis_get_info(data->vorbis);
+  int channels = info.channels >= 2 ? 2 : 1;   // Force to mono or stereo
+
+  int safeBufferSize = sampleCount * channels + 4096;
+  if(safeBufferSize > data->readBufferSize) {
+    data->readBufferSize = safeBufferSize;
+    free(data->readBuffer);
+    data->readBuffer = malloc(sizeof(ALshort) * safeBufferSize);
+  }
+
+  int readSamples = data->carryCount;
+
+  while(readSamples < sampleCount) {
+    float **channelData;
+    int samples = stb_vorbis_get_frame_float(data->vorbis, NULL, &channelData);
+    for(int i = 0; i < samples; ++i) {
+      for(int c = 0; c < channels; ++c) {
+        data->readBuffer[readSamples + channels * i + c] = (ALshort)(channelData[c][i] * 0x7FFF);
+      }
+    }
+
+    readSamples += channels * samples;
+  }
+
+  alBufferData(
+    buffer,
+    channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
+    data->readBuffer,
+    sampleCount * sizeof(ALshort),
+    info.sample_rate
+  );
+
+  int carry = readSamples - sampleCount;
+  if(carry > 0) {
+    data->carryCount = carry;
+    memmove(data->readBuffer, data->readBuffer+sampleCount, carry * sizeof(ALshort));
+  } else {
+    data->carryCount = 0;
   }
 
   return readSamples;
@@ -79,8 +140,8 @@ bool audio_vorbis_load(audio_StaticSource *source, char const * filename) {
 }
 
 void audio_vorbis_decoder_init() {
-  moduleData.streamReadBuffer = 0;
-  moduleData.currentStreamReadBufferSize = 0;
+  moduleData.currentStreamReadBufferSize = 2 * (44100 + 4096); // Anough space for one second of audio in most cases, including one extra vorbis frame
+  moduleData.streamReadBuffer = malloc(sizeof(ALshort) * moduleData.currentStreamReadBufferSize);
 }
 
 int audio_vorbis_getChannelCount(void *decoderData) {
