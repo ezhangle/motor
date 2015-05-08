@@ -1,16 +1,46 @@
 #include "tools.h"
 #include "audio.h"
 
+// TODO use two separate metatables for streaming and static sources?
+
 static struct {
   int sourceMT;
 } moduleData;
 
+
+static const l_tools_Enum l_audio_SourceType[] = {
+  {"static", audio_SourceType_static},
+  {"stream", audio_SourceType_stream},
+  {NULL, 0}
+};
+
 static int l_audio_newSource(lua_State *state) {
   char const* filename = l_tools_toStringOrError(state, 1);
 
-  audio_Source *src = lua_newuserdata(state, sizeof(audio_Source));
+  audio_SourceType type = audio_SourceType_stream;
+  if(!lua_isnoneornil(state, 2)) {
+    type = l_tools_toEnumOrError(state, 2, l_audio_SourceType);
+  }
+
+  // TODO handle load errors
+  switch(type) {
+  case audio_SourceType_static:
+    {
+      l_audio_StaticSource *src = lua_newuserdata(state, sizeof(l_audio_StaticSource));
+      src->type = audio_SourceType_static;
+      audio_loadStatic(&src->source, filename);
+      break;
+    }
+
+  case audio_SourceType_stream:
+    {
+      l_audio_StreamSource *src = lua_newuserdata(state, sizeof(l_audio_StreamSource));
+      src->type = audio_SourceType_stream;
+      audio_loadStream(&src->source, filename);
+      break;
+    }
+  }
   
-  audio_load(src, filename);
 
   lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.sourceMT);
   lua_setmetatable(state, -2);
@@ -19,13 +49,25 @@ static int l_audio_newSource(lua_State *state) {
 }
 
 l_checkTypeFn(l_audio_isSource, moduleData.sourceMT)
-l_toTypeFn(l_audio_toSource, audio_Source)
 
 static int l_audio_Source_play(lua_State *state) {
   l_assertType(state, 1, l_audio_isSource); 
-  audio_Source const* source = l_audio_toSource(state, 1);
+  audio_SourceType *type = lua_touserdata(state, 1);
+  switch(*type) {
+  case audio_SourceType_static:
+    {
+      l_audio_StaticSource *src = (l_audio_StaticSource*)type;
+      audio_StaticSource_play(&src->source);
+      break;
+    }
 
-  audio_Source_play(source);
+  case audio_SourceType_stream:
+    {
+      l_audio_StreamSource *src = (l_audio_StreamSource*)type;
+      audio_StreamSource_play(&src->source);
+      break;
+    }
+  }
 
   return 0;
 }
