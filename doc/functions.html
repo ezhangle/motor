@@ -58,7 +58,7 @@ In fact, there are several reasons for this. The most important one is, that I j
   <strong>Löve2D is written in C++ and makes extensive use of exceptions.</strong> While there is absolutely no problem with this on real computers, exceptions are very costly to implement in asm.js (the highly optimizable subset of JavaScript that emscripten compiles to), even if no exception is thrown at all. So all error handling would either have to be slowing down the whole framework, rewritten or stripped out, neither of which was an option.
 </li>
 <li>
-  <strong>Löve2D requires some external libraries that are not readily available on emscripten.</strong> Löve2D is built around SDL2, which in itself is a great library, but is not included in emscripten (only through emscripten ports) and adds a bit of extra weight to the final executable. I also couldn't find information an how much browser functionality is reused by SDL2, while emscripten's SDL1 implementation tries to use the browsers built in functionality for as much stuff as possible (image loading for example). The same goes for OpenAL and PhysicsFS.
+  <strong>Löve2D requires some external libraries that are not readily available on emscripten.</strong> Löve2D is built around SDL2, which in itself is a great library, but is not included in emscripten (only through emscripten ports) and adds a bit of extra weight to the final executable. I also couldn't find information an how much browser functionality is reused by SDL2, while emscripten's SDL1 implementation tries to use the browsers built in functionality for as much stuff as possible (image loading for example). The same goes for PhysicsFS.
 </li>
 <li>
   <strong>Emscripten brings its own virtual filesystem</strong>, so using Löve's integrated PhysicsFS is not only unnecessary, it also cannot provide preloading of image data.
@@ -252,7 +252,7 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td>0.0.1 </td>
   <td> </td>
 </tr>
-<tr class="no">
+<tr class="yes">
   <td>Font:getFilter()</td>
   <td> </td>
   <td> </td>
@@ -282,7 +282,7 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td> </td>
   <td> </td>
 </tr>
-<tr class="no">
+<tr class="yes">
   <td>Font:setFilter()</td>
   <td> </td>
   <td> </td>
@@ -737,7 +737,7 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td>0.0.1 </td>
   <td> </td>
 </tr>
-<tr class="no">
+<tr class="yes">
   <td>love.graphics.getBackgroundColor()</td>
   <td> </td>
   <td> </td>
@@ -752,7 +752,7 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td>0.0.1 </td>
   <td> </td>
 </tr>
-<tr class="no">
+<tr class="yes">
   <td>love.graphics.getColor()</td>
   <td> </td>
   <td> </td>
@@ -832,7 +832,7 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td>0.0.1 </td>
   <td> </td>
 </tr>
-<tr class="no">
+<tr class="yes">
   <td>love.graphics.getShader()</td>
   <td> </td>
   <td> </td>
@@ -1827,48 +1827,13 @@ I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is
   <td> </td>
   <td> </td>
 </tr>
-<tr class="no">
+<tr class="yes">
   <td>Shader.getWarnings()</td>
   <td> </td>
   <td> </td>
 </tr>
-<tr class="partial">
+<tr class="yes">
   <td>Shader.send()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendBoolean()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendCanvas()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendFloat()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendImage()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendInt()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendMatrix()</td>
-  <td> </td>
-  <td> </td>
-</tr>
-<tr class="no">
-  <td>Shader.sendTexture()</td>
   <td> </td>
   <td> </td>
 </tr>
