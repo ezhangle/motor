@@ -2,7 +2,7 @@
 
 #include "../image/imagedata.h"
 #include "quad.h"
-#include <SDL/SDL_opengl.h>
+#include <SDL_opengl.h>
 
 #include "gltools.h"
 

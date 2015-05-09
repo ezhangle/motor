@@ -1,5 +1,6 @@
 #include <tgmath.h>
 #include <stdlib.h>
+#include "../math/trig.h"
 #include "geometry.h"
 #include "graphics.h"
 #include "shader.h"
@@ -76,7 +77,7 @@ static void drawBuffer(int vertices, int indices, GLenum type) {
 void graphics_geometry_drawCircle(float x, float y, float radius, int segments) {
   growBuffers(segments*2, segments*2+2);
 
-  float step = 2*M_PI / segments;
+  float step = 2*PI / segments;
   float ang = 0;
   moduleData.index[2*segments  ] = 0;
   moduleData.index[2*segments+1] = 1;
@@ -112,7 +113,7 @@ void graphics_geometry_drawCircle(float x, float y, float radius, int segments) 
 void graphics_geometry_fillCircle(float x, float y, float radius, int segments) {
   growBuffers(segments+1, segments+2);
 
-  float step = 2*M_PI / segments;
+  float step = 2*PI / segments;
   float ang = 0;
   moduleData.data[0] = x;
   moduleData.data[1] = y;

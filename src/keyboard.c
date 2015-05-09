@@ -18,7 +18,6 @@ static const KeyName keynames[] = {
   {SDLK_EXCLAIM,      "!"},
   {SDLK_QUOTEDBL,     "\""},
   {SDLK_HASH,         "#"},
-  {SDLK_PERCENT,      "%"},
   {SDLK_DOLLAR,       "$"},
   {SDLK_AMPERSAND,    "&"},
   {SDLK_QUOTE,        "\'"},
@@ -92,8 +91,6 @@ static const KeyName keynames[] = {
   {SDLK_F10,          "f10"},
   {SDLK_F11,          "f11"},
   {SDLK_F12,          "f12"},
-  {SDLK_PRINTSCREEN,  "printscreen"},
-  {SDLK_SCROLLLOCK,   "scrolllock"},
   {SDLK_PAUSE,        "pause"},
   {SDLK_INSERT,       "insert"},
   {SDLK_HOME,         "home"},
@@ -105,25 +102,35 @@ static const KeyName keynames[] = {
   {SDLK_LEFT,         "left"},
   {SDLK_DOWN,         "down"},
   {SDLK_UP,           "up"},
+  {SDLK_POWER,        "power"},
+  {SDLK_KP_EQUALS,    "kp="},
+  {SDLK_HELP,         "help"},
+  {SDLK_MENU,         "menu"},
+  {SDLK_UNDO,         "undo"},
+  {SDLK_SYSREQ,       "sysreq"},
+  {SDLK_CLEAR,        "clear"},
+  {SDLK_LCTRL,        "lctrl"},
+  {SDLK_LSHIFT,       "lshift"},
+  {SDLK_LALT,         "lalt"},
+  {SDLK_RCTRL,        "rctrl"},
+  {SDLK_RSHIFT,       "rshift"},
+  {SDLK_RALT,         "ralt"},
+  {SDLK_MODE,         "mode"},
+#ifdef EMSCRIPTEN
+  {SDLK_RGUI,         "rgui"},
+  {SDLK_LGUI,         "lgui"},
+  {SDLK_CURRENCYUNIT, "currencyunit"},
   {SDLK_KP_DIVIDE,    "kp/"},
   {SDLK_KP_MULTIPLY,  "kp*"},
   {SDLK_KP_MINUS,     "kp-"},
   {SDLK_KP_PLUS,      "kp+"},
   {SDLK_KP_ENTER,     "kpenter"},
-  {SDLK_KP_1,         "kp1"},
-  {SDLK_KP_2,         "kp2"},
-  {SDLK_KP_3,         "kp3"},
-  {SDLK_KP_4,         "kp4"},
-  {SDLK_KP_5,         "kp5"},
-  {SDLK_KP_6,         "kp6"},
-  {SDLK_KP_7,         "kp7"},
-  {SDLK_KP_8,         "kp8"},
-  {SDLK_KP_9,         "kp9"},
-  {SDLK_KP_0,         "kp0"},
   {SDLK_KP_PERIOD,    "kp."},
+  {SDLK_KP_COMMA,     "kp,"},
+  {SDLK_PERCENT,      "%"},
+  {SDLK_PRINTSCREEN,  "printscreen"},
+  {SDLK_SCROLLLOCK,   "scrolllock"},
   {SDLK_APPLICATION,  "application"},
-  {SDLK_POWER,        "power"},
-  {SDLK_KP_EQUALS,    "kp="},
   {SDLK_F13,          "f13"},
   {SDLK_F14,          "f14"},
   {SDLK_F15,          "f15"},
@@ -136,22 +143,16 @@ static const KeyName keynames[] = {
   {SDLK_F22,          "f22"},
   {SDLK_F23,          "f23"},
   {SDLK_F24,          "f24"},
-  {SDLK_HELP,         "help"},
-  {SDLK_MENU,         "menu"},
-  {SDLK_UNDO,         "undo"},
-  {SDLK_KP_COMMA,     "kp,"},
-  {SDLK_SYSREQ,       "sysreq"},
-  {SDLK_CLEAR,        "clear"},
-  {SDLK_CURRENCYUNIT, "currencyunit"},
-  {SDLK_LCTRL,        "lctrl"},
-  {SDLK_LSHIFT,       "lshift"},
-  {SDLK_LALT,         "lalt"},
-  {SDLK_LGUI,         "lgui"},
-  {SDLK_RCTRL,        "rctrl"},
-  {SDLK_RSHIFT,       "rshift"},
-  {SDLK_RALT,         "ralt"},
-  {SDLK_RGUI,         "rgui"},
-  {SDLK_MODE,         "mode"},
+  {SDLK_KP_1,         "kp1"},
+  {SDLK_KP_2,         "kp2"},
+  {SDLK_KP_3,         "kp3"},
+  {SDLK_KP_4,         "kp4"},
+  {SDLK_KP_5,         "kp5"},
+  {SDLK_KP_6,         "kp6"},
+  {SDLK_KP_7,         "kp7"},
+  {SDLK_KP_8,         "kp8"},
+  {SDLK_KP_9,         "kp9"},
+  {SDLK_KP_0,         "kp0"},
   {SDLK_WWW,          "www"},
   {SDLK_MAIL,         "mail"},
   {SDLK_CALCULATOR,   "calculator"},
@@ -163,6 +164,9 @@ static const KeyName keynames[] = {
   {SDLK_AC_STOP,      "appstop"},
   {SDLK_AC_REFRESH,   "apprefresh"},
   {SDLK_AC_BOOKMARKS, "appbookmarks"},
+#else
+
+#endif
 };
 
 static struct {
@@ -217,12 +221,20 @@ bool keyboard_ispressed(SDL_Keycode key) {
 }
 
 void keyboard_startText(void) {
+#ifdef EMSCRIPTEN
   SDL_StartTextInput();
+#else
+# warning SDL_StartTextInput not available in SDL1.2
+#endif
   moduleData.textActive = true;
 }
 
 void keyboard_stopText(void) {
+#ifdef EMSCRIPTEN
   SDL_StopTextInput();
+#else
+# warning SDL_StopTextInput not available in SDL1.2
+#endif
   moduleData.textActive = false;
 }
 

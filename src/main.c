@@ -1,7 +1,5 @@
 #ifdef EMSCRIPTEN
-#include <emscripten.h>
-#else
-#include <time.h>
+# include <emscripten.h>
 #endif
 #include <stdio.h>
 #include <dirent.h>
@@ -29,21 +27,8 @@
 #include "mouse.h"
 #include "timer/timer.h"
 
-double curtime(void) {
-#ifdef EMSCRIPTEN
-  return emscripten_get_now() / 1000.0;
-#else
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (double)(ts.tv_sec)*1000.0 + (double)(ts.tv_nsec) / 1000000.0;
-#endif
-}
 
 
-int lua_curtime(lua_State *state) {
-  lua_pushnumber(state, curtime());
-  return 1;
-}
 
 
 int lua_errorhandler(lua_State *state) {
@@ -86,7 +71,11 @@ void main_loop(void *data) {
   lua_pushnumber(loopData->luaState, timer_getDelta());
   if(lua_pcall(loopData->luaState, 1, 0, 1)) {
     printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
-    emscripten_force_exit(1);
+    #ifdef EMSCRIPTEN
+      emscripten_force_exit(1);
+    #else
+      exit(1);
+    #endif
   }
 
   lua_pushstring(loopData->luaState, "draw");
@@ -95,7 +84,11 @@ void main_loop(void *data) {
   // TODO use pcall, add error handling
   if(lua_pcall(loopData->luaState, 0, 0, 1)) {
     printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
-    emscripten_force_exit(1);
+    #ifdef EMSCRIPTEN
+      emscripten_force_exit(1);
+    #else
+      exit(1);
+    #endif
   }
 
   graphics_swap();
@@ -127,6 +120,10 @@ void main_loop(void *data) {
       mouse_mousereleased(event.button.x, event.button.y,
       event.button.button);
       break;
+#ifndef EMSCRIPTEN
+    case SDL_QUIT:
+      exit(0);
+#endif
     }
   }
 
@@ -157,7 +154,7 @@ int main() {
   audio_init();
 
 
-  if(luaL_dofile(lua, "/main.lua")) {
+  if(luaL_dofile(lua, "main.lua")) {
     printf("Error: %s\n", lua_tostring(lua, -1));
   }
 
@@ -174,5 +171,11 @@ int main() {
   };
 
   timer_init();
+#ifdef EMSCRIPTEN
   emscripten_set_main_loop_arg(main_loop, &mainLoopData, 0, 1);
+#else
+  for(;;) {
+    main_loop(&mainLoopData);
+  }
+#endif
 }

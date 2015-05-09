@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 // TODO:
 // moduleData.getRelativeMode()
@@ -32,11 +32,13 @@ static const char *buttonStr(int x) {
     case SDL_BUTTON_MIDDLE:
       return "m";
 
+/*
     case SDL_BUTTON_WHEELDOWN:
       return "wd";
 
     case SDL_BUTTON_WHEELUP:
       return "wu";
+*/
   }
   return "?";
 }
@@ -56,7 +58,7 @@ static int buttonEnum(const char *str) {
     case 'm':
       res = SDL_BUTTON_MIDDLE;
       break;
-
+/*
     case 'w':
       str++;
       switch (*str) {
@@ -71,6 +73,8 @@ static int buttonEnum(const char *str) {
           break;
       }
       break;
+*/
+
     default:
       return -1;
   }

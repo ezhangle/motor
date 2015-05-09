@@ -1,4 +1,9 @@
-#include <emscripten.h>
+#ifdef EMSCRIPTEN
+# include <emscripten.h>
+#else
+# define _POSIX_C_SOURCE 200809L
+# include <time.h>
+#endif
 #include "timer.h"
 
 static float const FpsUpdateTimeout = 1.0f;
@@ -11,6 +16,16 @@ static struct {
   float fps;
   int frames;
 } moduleData;
+
+float timer_getTime(void) {
+#ifdef EMSCRIPTEN
+  return emscripten_get_now() / 1000.0f;
+#else
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (double)(ts.tv_sec)*1000.0f + (double)(ts.tv_nsec) / 1000000.0f;
+#endif
+}
 
 void timer_step(void) {
   ++moduleData.frames;
@@ -28,9 +43,6 @@ void timer_step(void) {
   }
 }
 
-float timer_getTime(void) {
-  return emscripten_get_now() / 1000.0f;
-}
 
 float timer_getFPS(void) {
   return moduleData.fps;

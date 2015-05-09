@@ -4,6 +4,10 @@
 #include "shader.h"
 #include "../3rdparty/slre/slre.h"
 
+#ifndef EMSCRIPTEN
+#include <GLES3/gl3.h>
+#endif
+
 static struct {
   graphics_Shader *activeShader;
   graphics_Shader defaultShader;

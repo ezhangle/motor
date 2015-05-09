@@ -105,17 +105,23 @@ sources = [
   '3rdparty/freetype/src/truetype/truetype.c',
 ]
 
-output = 'motor2d.js'
 
 
 SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
+output = 'motor2d.js'
 CFLAGS = '-O{optimize} --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
 LDFLAGS = '-O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
 CC = 'emcc'
 LD = 'emcc'
+
+#output = 'motor2d'
+#CFLAGS = '-I/usr/include/SDL2 -DFT2_BUILD_LIBRARY -Wall -g -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+#LDFLAGS = '-lm -lSDL2 -lGLESv2 -lopenal -lSDL_image -g'.format(optimize=optimize, link_time_optimize=link_time_optimize)
+#CC = 'clang'
+#LD = 'clang'
 
 if SRCDIR == '.' or SRCDIR == '':
   print("Please build out-of-source")

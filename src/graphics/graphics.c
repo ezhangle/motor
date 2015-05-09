@@ -35,7 +35,11 @@ static struct {
 
 void graphics_init(int width, int height) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+  #ifdef EMSCRIPTEN
   moduleData.surface = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
+  #else
+  moduleData.surface = SDL_CreateWindow("motor2d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+  #endif
   glViewport(0,0,width,height);
 
   matrixstack_init();

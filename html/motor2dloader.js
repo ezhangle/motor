@@ -60,7 +60,7 @@
   }
 
   var Module = {
-    preRun: [loadGame],
+    preRun: [memoryprofiler_add_hooks, loadGame],
     postRun: [],
     print: (function() {
       return function(text) {
@@ -72,7 +72,7 @@
       text = Array.prototype.slice.call(arguments).join(' ');
       console.error(text);
     },
-    TOTAL_MEMORY:67108864
+    TOTAL_MEMORY:67108864*2
   };
 
 
