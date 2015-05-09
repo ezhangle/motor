@@ -86,11 +86,7 @@ void audio_updateStreams() {
   for(int i = 0; i < moduleData.playingStreamCount; ++i) {
     audio_StreamSource const* source = moduleData.playingStreams[i];
 
-    extern double curtime();
-    double t1 = curtime();
     source->decoder->preloadSamples(source->decoderData, 8000);
-    double t2 = curtime();
-    //printf("Preloaded for %0.6fs\n", t2 - t1);
 
     ALuint src = source->source;
     ALint count;
@@ -123,6 +119,4 @@ void audio_init() {
   moduleData.playingStreamCount = 0;
   moduleData.playingStreamSize  = 16;
   moduleData.playingStreams     = malloc(sizeof(audio_StreamSource*) * 16);
-
-  audio_vorbis_decoder_init();
 }

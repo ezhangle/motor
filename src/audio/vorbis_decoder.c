@@ -4,10 +4,6 @@
 #include "../3rdparty/stb/stb_vorbis.c"
 #include "audio.h"
 
-static struct {
-  ALshort *streamReadBuffer;
-  int currentStreamReadBufferSize;
-} moduleData;
 
 typedef struct {
   stb_vorbis *vorbis;
@@ -127,11 +123,6 @@ bool audio_vorbis_load(audio_StaticSource *source, char const * filename) {
   free(data);
 
   return true;
-}
-
-void audio_vorbis_decoder_init() {
-  moduleData.currentStreamReadBufferSize = 2 * (44100 + 4096); // Anough space for one second of audio in most cases, including one extra vorbis frame
-  moduleData.streamReadBuffer = malloc(sizeof(ALshort) * moduleData.currentStreamReadBufferSize);
 }
 
 int audio_vorbis_getChannelCount(void *decoderData) {
