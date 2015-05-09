@@ -45,6 +45,7 @@ sources = [
   'math/vector.c',
   'math/minmax.c',
   'math/random.c',
+  'math/randomgenerator.c',
   'main.c',
   'motor.c',
   'mouse.c',

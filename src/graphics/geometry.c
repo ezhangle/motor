@@ -1,6 +1,6 @@
 #include <tgmath.h>
 #include <stdlib.h>
-#include "../math/trig.h"
+#include "../math/util.h"
 #include "geometry.h"
 #include "graphics.h"
 #include "shader.h"
