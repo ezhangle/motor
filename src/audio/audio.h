@@ -16,7 +16,8 @@ typedef struct {
   int  (*getChannelCount)(void *decoderData);
   int  (*getSampleRate)(void *decoderData);
   bool (*closeFile)(void **decoderData);
-  int  (*loadStreamSamples)(void *decoderData, ALuint buffer, int sampleCount);
+  int  (*preloadSamples)(void *decoderData, int sampleCount);
+  int  (*uploadPreloadedSamples)(void *decoderData, ALuint buffer);
 } audio_StreamSourceDecoder;
 
 static int const AUDIO_BUFFERS_PER_STREAM = 8;

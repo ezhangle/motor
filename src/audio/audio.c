@@ -31,23 +31,6 @@ void audio_StaticSource_play(audio_StaticSource const *source) {
   alSourcePlay(source->source);
 }
 
-static void audio_loadStreamSamples(audio_StreamSource const * source, ALuint buffer) {
-  int readSamples = source->decoder->loadStreamSamples(
-    source->decoderData,
-    buffer,
-    8000
-  );
-
-/*
-  alBufferData(
-    buffer,
-    source->channels >= 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
-    source->bufferData,
-    readSamples * sizeof(short),
-    source->sampleRate
-  );
-*/
-}
 
 bool audio_loadStream(audio_StreamSource *source, char const * filename) {
   // TODO select approprate decoder (there only one right now though!)
@@ -75,7 +58,8 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
   source->bufferData = malloc(sizeof(ALshort) * source->bufferSamples);
 
   for(int i = 0; i < 2; ++i) {
-    audio_loadStreamSamples(source, source->buffers[i]);
+    source->decoder->preloadSamples(source->decoderData, 44100);
+    source->decoder->uploadPreloadedSamples(source->decoderData, source->buffers[i]);
   }
 
   return good;
@@ -101,18 +85,29 @@ void audio_StreamSource_play(audio_StreamSource *source) {
 void audio_updateStreams() {
   for(int i = 0; i < moduleData.playingStreamCount; ++i) {
     audio_StreamSource const* source = moduleData.playingStreams[i];
+
+    extern double curtime();
+    double t1 = curtime();
+    source->decoder->preloadSamples(source->decoderData, 8000);
+    double t2 = curtime();
+    //printf("Preloaded for %0.6fs\n", t2 - t1);
+
     ALuint src = source->source;
     ALint count;
+    ALint queued;
+    ALint state;
     alGetSourcei(src, AL_BUFFERS_PROCESSED, &count);
+    alGetSourcei(src, AL_BUFFERS_QUEUED, &queued);
+    alGetSourcei(src, AL_SOURCE_STATE, &state);
+  //  printf("%d buffers free, %d queued, state=%d\n", count, queued, state);
+    if(state == AL_STOPPED) {
+      moduleData.playingStreamCount = 0;
+    }
 
     for(int j = 0; j < count; ++j) {
       ALuint buf;
       alSourceUnqueueBuffers(src, 1, &buf);
-      extern double curtime();
-      double t1 = curtime();
-      audio_loadStreamSamples(source, buf);
-      double t2 = curtime();
-  //    printf("Load time: %0.6fs\n", t2 - t1);
+      source->decoder->uploadPreloadedSamples(source->decoderData, buf);
       alSourceQueueBuffers(src, 1, &buf);
     }
   }
