@@ -171,9 +171,9 @@ static struct {
   bool textActive;
 } moduleData;
 
-void keyboard_startText();
+void keyboard_startText(void);
 
-void keyboard_init() {
+void keyboard_init(void) {
 
   for(int i = 0; i < SDLK_LAST; ++i) {
     moduleData.keynames[i] = "unknown";
@@ -216,17 +216,17 @@ bool keyboard_ispressed(SDL_Keycode key) {
   return moduleData.keystate[key];
 }
 
-void keyboard_startText() {
+void keyboard_startText(void) {
   SDL_StartTextInput();
   moduleData.textActive = true;
 }
 
-void keyboard_stopText() {
+void keyboard_stopText(void) {
   SDL_StopTextInput();
   moduleData.textActive = false;
 }
 
-bool keyboard_isTextEnabled() {
+bool keyboard_isTextEnabled(void) {
   return moduleData.textActive;
 }
 

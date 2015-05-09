@@ -47,7 +47,7 @@ typedef struct {
 
 int graphics_Font_getWrap(graphics_Font * font, char const* line, int width, char **wrapped);
 
-void graphics_font_init();
+void graphics_font_init(void);
 
 int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize);
 

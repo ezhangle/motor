@@ -29,7 +29,7 @@
 #include "mouse.h"
 #include "timer/timer.h"
 
-double curtime() {
+double curtime(void) {
 #ifdef EMSCRIPTEN
   return emscripten_get_now() / 1000.0;
 #else

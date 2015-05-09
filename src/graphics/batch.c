@@ -34,7 +34,7 @@ static void graphics_batch_makeIndexBuffer(int quadCount) {
   moduleData.indexBufferSize = quadCount;
 }
 
-void graphics_batch_init() {
+void graphics_batch_init(void) {
   glGenBuffers(1, &moduleData.sharedIndexBuffer);
   moduleData.sharedIndexBufferData = NULL; 
   moduleData.indexBufferSize = 0;

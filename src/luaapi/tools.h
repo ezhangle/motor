@@ -73,21 +73,21 @@ inline int l_tools_toEnumOrError(lua_State* state, int index, l_tools_Enum const
 void l_tools_pushEnum(lua_State* state, int value, l_tools_Enum const* values);
 
 #define l_checkTypeFn(name, typeMT) \
-bool name(lua_State* state, int index) { \
-  if(lua_type(state, index) != LUA_TUSERDATA) \
-    return 0;                                 \
-  lua_getmetatable(state, index);             \
-  lua_pushstring(state, "type");              \
-  lua_rawget(state, -2);                      \
-  bool matching = lua_tointeger(state, -1) == typeMT; \
-  lua_pop(state, 2);                          \
-  return matching;                          \
-}
+  bool name(lua_State* state, int index) { \
+    if(lua_type(state, index) != LUA_TUSERDATA) \
+      return 0;                                 \
+    lua_getmetatable(state, index);             \
+    lua_pushstring(state, "type");              \
+    lua_rawget(state, -2);                      \
+    bool matching = lua_tointeger(state, -1) == typeMT; \
+    lua_pop(state, 2);                          \
+    return matching;                          \
+  }
 
 #define l_toTypeFn(name, type) \
-type* name(lua_State* state, int index) {\
-  return (type*)lua_touserdata(state, index);\
-}
+  type* name(lua_State* state, int index) {\
+    return (type*)lua_touserdata(state, index);\
+  }
 
 #ifndef MOTOR_SKIP_SAFETY_CHECKS
 // TODO appropriate name

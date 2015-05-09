@@ -13,12 +13,12 @@ inline mat4x4* matrixstack_head() {
   return &moduleData.stack[moduleData.head];
 }
 
-void matrixstack_init() {
+void matrixstack_init(void) {
   moduleData.head = 0;
   m4x4_newIdentity(matrixstack_head());
 }
 
-int matrixstack_push() {
+int matrixstack_push(void) {
   if(moduleData.head == stackSize - 1) {
     return 1;
   }
@@ -28,7 +28,7 @@ int matrixstack_push() {
   return 0;
 }
 
-int matrixstack_pop() {
+int matrixstack_pop(void) {
   if(moduleData.head == 0) {
     return 1;
   }
@@ -45,7 +45,7 @@ void matrixstack_scale(float x, float y) {
   m4x4_scale(matrixstack_head(), x, y, 0.0f);
 }
 
-void matrixstack_origin() {
+void matrixstack_origin(void) {
   m4x4_newIdentity(matrixstack_head());
 }
 

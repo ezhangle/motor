@@ -36,9 +36,9 @@ typedef struct {
   int nextBuffer;
 } audio_StreamSource;
 
-void audio_init();
+void audio_init(void);
 void audio_loadStatic(audio_StaticSource *source, char const * filename);
 bool audio_loadStream(audio_StreamSource *source, char const * filename);
 void audio_StaticSource_play(audio_StaticSource const *source);
 void audio_StreamSource_play(audio_StreamSource *source);
-void audio_updateStreams();
+void audio_updateStreams(void);

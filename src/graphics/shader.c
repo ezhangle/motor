@@ -325,7 +325,7 @@ void graphics_Shader_activate(mat4x4 const* projection, mat4x4 const* transform,
   }
 }
 
-void graphics_setDefaultShader() {
+void graphics_setDefaultShader(void) {
   moduleData.activeShader = &moduleData.defaultShader;
 }
 
@@ -333,11 +333,11 @@ void graphics_setShader(graphics_Shader* shader) {
   moduleData.activeShader = shader;
 }
 
-graphics_Shader* graphics_getShader() {
+graphics_Shader* graphics_getShader(void) {
   return moduleData.activeShader;
 }
 
-void graphics_shader_init() {
+void graphics_shader_init(void) {
   graphics_Shader_new(&moduleData.defaultShader, NULL, NULL);
   moduleData.activeShader = &moduleData.defaultShader;
   glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &moduleData.maxTextureUnits);

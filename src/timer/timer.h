@@ -1,9 +1,9 @@
 #pragma once
 
-void timer_step();
-float timer_getTime();
-float timer_getFPS();
-float timer_getDelta();
-float timer_getAverageDelta();
-void timer_init();
+void timer_step(void);
+float timer_getTime(void);
+float timer_getFPS(void);
+float timer_getDelta(void);
+float timer_getAverageDelta(void);
+void timer_init(void);
 

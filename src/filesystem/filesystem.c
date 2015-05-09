@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void filesystem_init() {
+void filesystem_init(void) {
 
 }
 

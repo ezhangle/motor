@@ -24,7 +24,7 @@ typedef struct {
 } graphics_Image;
 
 
-void graphics_image_init();
+void graphics_image_init(void);
 void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData *data);
 void graphics_Image_new(graphics_Image *dst);
 void graphics_Image_free(graphics_Image *obj);

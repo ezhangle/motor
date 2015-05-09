@@ -79,11 +79,11 @@ void graphics_setColor(float red, float green, float blue, float alpha) {
   moduleData.foregroundColor.alpha = alpha;
 }
 
-void graphics_clear() {
+void graphics_clear(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void graphics_swap() {
+void graphics_swap(void) {
   SDL_GL_SwapBuffers();
 }
 
@@ -107,19 +107,19 @@ void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint va
   glDrawElements(type, count, indexType, 0);
 }
 
-int graphics_getWidth() {
+int graphics_getWidth(void) {
   return moduleData.surface->w;
 }
 
-int graphics_getHeight() {
+int graphics_getHeight(void) {
   return moduleData.surface->h;
 }
 
-float* graphics_getColor() {
+float* graphics_getColor(void) {
   return (float*)(&moduleData.foregroundColor);
 }
 
-float* graphics_getBackgroundColor() {
+float* graphics_getBackgroundColor(void) {
   return (float*)(&moduleData.backgroundColor);
 }
 
@@ -139,7 +139,7 @@ void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a) {
   *a = moduleData.colorMask[3];
 }
 
-graphics_BlendMode graphics_getBlendMode() {
+graphics_BlendMode graphics_getBlendMode(void) {
   return moduleData.blendMode;
 }
 
@@ -193,7 +193,7 @@ void graphics_setBlendMode(graphics_BlendMode mode) {
   glBlendEquation(bFunc);
 }
 
-void graphics_clearScissor() {
+void graphics_clearScissor(void) {
   moduleData.scissorSet = false;
   glDisable(GL_SCISSOR_TEST);
 }
@@ -221,7 +221,7 @@ bool graphics_getScissor(int *x, int *y, int *w, int *h) {
   return true;
 }
 
-void graphics_reset() {
+void graphics_reset(void) {
   matrixstack_origin();
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
   graphics_setBackgroundColor(0.0f, 0.0f, 0.0f, 1.0f);

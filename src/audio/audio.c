@@ -82,7 +82,7 @@ void audio_StreamSource_play(audio_StreamSource *source) {
   alSourcePlay(source->source);
 }
 
-void audio_updateStreams() {
+void audio_updateStreams(void) {
   for(int i = 0; i < moduleData.playingStreamCount; ++i) {
     audio_StreamSource const* source = moduleData.playingStreams[i];
 
@@ -109,7 +109,7 @@ void audio_updateStreams() {
   }
 }
 
-void audio_init() {
+void audio_init(void) {
   moduleData.device = alcOpenDevice(0);
   moduleData.context = alcCreateContext(moduleData.device, 0);
   if(!alcMakeContextCurrent(moduleData.context)) {

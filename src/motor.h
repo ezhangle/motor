@@ -7,4 +7,4 @@ typedef struct {
   char const * codename;
 } motor_Version;
 
-motor_Version const * motor_getVersion();
+motor_Version const * motor_getVersion(void);

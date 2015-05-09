@@ -12,7 +12,7 @@ static struct {
   int frames;
 } moduleData;
 
-void timer_step() {
+void timer_step(void) {
   ++moduleData.frames;
 
   float last = moduleData.currentTime;
@@ -28,19 +28,19 @@ void timer_step() {
   }
 }
 
-float timer_getTime() {
+float timer_getTime(void) {
   return emscripten_get_now() / 1000.0f;
 }
 
-float timer_getFPS() {
+float timer_getFPS(void) {
   return moduleData.fps;
 }
 
-float timer_getDelta() {
+float timer_getDelta(void) {
   return moduleData.deltaTime;
 }
 
-float timer_getAverageDelta() {
+float timer_getAverageDelta(void) {
   return moduleData.averageDeltaTime;
 }
 

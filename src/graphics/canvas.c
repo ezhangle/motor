@@ -62,6 +62,6 @@ void graphics_canvas_init(int width, int height) {
   moduleData.canvas = &moduleData.defaultCanvas;
 }
 
-graphics_Canvas const* graphics_getCanvas() {
+graphics_Canvas const* graphics_getCanvas(void) {
   return moduleData.canvas;
 }

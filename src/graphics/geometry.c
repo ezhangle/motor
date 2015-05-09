@@ -18,7 +18,7 @@ static struct {
   graphics_LineJoin join;
 } moduleData;
 
-void graphics_geometry_init() {
+void graphics_geometry_init(void) {
   glGenVertexArrays(1, &moduleData.dataVAO);
   glBindVertexArray(moduleData.dataVAO);
   glGenBuffers(1, &moduleData.dataIBO);
@@ -350,7 +350,7 @@ void graphics_geometry_drawLines(int vertexCount, float const* vertices) {
 
 }
 
-float graphics_geometry_getLineWidth() {
+float graphics_geometry_getLineWidth(void) {
   return moduleData.lineWidth;
 }
 

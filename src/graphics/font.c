@@ -414,7 +414,7 @@ exitPreparation:
   graphics_setShader(shader);
 }
 
-void graphics_font_init() {
+void graphics_font_init(void) {
   // TODO use error
   int error = FT_Init_FreeType(&moduleData.ft);
   (void)error;

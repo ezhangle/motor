@@ -19,5 +19,5 @@ void graphics_Canvas_draw(graphics_Canvas const* canvas, graphics_Quad const* qu
                          float x, float y, float r, float sx, float sy,
                          float ox, float oy, float kx, float ky);
 void graphics_setCanvas(graphics_Canvas const* canvas);
-graphics_Canvas const* graphics_getCanvas();
+graphics_Canvas const* graphics_getCanvas(void);
 void graphics_canvas_init(int width, int height);

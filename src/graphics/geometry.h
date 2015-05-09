@@ -13,7 +13,7 @@ typedef enum {
   graphics_LineJoin_bevel
 } graphics_LineJoin;
 
-void graphics_geometry_init();
+void graphics_geometry_init(void);
 
 void graphics_geometry_fillRectangle(float x, float y, float w, float h);
 void graphics_geometry_drawRectangle(float x, float y, float w, float h);
@@ -26,5 +26,5 @@ void graphics_geometry_drawLines(int vertexCount, float const* vertices);
 void graphics_geometry_setLineJoin(graphics_LineJoin join);
 graphics_LineJoin graphics_geometry_getLineJoin();
 
-float graphics_geometry_getLineWidth();
+float graphics_geometry_getLineWidth(void);
 void  graphics_geometry_setLineWidth(float width);

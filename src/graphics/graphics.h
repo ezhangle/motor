@@ -21,18 +21,18 @@ typedef enum {
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha);
 void graphics_setColor(float red, float green, float blue, float alpha);
-float* graphics_getColor();
-float* graphics_getBackgroundColor();
-void graphics_clear();
-void graphics_swap();
+float* graphics_getColor(void);
+float* graphics_getBackgroundColor(void);
+void graphics_clear(void);
+void graphics_swap(void);
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const * useColor, float ws, float hs);
-int graphics_getWidth();
-int graphics_getHeight();
+int graphics_getWidth(void);
+int graphics_getHeight(void);
 void graphics_setColorMask(bool r, bool g, bool b, bool a);
 void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a);
 graphics_BlendMode graphics_getBlendMode();
 void graphics_setBlendMode(graphics_BlendMode mode);
-void graphics_clearScissor();
+void graphics_clearScissor(void);
 void graphics_setScissor(int x, int y, int w, int h);
 bool graphics_getScissor(int *x, int *y, int *w, int *h);
-void graphics_reset();
+void graphics_reset(void);

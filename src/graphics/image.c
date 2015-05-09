@@ -10,7 +10,7 @@ static struct {
   GLuint imageVAO;
 } moduleData;
 
-void graphics_image_init() {
+void graphics_image_init(void) {
   glGenVertexArrays(1, &moduleData.imageVAO);
   glBindVertexArray(moduleData.imageVAO);
   glGenBuffers(1, &moduleData.imageVBO);
