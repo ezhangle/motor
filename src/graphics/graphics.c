@@ -19,6 +19,10 @@ typedef struct {
 } graphics_Color;
 
 static struct {
+#ifndef EMSCRIPTEN
+  SDL_Window* window;
+  SDL_GLContext context;
+#endif
   SDL_Surface* surface;
   graphics_Color backgroundColor;
   graphics_Color foregroundColor;
@@ -33,13 +37,26 @@ static struct {
   GLuint polygonVAO;
 } moduleData;
 
+#ifndef EMSCRIPTEN
+  SDL_Window* graphics_getWindow(void) {
+    return moduleData.window;
+  }
+#endif
+
 void graphics_init(int width, int height) {
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+  SDL_Init(SDL_INIT_VIDEO);
   #ifdef EMSCRIPTEN
-  moduleData.surface = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
+    moduleData.surface = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
   #else
-  moduleData.surface = SDL_CreateWindow("motor2d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    moduleData.window = SDL_CreateWindow("motor2d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+    moduleData.context = SDL_GL_CreateContext(moduleData.window);
+
+    moduleData.surface = SDL_GetWindowSurface(moduleData.window);
   #endif
+
   glViewport(0,0,width,height);
 
   matrixstack_init();
@@ -88,7 +105,11 @@ void graphics_clear(void) {
 }
 
 void graphics_swap(void) {
+#ifdef EMSCRIPTEN
   SDL_GL_SwapBuffers();
+#else
+  SDL_GL_SwapWindow(moduleData.window);
+#endif
 }
 
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor, float ws, float hs) {

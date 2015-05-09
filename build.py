@@ -111,17 +111,12 @@ SRCDIR = os.path.dirname(sys.argv[0]) + "/src"
 
 ftinc = " ".join(map(lambda x: "-I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/src/" + x, ["truetype", "sfnt", "autofit", "smooth", "raster", "psaux", "psnames"])) + " -I" + os.path.relpath(SRCDIR) + "/3rdparty/freetype/include"
 
-output = 'motor2d.js'
-CFLAGS = '-O{optimize} --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-LDFLAGS = '-O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
-CC = 'emcc'
-LD = 'emcc'
+output = ''
+CFLAGS = ''
+LDFLAGS = ''
+CC = ''
+LD = ''
 
-#output = 'motor2d'
-#CFLAGS = '-I/usr/include/SDL2 -DFT2_BUILD_LIBRARY -Wall -g -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-#LDFLAGS = '-lm -lSDL2 -lGLESv2 -lopenal -lSDL_image -g'.format(optimize=optimize, link_time_optimize=link_time_optimize)
-#CC = 'clang'
-#LD = 'clang'
 
 if SRCDIR == '.' or SRCDIR == '':
   print("Please build out-of-source")
@@ -192,6 +187,20 @@ def compile(filename):
   return os.system(cmd) == 0
 
 def build():
+  global output, CFLAGS, LDFLAGS, CC, LD
+  if '--native' in sys.argv:
+    output = 'motor2d'
+    CFLAGS = '-O{optimize} -I/usr/include/SDL2 -DFT2_BUILD_LIBRARY -Wall -g -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+    LDFLAGS = '-lm -lSDL2 -lGLESv2 -lopenal -lSDL2_image -g'.format(optimize=optimize, link_time_optimize=link_time_optimize)
+    CC = 'clang'
+    LD = 'clang'
+  else:
+    output = 'motor2d.js'
+    CFLAGS = '-O{optimize} --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+    LDFLAGS = '-O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
+    CC = 'emcc'
+    LD = 'emcc'
+
   needsLinking = False
   fontChanged = makeFontFile()
   needsLinking = needsLinking or fontChanged
@@ -212,6 +221,9 @@ def build():
       print("Failed")
 
 def buildLoader():
+  if '--native' in sys.argv:
+    print("Cannot build native version of JS loader, you won't need one!")
+
   closure = os.path.join(os.path.dirname(os.path.realpath(shutil.which("emcc"))), "third_party", "closure-compiler", "compiler.jar")
   if not os.path.exists(closure):
     closure = shutil.which('closure-compiler')
@@ -236,16 +248,26 @@ def clean():
   for i in sources:
     remove(getObjFilename(i))
 
-  remove(output)
+  remove('motor2d.js')
+  remove('motor2d')
 
-  if extra_output:
+  try:
     for i in extra_output:
-      remove(extra_output)
+      remove(i)
+  except NameError:
+    pass
 
+def usage():
+  print(sys.argv[0] + " (build|buildloader|clean) [--native]")
+  print("  Verbs:")
+  print("    build         build motor2d executable")
+  print("    buildloader   build the JavaScript loader for engine and data")
+  print("    clean         delete intermediate files and final executable (doesn't clean loader)")
+  print("  Flags:")
+  print("    --native      build native executable (not supported for buildloader)")
 
 if len(sys.argv) == 1:
-  build()
-  buildLoader()
+  usage()
 elif sys.argv[1] == 'build':
   build()
 elif sys.argv[1] == 'buildloader':

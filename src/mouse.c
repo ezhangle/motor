@@ -12,6 +12,9 @@
 // moduleData.setGrabbed()
 // moduleData.setRelativeMode()
 
+#ifndef EMSCRIPTEN
+extern SDL_Window* graphics_getWindow(void);
+#endif
 
 static struct {
   int x, y;
@@ -149,7 +152,11 @@ int mouse_getY(void) {
 
 
 void mouse_setPosition(int x, int y) {
+#ifdef EMSCRIPTEN
   SDL_WarpMouse(x, y);
+#else
+  SDL_WarpMouseInWindow(graphics_getWindow(), x, y);
+#endif
 }
 
 
@@ -160,10 +167,18 @@ void mouse_setVisible(int b) {
 
 
 void mouse_setX(int x) {
+#ifdef EMSCRIPTEN
   SDL_WarpMouse(x, moduleData.y);
+#else
+  SDL_WarpMouseInWindow(graphics_getWindow(), x, moduleData.y);
+#endif
 }
 
 
 void mouse_setY(int y) {
+#ifdef EMSCRIPTEN
   SDL_WarpMouse(moduleData.x, y);
+#else
+  SDL_WarpMouseInWindow(graphics_getWindow(), moduleData.x, y);
+#endif
 }

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "keyboard.h"
@@ -116,7 +117,6 @@ static const KeyName keynames[] = {
   {SDLK_RSHIFT,       "rshift"},
   {SDLK_RALT,         "ralt"},
   {SDLK_MODE,         "mode"},
-#ifdef EMSCRIPTEN
   {SDLK_RGUI,         "rgui"},
   {SDLK_LGUI,         "lgui"},
   {SDLK_CURRENCYUNIT, "currencyunit"},
@@ -164,40 +164,56 @@ static const KeyName keynames[] = {
   {SDLK_AC_STOP,      "appstop"},
   {SDLK_AC_REFRESH,   "apprefresh"},
   {SDLK_AC_BOOKMARKS, "appbookmarks"},
-#else
-
-#endif
 };
 
 static struct {
-  char const * keynames[SDLK_LAST];
-  bool keystate[SDLK_LAST];
+  char const **keynames;
+  bool *keystate;
   bool textActive;
+  int maxKey;
 } moduleData;
 
 void keyboard_startText(void);
 
-void keyboard_init(void) {
+static int normalizeKeyCode(int key) {
+  if(key & 0x40000000) {
+    key = (key & 0x3ff) | 0x400;
+  }
+  return key;
+}
 
-  for(int i = 0; i < SDLK_LAST; ++i) {
+void keyboard_init(void) {
+  // TODO This is dirty hack and needs to be cleaned. I'm too tired right now to do it though.
+  moduleData.maxKey = 0;
+  for(int i = 0; i < sizeof(keynames) / sizeof(KeyName); ++i) {
+    int key = normalizeKeyCode(keynames[i].keycode);
+    if(key > moduleData.maxKey) {
+      moduleData.maxKey = key;
+    }
+  }
+
+  moduleData.keynames = malloc(moduleData.maxKey * sizeof(char*));
+  moduleData.keystate = malloc(moduleData.maxKey * sizeof(bool));
+
+  for(int i = 0; i < moduleData.maxKey; ++i) {
     moduleData.keynames[i] = "unknown";
   }
 
   for(int i = 0; i < sizeof(keynames) / sizeof(KeyName); ++i) {
-    moduleData.keynames[keynames[i].keycode] = keynames[i].name;
+    moduleData.keynames[normalizeKeyCode(keynames[i].keycode)] = keynames[i].name;
   }
 
-  memset(&moduleData.keystate, 0, sizeof(moduleData.keystate));
+  memset(moduleData.keystate, 0, sizeof(bool) * moduleData.maxKey);
   keyboard_startText();
 }
 
 char const * keyboard_getKeyName(SDL_Keycode key) {
-  return moduleData.keynames[key];
+  return moduleData.keynames[normalizeKeyCode(key)];
 }
 
 SDL_Keycode keyboard_getKeycode(char const* name) {
   // TODO this is really slow. use appropriate data structure
-  for(int i = 0; i < SDLK_LAST; ++i) {
+  for(int i = 0; i < moduleData.maxKey; ++i) {
     if(!strcmp(name, keynames[i].name)) {
       return keynames[i].keycode;
     }
@@ -206,35 +222,29 @@ SDL_Keycode keyboard_getKeycode(char const* name) {
 }
 
 void keyboard_keypressed(SDL_Keycode key) {
-  bool repeat = moduleData.keystate[key];
-  moduleData.keystate[key] = true;
-  l_keyboard_keypressed(key, repeat);
+  int nk = normalizeKeyCode(key);
+  bool repeat = moduleData.keystate[nk];
+  moduleData.keystate[nk] = true;
+  l_keyboard_keypressed(nk, repeat);
 }
 
 void keyboard_keyreleased(SDL_Keycode key) {
-  moduleData.keystate[key] = false;
-  l_keyboard_keyreleased(key);
+  int nk = normalizeKeyCode(key);
+  moduleData.keystate[nk] = false;
+  l_keyboard_keyreleased(nk);
 }
 
 bool keyboard_ispressed(SDL_Keycode key) {
-  return moduleData.keystate[key];
+  return moduleData.keystate[normalizeKeyCode(key)];
 }
 
 void keyboard_startText(void) {
-#ifdef EMSCRIPTEN
   SDL_StartTextInput();
-#else
-# warning SDL_StartTextInput not available in SDL1.2
-#endif
   moduleData.textActive = true;
 }
 
 void keyboard_stopText(void) {
-#ifdef EMSCRIPTEN
   SDL_StopTextInput();
-#else
-# warning SDL_StopTextInput not available in SDL1.2
-#endif
   moduleData.textActive = false;
 }
 
