@@ -1,4 +1,7 @@
 #include "gltools.h"
+#ifndef EMSCRIPTEN
+# include <SDL_opengles2.h>
+#endif
 
 
 void graphics_Texture_setFilter(GLuint texID, graphics_Filter const* filter) {
@@ -41,6 +44,7 @@ void graphics_Texture_setFilter(GLuint texID, graphics_Filter const* filter) {
       }
     }
     glGenerateMipmap(GL_TEXTURE_2D);
+
   }
 
   int magFilter = (filter->magMode == graphics_FilterMode_linear) ? GL_LINEAR : GL_NEAREST;
