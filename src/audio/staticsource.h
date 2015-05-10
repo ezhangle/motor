@@ -5,7 +5,6 @@
 
 
 typedef struct {
-  int channels;
   ALuint source;
   ALuint buffer;
 } audio_StaticSource;
