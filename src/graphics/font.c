@@ -176,6 +176,7 @@ int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
 
   memset(&dst->glyphs, 0, sizeof(graphics_GlyphMap));
   int sizeIdx = TextureSizeCount - 1;
+  dst->height = dst->face->size->metrics.height >> 6;
   int estArea = dst->height * dst->height * 80;
   for(int i = 0; i < TextureSizeCount; ++i) {
     if(estArea <= TextureWidths[i] * TextureHeights[i]) {
@@ -189,7 +190,6 @@ int graphics_Font_new(graphics_Font *dst, char const* filename, int ptsize) {
 
   graphics_GlyphMap_newTexture(&dst->glyphs);
 
-  dst->height = dst->face->size->metrics.height >> 6;
   dst->ascent = dst->face->size->metrics.ascender >> 6;
   dst->descent = dst->face->size->metrics.descender >> 6;
   dst->lineHeight = 1.0f;
