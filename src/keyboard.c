@@ -9,6 +9,11 @@ typedef struct {
   char const * name;
 } KeyName;
 
+// Not all SDL2 keycodes supported in Love2d and SDL2 decided to pack the
+// keycodes into two sets: printable and non-printable keys. Problem is, they
+// decided to put all non-printable ones above 0x40000000 so we have to
+// normalize a bit to make sure we can put them into a single array.
+
 static const KeyName keynames[] = {
   {SDLK_UNKNOWN,      "unknown"},
   {SDLK_RETURN,       "return"},
@@ -170,32 +175,33 @@ static struct {
   char const **keynames;
   bool *keystate;
   bool textActive;
-  int maxKey;
+  int numKeys;
 } moduleData;
 
 void keyboard_startText(void);
 
 static int normalizeKeyCode(int key) {
   if(key & 0x40000000) {
-    key = (key & 0x3ff) | 0x400;
+    key = (key & 0x3ff) | 0x200;
   }
   return key;
 }
 
 void keyboard_init(void) {
   // TODO This is dirty hack and needs to be cleaned. I'm too tired right now to do it though.
-  moduleData.maxKey = 0;
+  moduleData.numKeys = 0;
   for(int i = 0; i < sizeof(keynames) / sizeof(KeyName); ++i) {
     int key = normalizeKeyCode(keynames[i].keycode);
-    if(key > moduleData.maxKey) {
-      moduleData.maxKey = key;
+    if(key > moduleData.numKeys) {
+      moduleData.numKeys = key;
     }
   }
+  ++moduleData.numKeys;
 
-  moduleData.keynames = malloc(moduleData.maxKey * sizeof(char*));
-  moduleData.keystate = malloc(moduleData.maxKey * sizeof(bool));
+  moduleData.keynames = malloc(moduleData.numKeys * sizeof(char*));
+  moduleData.keystate = malloc(moduleData.numKeys * sizeof(bool));
 
-  for(int i = 0; i < moduleData.maxKey; ++i) {
+  for(int i = 0; i < moduleData.numKeys; ++i) {
     moduleData.keynames[i] = "unknown";
   }
 
@@ -203,7 +209,7 @@ void keyboard_init(void) {
     moduleData.keynames[normalizeKeyCode(keynames[i].keycode)] = keynames[i].name;
   }
 
-  memset(moduleData.keystate, 0, sizeof(bool) * moduleData.maxKey);
+  memset(moduleData.keystate, 0, sizeof(bool) * moduleData.numKeys);
   keyboard_startText();
 }
 
@@ -213,7 +219,7 @@ char const * keyboard_getKeyName(SDL_Keycode key) {
 
 SDL_Keycode keyboard_getKeycode(char const* name) {
   // TODO this is really slow. use appropriate data structure
-  for(int i = 0; i < moduleData.maxKey; ++i) {
+  for(int i = 0; i < moduleData.numKeys; ++i) {
     if(!strcmp(name, keynames[i].name)) {
       return keynames[i].keycode;
     }
@@ -223,19 +229,24 @@ SDL_Keycode keyboard_getKeycode(char const* name) {
 
 void keyboard_keypressed(SDL_Keycode key) {
   int nk = normalizeKeyCode(key);
-  bool repeat = moduleData.keystate[nk];
-  moduleData.keystate[nk] = true;
-  l_keyboard_keypressed(nk, repeat);
+  if(nk < moduleData.numKeys) {
+    bool repeat = moduleData.keystate[nk];
+    moduleData.keystate[nk] = true;
+    l_keyboard_keypressed(nk, repeat);
+  }
 }
 
 void keyboard_keyreleased(SDL_Keycode key) {
   int nk = normalizeKeyCode(key);
-  moduleData.keystate[nk] = false;
-  l_keyboard_keyreleased(nk);
+  if(nk < moduleData.numKeys) {
+    moduleData.keystate[nk] = false;
+    l_keyboard_keyreleased(nk);
+  }
 }
 
 bool keyboard_ispressed(SDL_Keycode key) {
-  return moduleData.keystate[normalizeKeyCode(key)];
+  int nk = normalizeKeyCode(key);
+  return nk < moduleData.numKeys && moduleData.keystate[nk];
 }
 
 void keyboard_startText(void) {
