@@ -1,8 +1,7 @@
-#include "vorbis_decoder.h"
 #include <AL/al.h>
 #include <alloca.h>
 #include "../3rdparty/stb/stb_vorbis.c"
-#include "audio.h"
+#include "decoder.h"
 
 
 typedef struct {
@@ -96,7 +95,7 @@ int audio_vorbis_uploadPreloadedStreamSamples(void *decoderData, ALuint buffer) 
 
 
 
-bool audio_vorbis_load(audio_StaticSource *source, char const * filename) {
+bool audio_vorbis_load(ALuint buffer, char const *filename) {
   short *data;
   int channels;
   int samplingrate;
@@ -106,19 +105,7 @@ bool audio_vorbis_load(audio_StaticSource *source, char const * filename) {
     return false;
   }
 
-  alGenSources(1, &source->source);
-
-  alSourcef(source->source, AL_PITCH, 1);
-  alSourcef(source->source, AL_GAIN, 1);
-  alSource3f(source->source, AL_POSITION, 0, 0, 0);
-  alSource3f(source->source, AL_VELOCITY, 0, 0, 0);
-  alSourcei(source->source, AL_LOOPING, AL_FALSE);
-
-  alGenBuffers(1, &source->buffer);
-
-  alBufferData(source->buffer, channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data, len * sizeof(short), samplingrate);
-
-  alSourcei(source->source, AL_BUFFER, source->buffer);
+  alBufferData(buffer, channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data, len * sizeof(short), samplingrate);
 
   free(data);
 
@@ -143,4 +130,9 @@ audio_StreamSourceDecoder audio_vorbis_decoder = {
   .closeFile         = NULL,
   .preloadSamples    = audio_vorbis_preloadStreamSamples,
   .uploadPreloadedSamples = audio_vorbis_uploadPreloadedStreamSamples
+};
+
+audio_StaticSourceDecoder audio_vorbis_static_decoder = {
+  .testFile = NULL,
+  .loadFile = audio_vorbis_load
 };

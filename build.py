@@ -10,6 +10,8 @@ link_time_optimize = 3
 
 sources = [
   'audio/audio.c',
+  'audio/staticsource.c',
+  'audio/streamsource.c',
   'audio/vorbis_decoder.c',
   'filesystem/filesystem.c',
   'graphics/batch.c',
