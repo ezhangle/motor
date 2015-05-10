@@ -31,13 +31,6 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
   alSourcei( source->source, AL_LOOPING,  AL_FALSE);
 
   alGenBuffers(2, source->buffers);
-  source->nextBuffer = 0;
-
-  source->channels   = source->decoder->getChannelCount(source->decoderData);
-  source->sampleRate = source->decoder->getSampleRate(source->decoderData);
-  source->bufferSamples = source->channels * source->sampleRate / 2;
-
-  source->bufferData = malloc(sizeof(ALshort) * source->bufferSamples);
 
   for(int i = 0; i < 2; ++i) {
     source->decoder->preloadSamples(source->decoderData, 44100);
