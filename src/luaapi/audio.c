@@ -72,8 +72,32 @@ static int l_audio_Source_play(lua_State *state) {
   return 0;
 }
 
+static int l_audio_source_setLooping(lua_State *state) {
+  l_assertType(state, 1, l_audio_isSource); 
+  audio_SourceType *type = lua_touserdata(state, 1);
+  bool loop = l_tools_toBooleanOrError(state, 2);
+  switch(*type) {
+  case audio_SourceType_static:
+    {
+      l_audio_StaticSource *src = (l_audio_StaticSource*)type;
+      audio_StaticSource_setLooping(&src->source, loop);
+      break;
+    }
+
+  case audio_SourceType_stream:
+    {
+      l_audio_StreamSource *src = (l_audio_StreamSource*)type;
+      audio_StreamSource_setLooping(&src->source, loop);
+      break;
+    }
+  }
+
+  return 0;
+}
+
 static luaL_Reg const sourceMetatableFuncs[] = {
   {"play", l_audio_Source_play},
+  {"setLooping", l_audio_source_setLooping},
   {NULL, NULL}
 };
 

@@ -41,11 +41,9 @@ int audio_vorbis_preloadStreamSamples(void* decoderData, int sampleCount) {
   }
 
   int space = data->readBufferSize - data->preloadedSamples - 4096;
-  #if 0
   if(space <= 0) {
-    printf("Buffer already 100%% filled, no need to read more\n");
+    return -1;
   }
-  #endif
 
   if(space < sampleCount) {
     sampleCount = space;
@@ -55,6 +53,9 @@ int audio_vorbis_preloadStreamSamples(void* decoderData, int sampleCount) {
   while(readSamples < sampleCount) {
     float **channelData;
     int samples = stb_vorbis_get_frame_float(data->vorbis, NULL, &channelData);
+    if(samples == 0) {
+      break;
+    }
     for(int i = 0; i < samples; ++i) {
       for(int c = 0; c < channels; ++c) {
         data->readBuffer[data->preloadedSamples + readSamples + channels * i + c] = (ALshort)(channelData[c][i] * 0x7FFF);
@@ -65,7 +66,6 @@ int audio_vorbis_preloadStreamSamples(void* decoderData, int sampleCount) {
   }
 
   data->preloadedSamples += readSamples;
-  //printf("Preloaded %d samples, buffered: %d samples\n", readSamples, data->preloadedSamples);
 
   return readSamples;
 }
@@ -105,11 +105,16 @@ bool audio_vorbis_load(ALuint buffer, char const *filename) {
     return false;
   }
 
-  alBufferData(buffer, channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data, len * sizeof(short), samplingrate);
+  alBufferData(buffer, channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data, len * sizeof(short) * channels, samplingrate);
 
   free(data);
 
   return true;
+}
+
+void audio_vorbis_rewindStream(void *decoderData) {
+  audio_vorbis_DecoderData * data = (audio_vorbis_DecoderData*)decoderData;
+  stb_vorbis_seek_start(data->vorbis);
 }
 
 int audio_vorbis_getChannelCount(void *decoderData) {
@@ -128,6 +133,7 @@ audio_StreamSourceDecoder audio_vorbis_decoder = {
   .getSampleRate     = audio_vorbis_getSampleRate,
   .openFile          = audio_vorbis_openStream,
   .closeFile         = NULL,
+  .rewind            = audio_vorbis_rewindStream,
   .preloadSamples    = audio_vorbis_preloadStreamSamples,
   .uploadPreloadedSamples = audio_vorbis_uploadPreloadedStreamSamples
 };

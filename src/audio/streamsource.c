@@ -37,6 +37,8 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
     source->decoder->uploadPreloadedSamples(source->decoderData, source->buffers[i]);
   }
 
+  source->looping = false;
+
   return good;
 }
 
@@ -61,7 +63,11 @@ void audio_updateStreams(void) {
   for(int i = 0; i < moduleData.playingStreamCount; ++i) {
     audio_StreamSource const* source = moduleData.playingStreams[i];
 
-    source->decoder->preloadSamples(source->decoderData, 8000);
+    int loaded = source->decoder->preloadSamples(source->decoderData, 8000);
+    if(loaded == 0) {
+      // We don't read anything in this frame, just let it continue next frame
+      source->decoder->rewind(source->decoderData);
+    }
 
     ALuint src = source->source;
     ALint count;
@@ -84,6 +90,9 @@ void audio_updateStreams(void) {
   }
 }
 
+void audio_StreamSource_setLooping(audio_StreamSource *source, bool loop) {
+  source->looping = loop;
+}
 
 void audio_streamsource_init(void) {
   moduleData.playingStreamCount = 0;

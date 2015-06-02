@@ -28,3 +28,7 @@ void audio_loadStatic(audio_StaticSource *source, char const * filename) {
 void audio_StaticSource_play(audio_StaticSource const *source) {
   alSourcePlay(source->source);
 }
+
+void audio_StaticSource_setLooping(audio_StaticSource *source, bool loop) {
+  alSourcei(source->source, AL_LOOPING, loop);
+}
