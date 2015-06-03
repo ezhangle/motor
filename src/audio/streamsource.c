@@ -60,13 +60,16 @@ void audio_StreamSource_play(audio_StreamSource *source) {
 }
 
 void audio_updateStreams(void) {
-  for(int i = 0; i < moduleData.playingStreamCount; ++i) {
+  for(int i = 0; i < moduleData.playingStreamCount;) {
     audio_StreamSource const* source = moduleData.playingStreams[i];
 
     int loaded = source->decoder->preloadSamples(source->decoderData, 8000);
     if(loaded == 0) {
-      // We don't read anything in this frame, just let it continue next frame
-      source->decoder->rewind(source->decoderData);
+      if(source->looping) {
+        source->decoder->rewind(source->decoderData);
+      } else {
+        
+      }
     }
 
     ALuint src = source->source;
@@ -77,15 +80,24 @@ void audio_updateStreams(void) {
     alGetSourcei(src, AL_BUFFERS_QUEUED, &queued);
     alGetSourcei(src, AL_SOURCE_STATE, &state);
   //  printf("%d buffers free, %d queued, state=%d\n", count, queued, state);
-    if(state == AL_STOPPED) {
-      moduleData.playingStreamCount = 0;
-    }
 
     for(int j = 0; j < count; ++j) {
       ALuint buf;
       alSourceUnqueueBuffers(src, 1, &buf);
-      source->decoder->uploadPreloadedSamples(source->decoderData, buf);
-      alSourceQueueBuffers(src, 1, &buf);
+      // This may cause preloading two full frames
+      
+      int uploaded = source->decoder->uploadPreloadedSamples(source->decoderData, buf);
+      if(uploaded) {
+        alSourceQueueBuffers(src, 1, &buf);
+      }
+    }
+
+    alGetSourcei(src, AL_BUFFERS_QUEUED, &queued);
+    if(state == AL_STOPPED && queued == 0) {
+      --moduleData.playingStreamCount;
+      moduleData.playingStreams[i] = moduleData.playingStreams[moduleData.playingStreamCount];
+    } else {
+      ++i;
     }
   }
 }

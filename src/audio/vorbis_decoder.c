@@ -9,6 +9,7 @@ typedef struct {
   ALshort    *readBuffer;
   int         readBufferSize;
   int         preloadedSamples;
+  bool        atEnd;
 } audio_vorbis_DecoderData;
 
 bool audio_vorbis_openStream(char const * filename, void **decoderData) {
@@ -21,6 +22,7 @@ bool audio_vorbis_openStream(char const * filename, void **decoderData) {
   data->readBufferSize    = info.channels * info.sample_rate + 4096;
   data->readBuffer        = malloc(sizeof(ALshort) * data->readBufferSize);
   data->preloadedSamples  = 0;
+  data->atEnd             = false;
 
   *decoderData = data;
 
@@ -54,6 +56,7 @@ int audio_vorbis_preloadStreamSamples(void* decoderData, int sampleCount) {
     float **channelData;
     int samples = stb_vorbis_get_frame_float(data->vorbis, NULL, &channelData);
     if(samples == 0) {
+      data->atEnd = true;
       break;
     }
     for(int i = 0; i < samples; ++i) {
@@ -76,8 +79,12 @@ int audio_vorbis_uploadPreloadedStreamSamples(void *decoderData, ALuint buffer) 
   int channels = info.channels >= 2 ? 2 : 1;   // Force to mono or stereo
 
   // Emergency loading if we ran out of time for proper preloading
-  if(data->preloadedSamples < data->readBufferSize / 2) {
+  if(!data->atEnd && data->preloadedSamples < data->readBufferSize / 2) {
     audio_vorbis_preloadStreamSamples(decoderData, data->readBufferSize / 2);
+  }
+
+  if(data->preloadedSamples == 0) {
+    return 0;
   }
 
   alBufferData(
@@ -89,8 +96,9 @@ int audio_vorbis_uploadPreloadedStreamSamples(void *decoderData, ALuint buffer) 
   );
   //printf("uploaded %d samples to buffer %d\n", data->preloadedSamples, buffer);
 
+  int uploaded = data->preloadedSamples;
   data->preloadedSamples = 0;
-  return 0;
+  return uploaded;
 }
 
 
@@ -114,7 +122,13 @@ bool audio_vorbis_load(ALuint buffer, char const *filename) {
 
 void audio_vorbis_rewindStream(void *decoderData) {
   audio_vorbis_DecoderData * data = (audio_vorbis_DecoderData*)decoderData;
+  data->atEnd = false;
   stb_vorbis_seek_start(data->vorbis);
+}
+
+bool audio_vorbis_atEnd(void const *decoderData) {
+  audio_vorbis_DecoderData const * data = (audio_vorbis_DecoderData const *)decoderData;
+  return data->atEnd;
 }
 
 int audio_vorbis_getChannelCount(void *decoderData) {
@@ -133,6 +147,7 @@ audio_StreamSourceDecoder audio_vorbis_decoder = {
   .getSampleRate     = audio_vorbis_getSampleRate,
   .openFile          = audio_vorbis_openStream,
   .closeFile         = NULL,
+  .atEnd             = audio_vorbis_atEnd,
   .rewind            = audio_vorbis_rewindStream,
   .preloadSamples    = audio_vorbis_preloadStreamSamples,
   .uploadPreloadedSamples = audio_vorbis_uploadPreloadedStreamSamples
