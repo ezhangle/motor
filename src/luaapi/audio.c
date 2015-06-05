@@ -4,7 +4,8 @@
 // TODO use two separate metatables for streaming and static sources?
 
 static struct {
-  int sourceMT;
+  int staticMT;
+  int streamMT;
 } moduleData;
 
 
@@ -26,80 +27,67 @@ static int l_audio_newSource(lua_State *state) {
   switch(type) {
   case audio_SourceType_static:
     {
-      l_audio_StaticSource *src = lua_newuserdata(state, sizeof(l_audio_StaticSource));
-      src->type = audio_SourceType_static;
-      audio_loadStatic(&src->source, filename);
+      audio_StaticSource *src = lua_newuserdata(state, sizeof(audio_StaticSource));
+      audio_loadStatic(src, filename);
+      lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.staticMT);
       break;
     }
 
   case audio_SourceType_stream:
     {
-      l_audio_StreamSource *src = lua_newuserdata(state, sizeof(l_audio_StreamSource));
-      src->type = audio_SourceType_stream;
-      audio_loadStream(&src->source, filename);
+      audio_StreamSource *src = lua_newuserdata(state, sizeof(audio_StreamSource));
+      audio_loadStream(src, filename);
+      lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.streamMT);
       break;
     }
   }
   
 
-  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.sourceMT);
   lua_setmetatable(state, -2);
 
   return 1;
 }
 
-l_checkTypeFn(l_audio_isSource, moduleData.sourceMT)
+l_checkTypeFn(l_audio_isStaticSource, moduleData.staticMT)
+l_checkTypeFn(l_audio_isStreamSource, moduleData.streamMT)
 
-static int l_audio_Source_play(lua_State *state) {
-  l_assertType(state, 1, l_audio_isSource); 
-  audio_SourceType *type = lua_touserdata(state, 1);
-  switch(*type) {
-  case audio_SourceType_static:
-    {
-      l_audio_StaticSource *src = (l_audio_StaticSource*)type;
-      audio_StaticSource_play(&src->source);
-      break;
-    }
 
-  case audio_SourceType_stream:
-    {
-      l_audio_StreamSource *src = (l_audio_StreamSource*)type;
-      audio_StreamSource_play(&src->source);
-      break;
-    }
+#define t_l_audio_source_play(type) \
+  static int l_audio_ ## type ## Source_play(lua_State *state) { \
+    l_assertType(state, 1, l_audio_is ## type ## Source);  \
+    audio_ ## type ## Source *src = (audio_ ## type ## Source*) lua_touserdata(state, 1); \
+    audio_ ## type ## Source_play(src); \
+    return 0; \
   }
 
-  return 0;
-}
+t_l_audio_source_play(Static)
+t_l_audio_source_play(Stream)
+#undef t_l_audio_source_play
 
-static int l_audio_source_setLooping(lua_State *state) {
-  l_assertType(state, 1, l_audio_isSource); 
-  audio_SourceType *type = lua_touserdata(state, 1);
-  bool loop = l_tools_toBooleanOrError(state, 2);
-  switch(*type) {
-  case audio_SourceType_static:
-    {
-      l_audio_StaticSource *src = (l_audio_StaticSource*)type;
-      audio_StaticSource_setLooping(&src->source, loop);
-      break;
-    }
 
-  case audio_SourceType_stream:
-    {
-      l_audio_StreamSource *src = (l_audio_StreamSource*)type;
-      audio_StreamSource_setLooping(&src->source, loop);
-      break;
-    }
+#define t_l_audio_source_setLooping(type) \
+  static int l_audio_ ## type ## Source_setLooping(lua_State *state) { \
+    l_assertType(state, 1, l_audio_is ## type ## Source);  \
+    audio_ ## type ## Source *src = lua_touserdata(state, 1); \
+    bool loop = l_tools_toBooleanOrError(state, 2); \
+    audio_ ## type ## Source_setLooping(src, loop); \
+    return 0; \
   }
 
-  return 0;
-}
+t_l_audio_source_setLooping(Static)
+t_l_audio_source_setLooping(Stream)
+#undef t_l_audio_source_setLooping
 
-static luaL_Reg const sourceMetatableFuncs[] = {
-  {"play", l_audio_Source_play},
-  {"setLooping", l_audio_source_setLooping},
-  {NULL, NULL}
-};
+
+#define t_sourceMetatableFuncs(type) \
+  static luaL_Reg const type ## SourceMetatableFuncs[] = { \
+    {"play",       l_audio_ ## type ## Source_play}, \
+    {"setLooping", l_audio_ ## type ## Source_setLooping}, \
+    {NULL, NULL} \
+  };
+t_sourceMetatableFuncs(Stream)
+t_sourceMetatableFuncs(Static)
+#undef t_sourceMetatableFuncs
 
 
 static luaL_Reg const regFuncs[] = {
@@ -109,7 +97,8 @@ static luaL_Reg const regFuncs[] = {
 
 int l_audio_register(lua_State *state) {
   l_tools_registerModule(state, "audio", regFuncs);
-  moduleData.sourceMT = l_tools_makeTypeMetatable(state, sourceMetatableFuncs);
+  moduleData.staticMT = l_tools_makeTypeMetatable(state, StaticSourceMetatableFuncs);
+  moduleData.streamMT = l_tools_makeTypeMetatable(state, StreamSourceMetatableFuncs);
 
   return 1;
 }
