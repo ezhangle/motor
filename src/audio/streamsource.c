@@ -14,6 +14,13 @@ static audio_StreamSourceDecoder const* streamDecoders[] = {
   &audio_vorbis_decoder
 };
 
+static void initialPreload(audio_StreamSource *source) {
+  for(int i = 0; i < 2; ++i) {
+    source->decoder->preloadSamples(source->decoderData, 44100);
+    source->decoder->uploadPreloadedSamples(source->decoderData, source->buffers[i]);
+  }
+}
+
 bool audio_loadStream(audio_StreamSource *source, char const * filename) {
   // TODO select approprate decoder (there only one right now though!)
   source->decoder = streamDecoders[0];
@@ -23,19 +30,11 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
     return false;
   }
 
-  alGenSources(1, &source->source);
-  alSourcef( source->source, AL_PITCH,    1.0f);
-  alSourcef( source->source, AL_GAIN,     1.0f);
-  alSource3f(source->source, AL_POSITION, 0.0f, 0.0f, 0.0f);
-  alSource3f(source->source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
-  alSourcei( source->source, AL_LOOPING,  AL_FALSE);
+  audio_SourceCommon_init(&source->common);
 
   alGenBuffers(2, source->buffers);
 
-  for(int i = 0; i < 2; ++i) {
-    source->decoder->preloadSamples(source->decoderData, 44100);
-    source->decoder->uploadPreloadedSamples(source->decoderData, source->buffers[i]);
-  }
+  initialPreload(source);
 
   source->looping = false;
 
@@ -44,9 +43,11 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
 
 
 void audio_StreamSource_play(audio_StreamSource *source) {
-  // TODO security checks: not playing?
+  if(source->common.state == audio_SourceState_playing) {
+    return;
+  }
 
-  alSourceQueueBuffers(source->source, 2, source->buffers);
+  alSourceQueueBuffers(source->common.source, 2, source->buffers);
 
   if(moduleData.playingStreamCount == moduleData.playingStreamSize) {
     moduleData.playingStreamSize = 2 * moduleData.playingStreamSize;
@@ -56,7 +57,7 @@ void audio_StreamSource_play(audio_StreamSource *source) {
   moduleData.playingStreams[moduleData.playingStreamCount] = source;
   ++moduleData.playingStreamCount;
 
-  alSourcePlay(source->source);
+  audio_SourceCommon_play(&source->common);
 }
 
 void audio_updateStreams(void) {
@@ -72,7 +73,7 @@ void audio_updateStreams(void) {
       }
     }
 
-    ALuint src = source->source;
+    ALuint src = source->common.source;
     ALint count;
     ALint queued;
     ALint state;
@@ -110,4 +111,42 @@ void audio_streamsource_init(void) {
   moduleData.playingStreamCount = 0;
   moduleData.playingStreamSize  = 16;
   moduleData.playingStreams     = malloc(sizeof(audio_StreamSource*) * 16);
+}
+
+void audio_StreamSource_stop(audio_StreamSource *source) {
+  if(source->common.state == audio_SourceState_stopped) {
+    return;
+  }
+
+  for(int i = 0; i < moduleData.playingStreamCount; ++i) {
+    if(moduleData.playingStreams[i] == source) {
+      --moduleData.playingStreamCount;
+      moduleData.playingStreams[i] = moduleData.playingStreams[moduleData.playingStreamCount];
+      break;
+    }
+  }
+
+  audio_SourceCommon_stop(&source->common);
+
+  ALint count;
+  alGetSourcei(source->common.source, AL_BUFFERS_PROCESSED, &count);
+  for(int j = 0; j < count; ++j) {
+    ALuint buf;
+    alSourceUnqueueBuffers(source->common.source, 1, &buf);
+  }
+
+  source->decoder->rewind(source->decoderData);
+  source->decoder->flush(source->decoderData);
+  initialPreload(source);
+}
+
+void audio_StreamSource_rewind(audio_StreamSource *source) {
+  // TODO Skip to end of current buffers if playing or paused
+  audio_SourceState state = source->common.state;
+
+  audio_StreamSource_stop(source);
+
+  if(state == audio_SourceState_playing) {
+    audio_StreamSource_play(source);
+  }
 }

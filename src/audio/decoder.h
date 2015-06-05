@@ -24,4 +24,5 @@ typedef struct {
   void (*rewind)(void *decoderData);
   int  (*preloadSamples)(void *decoderData, int sampleCount);
   int  (*uploadPreloadedSamples)(void *decoderData, ALuint buffer);
+  void (*flush)(void *decoderData);
 } audio_StreamSourceDecoder;

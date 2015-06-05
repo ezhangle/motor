@@ -52,17 +52,21 @@ l_checkTypeFn(l_audio_isStaticSource, moduleData.staticMT)
 l_checkTypeFn(l_audio_isStreamSource, moduleData.streamMT)
 
 
-#define t_l_audio_source_play(type) \
-  static int l_audio_ ## type ## Source_play(lua_State *state) { \
+#define t_l_audio_source_generic(type, fun) \
+  static int l_audio_ ## type ## Source_ ## fun(lua_State *state) { \
     l_assertType(state, 1, l_audio_is ## type ## Source);  \
     audio_ ## type ## Source *src = (audio_ ## type ## Source*) lua_touserdata(state, 1); \
-    audio_ ## type ## Source_play(src); \
+    audio_ ## type ## Source_ ## fun(src); \
     return 0; \
   }
 
-t_l_audio_source_play(Static)
-t_l_audio_source_play(Stream)
-#undef t_l_audio_source_play
+t_l_audio_source_generic(Static, play)
+t_l_audio_source_generic(Stream, play)
+t_l_audio_source_generic(Static, stop)
+t_l_audio_source_generic(Stream, stop)
+t_l_audio_source_generic(Static, rewind)
+t_l_audio_source_generic(Stream, rewind)
+#undef t_l_audio_source_generic
 
 
 #define t_l_audio_source_setLooping(type) \
@@ -82,6 +86,8 @@ t_l_audio_source_setLooping(Stream)
 #define t_sourceMetatableFuncs(type) \
   static luaL_Reg const type ## SourceMetatableFuncs[] = { \
     {"play",       l_audio_ ## type ## Source_play}, \
+    {"stop",       l_audio_ ## type ## Source_stop}, \
+    {"rewind",     l_audio_ ## type ## Source_rewind}, \
     {"setLooping", l_audio_ ## type ## Source_setLooping}, \
     {NULL, NULL} \
   };

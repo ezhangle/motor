@@ -10,6 +10,7 @@ link_time_optimize = 0
 
 sources = [
   'audio/audio.c',
+  'audio/source.c',
   'audio/staticsource.c',
   'audio/streamsource.c',
   'audio/vorbis_decoder.c',

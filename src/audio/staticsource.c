@@ -8,27 +8,30 @@ static audio_StaticSourceDecoder const *staticDecoders[] = {
 };
 
 void audio_loadStatic(audio_StaticSource *source, char const * filename) {
-  alGenSources(1, &source->source);
-
-  alSourcef(source->source, AL_PITCH, 1);
-  alSourcef(source->source, AL_GAIN, 1);
-  alSource3f(source->source, AL_POSITION, 0, 0, 0);
-  alSource3f(source->source, AL_VELOCITY, 0, 0, 0);
-  alSourcei(source->source, AL_LOOPING, AL_FALSE);
+  audio_SourceCommon_init(&source->common);
 
   alGenBuffers(1, &source->buffer);
 
   // TODO detect file type
   staticDecoders[0]->loadFile(source->buffer, filename);
 
-  alSourcei(source->source, AL_BUFFER, source->buffer);
+  alSourcei(source->common.source, AL_BUFFER, source->buffer);
 }
 
 
-void audio_StaticSource_play(audio_StaticSource const *source) {
-  alSourcePlay(source->source);
+void audio_StaticSource_play(audio_StaticSource *source) {
+  audio_SourceCommon_play(&source->common);
 }
 
 void audio_StaticSource_setLooping(audio_StaticSource *source, bool loop) {
-  alSourcei(source->source, AL_LOOPING, loop);
+  alSourcei(source->common.source, AL_LOOPING, loop);
+}
+
+void audio_StaticSource_stop(audio_StaticSource *source) {
+  audio_SourceCommon_stop(&source->common);
+  audio_StaticSource_rewind(source);
+}
+
+void audio_StaticSource_rewind(audio_StaticSource *source) {
+  alSourceRewind(source->common.source);
 }

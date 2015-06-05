@@ -141,6 +141,11 @@ int audio_vorbis_getSampleRate(void *decoderData) {
   return info.sample_rate;
 }
 
+void audio_vorbis_flushBuffer(void *decoderData) {
+  audio_vorbis_DecoderData * data = (audio_vorbis_DecoderData*)decoderData;
+  data->preloadedSamples = 0;
+}
+
 audio_StreamSourceDecoder audio_vorbis_decoder = {
   .testFile          = NULL,
   .getChannelCount   = audio_vorbis_getChannelCount,
@@ -150,7 +155,8 @@ audio_StreamSourceDecoder audio_vorbis_decoder = {
   .atEnd             = audio_vorbis_atEnd,
   .rewind            = audio_vorbis_rewindStream,
   .preloadSamples    = audio_vorbis_preloadStreamSamples,
-  .uploadPreloadedSamples = audio_vorbis_uploadPreloadedStreamSamples
+  .uploadPreloadedSamples = audio_vorbis_uploadPreloadedStreamSamples,
+  .flush             = audio_vorbis_flushBuffer
 };
 
 audio_StaticSourceDecoder audio_vorbis_static_decoder = {
