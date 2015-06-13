@@ -72,7 +72,7 @@
       text = Array.prototype.slice.call(arguments).join(' ');
       console.error(text);
     },
-    TOTAL_MEMORY:67108864*2
+    TOTAL_MEMORY:67108864*4
   };
 
 

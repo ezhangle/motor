@@ -38,8 +38,7 @@ int audio_vorbis_preloadStreamSamples(void* decoderData, int sampleCount) {
   int safeBufferSize = sampleCount * channels + 4096;
   if(safeBufferSize > data->readBufferSize) {
     data->readBufferSize = safeBufferSize;
-    free(data->readBuffer);
-    data->readBuffer = malloc(sizeof(ALshort) * safeBufferSize);
+    data->readBuffer = realloc(data->readBuffer, sizeof(ALshort) * safeBufferSize);
   }
 
   int space = data->readBufferSize - data->preloadedSamples - 4096;
