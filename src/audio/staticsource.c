@@ -23,15 +23,23 @@ void audio_StaticSource_play(audio_StaticSource *source) {
   audio_SourceCommon_play(&source->common);
 }
 
+
 void audio_StaticSource_setLooping(audio_StaticSource *source, bool loop) {
   alSourcei(source->common.source, AL_LOOPING, loop);
 }
+
 
 void audio_StaticSource_stop(audio_StaticSource *source) {
   audio_SourceCommon_stop(&source->common);
   audio_StaticSource_rewind(source);
 }
 
+
 void audio_StaticSource_rewind(audio_StaticSource *source) {
   alSourceRewind(source->common.source);
+}
+
+
+void audio_StaticSource_pause(audio_StaticSource *source) {
+
 }

@@ -16,3 +16,4 @@ void audio_StaticSource_play(audio_StaticSource *source);
 void audio_StaticSource_setLooping(audio_StaticSource *source, bool loop);
 void audio_StaticSource_stop(audio_StaticSource *source);
 void audio_StaticSource_rewind(audio_StaticSource *source);
+void audio_StaticSource_pause(audio_StaticSource *source);

@@ -14,12 +14,14 @@ static audio_StreamSourceDecoder const* streamDecoders[] = {
   &audio_vorbis_decoder
 };
 
+
 static void initialPreload(audio_StreamSource *source) {
   for(int i = 0; i < 2; ++i) {
     source->decoder->preloadSamples(source->decoderData, 44100);
     source->decoder->uploadPreloadedSamples(source->decoderData, source->buffers[i]);
   }
 }
+
 
 bool audio_loadStream(audio_StreamSource *source, char const * filename) {
   // TODO select approprate decoder (there only one right now though!)
@@ -45,6 +47,9 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
 void audio_StreamSource_play(audio_StreamSource *source) {
   if(source->common.state == audio_SourceState_playing) {
     return;
+  } else if(source->common.state == audio_SourceState_paused) {
+    audio_SourceCommon_play(&source->common);
+    return;
   }
 
   alSourceQueueBuffers(source->common.source, 2, source->buffers);
@@ -59,6 +64,7 @@ void audio_StreamSource_play(audio_StreamSource *source) {
 
   audio_SourceCommon_play(&source->common);
 }
+
 
 void audio_updateStreams(void) {
   for(int i = 0; i < moduleData.playingStreamCount;) {
@@ -103,15 +109,18 @@ void audio_updateStreams(void) {
   }
 }
 
+
 void audio_StreamSource_setLooping(audio_StreamSource *source, bool loop) {
   source->looping = loop;
 }
+
 
 void audio_streamsource_init(void) {
   moduleData.playingStreamCount = 0;
   moduleData.playingStreamSize  = 16;
   moduleData.playingStreams     = malloc(sizeof(audio_StreamSource*) * 16);
 }
+
 
 void audio_StreamSource_stop(audio_StreamSource *source) {
   if(source->common.state == audio_SourceState_stopped) {
@@ -140,6 +149,7 @@ void audio_StreamSource_stop(audio_StreamSource *source) {
   initialPreload(source);
 }
 
+
 void audio_StreamSource_rewind(audio_StreamSource *source) {
   // TODO Skip to end of current buffers if playing or paused
   audio_SourceState state = source->common.state;
@@ -149,4 +159,9 @@ void audio_StreamSource_rewind(audio_StreamSource *source) {
   if(state == audio_SourceState_playing) {
     audio_StreamSource_play(source);
   }
+}
+
+
+void audio_StreamSource_pause(audio_StaticSource *source) {
+  audio_SourceCommon_pause(&source->common);
 }
