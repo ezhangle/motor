@@ -18,4 +18,5 @@ void audio_SourceCommon_init(audio_SourceCommon *source);
 void audio_SourceCommon_play(audio_SourceCommon *source);
 void audio_SourceCommon_stop(audio_SourceCommon *source);
 void audio_SourceCommon_pause(audio_SourceCommon *source);
+void audio_SourceCommon_resume(audio_SourceCommon *source);
 audio_SourceState audio_SourceCommon_getState(audio_SourceCommon const *source);

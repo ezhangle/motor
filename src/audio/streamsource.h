@@ -21,4 +21,5 @@ void audio_updateStreams(void);
 void audio_streamsource_init(void);
 void audio_StreamSource_stop(audio_StreamSource *source);
 void audio_StreamSource_rewind(audio_StreamSource *source);
-void audio_StreamSource_pause(audio_StaticSource *source);
+void audio_StreamSource_pause(audio_StreamSource *source);
+void audio_StreamSource_resume(audio_StreamSource *source);

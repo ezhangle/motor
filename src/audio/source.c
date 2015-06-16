@@ -32,18 +32,16 @@ audio_SourceState audio_SourceCommon_getState(audio_SourceCommon const *source) 
 
 
 void audio_SourceCommon_pause(audio_SourceCommon *source) {
-  if(source->common.state != audio_SourceState_playing) {
-    return;
+  if(source->state == audio_SourceState_playing) {
+    alSourcePause(source->source);
+    source->state = audio_SourceState_paused;
   }
-
-  alSourcePause(source->source);
-  source->state = audio_sourceState_paused;
 }
 
 
 void audio_SourceCommon_resume(audio_SourceCommon *source) {
   if(source->state == audio_SourceState_paused) {
     alSourcePlay(source->source);
-    source->state = audio_sourceState_playing;
+    source->state = audio_SourceState_playing;
   }
 }

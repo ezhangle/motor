@@ -20,7 +20,9 @@ void audio_loadStatic(audio_StaticSource *source, char const * filename) {
 
 
 void audio_StaticSource_play(audio_StaticSource *source) {
-  audio_SourceCommon_play(&source->common);
+  if(source->common.state != audio_SourceState_playing) {
+    audio_SourceCommon_play(&source->common);
+  }
 }
 
 
@@ -37,9 +39,18 @@ void audio_StaticSource_stop(audio_StaticSource *source) {
 
 void audio_StaticSource_rewind(audio_StaticSource *source) {
   alSourceRewind(source->common.source);
+
+  if(source->common.state == audio_SourceState_playing) {
+    audio_SourceCommon_play(&source->common);
+  }
 }
 
 
 void audio_StaticSource_pause(audio_StaticSource *source) {
+  audio_SourceCommon_pause(&source->common);
+}
 
+
+void audio_StaticSource_resume(audio_StaticSource *source) {
+  audio_SourceCommon_resume(&source->common);
 }

@@ -44,7 +44,7 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
 }
 
 
-void audio_StreamSource_play(audio_StreamSource *source) {
+static void prepareToPlay(audio_StreamSource *source) {
   if(source->common.state == audio_SourceState_playing) {
     return;
   } else if(source->common.state == audio_SourceState_paused) {
@@ -61,8 +61,20 @@ void audio_StreamSource_play(audio_StreamSource *source) {
 
   moduleData.playingStreams[moduleData.playingStreamCount] = source;
   ++moduleData.playingStreamCount;
+}
 
-  audio_SourceCommon_play(&source->common);
+
+void audio_StreamSource_play(audio_StreamSource *source) {
+  switch(source->common.state) {
+  case audio_SourceState_stopped:
+    prepareToPlay(source);
+    // Fall through
+  case audio_SourceState_paused:
+    audio_SourceCommon_play(&source->common);
+    break;
+  default:
+    break;
+  }
 }
 
 
@@ -158,10 +170,17 @@ void audio_StreamSource_rewind(audio_StreamSource *source) {
 
   if(state == audio_SourceState_playing) {
     audio_StreamSource_play(source);
+  } else {
+    prepareToPlay(source);
+    source->common.state = audio_SourceState_paused;
   }
 }
 
 
-void audio_StreamSource_pause(audio_StaticSource *source) {
+void audio_StreamSource_pause(audio_StreamSource *source) {
   audio_SourceCommon_pause(&source->common);
+}
+
+void audio_StreamSource_resume(audio_StreamSource *source) {
+  audio_SourceCommon_resume(&source->common);
 }

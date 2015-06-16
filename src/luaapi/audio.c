@@ -66,6 +66,10 @@ t_l_audio_source_generic(Static, stop)
 t_l_audio_source_generic(Stream, stop)
 t_l_audio_source_generic(Static, rewind)
 t_l_audio_source_generic(Stream, rewind)
+t_l_audio_source_generic(Static, pause)
+t_l_audio_source_generic(Stream, pause)
+t_l_audio_source_generic(Static, resume)
+t_l_audio_source_generic(Stream, resume)
 #undef t_l_audio_source_generic
 
 
@@ -88,6 +92,8 @@ t_l_audio_source_setLooping(Stream)
     {"play",       l_audio_ ## type ## Source_play}, \
     {"stop",       l_audio_ ## type ## Source_stop}, \
     {"rewind",     l_audio_ ## type ## Source_rewind}, \
+    {"pause",      l_audio_ ## type ## Source_pause}, \
+    {"resume",     l_audio_ ## type ## Source_resume}, \
     {"setLooping", l_audio_ ## type ## Source_setLooping}, \
     {NULL, NULL} \
   };
