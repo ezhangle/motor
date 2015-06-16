@@ -15,10 +15,8 @@ l_toTypeFn(l_graphics_toCanvas, graphics_Canvas)
 
 
 int l_graphics_newCanvas(lua_State* state) {
-  // TODO support default parameters
-
-  int width = l_tools_toNumberOrError(state, 1);
-  int height = l_tools_toNumberOrError(state, 2);
+  int width  = luaL_optint(state, 1, graphics_getWidth());
+  int height = luaL_optint(state, 2, graphics_getHeight());
   
   graphics_Canvas *canvas = lua_newuserdata(state, sizeof(graphics_Canvas));
   graphics_Canvas_new(canvas, width, height);
