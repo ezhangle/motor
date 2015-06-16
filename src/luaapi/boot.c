@@ -2,6 +2,7 @@
 #include "boot.h"
 
 static char const bootScript[] =
+  "package.path = '?.lua;?/init.lua'\n"
   "love.update = function(dt) end\n"
   "love.draw = function() end\n"
   "love.load = function() end\n"
