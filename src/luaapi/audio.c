@@ -101,16 +101,56 @@ t_sourceMetatableFuncs(Stream)
 t_sourceMetatableFuncs(Static)
 #undef t_sourceMetatableFuncs
 
+#if 0
+#define t_freeFunctionAdaptor(fun, args, rets) \
+  static int l_audio_ ## fun (lua_State *state) { \
+    lua_getmetatable(state, 1); \
+    lua_pushstring(state, #fun); \
+    lua_rawget(state, -2); \
+    lua_insert(state, 1); \
+    lua_pop(state, 2); \
+    lua_call(state, args, rets); \
+    return rets; \
+  }
+
+t_freeFunctionAdaptor(pause,  1, 0)
+t_freeFunctionAdaptor(resume, 1, 0)
+t_freeFunctionAdaptor(stop,   1, 0)
+t_freeFunctionAdaptor(play,   1, 0)
+t_freeFunctionAdaptor(rewind, 1, 0)
+#endif
 
 static luaL_Reg const regFuncs[] = {
   {"newSource", l_audio_newSource},
+  #if 0
+  {"pause",     l_audio_pause},
+  {"play",      l_audio_play},
+  {"stop",      l_audio_stop},
+  {"resume",    l_audio_resume},
+  {"rewind",    l_audio_rewind},
+  #endif
   {NULL, NULL}
 };
+
+static char const bootScript[] =
+  "for i, k in ipairs({\"play\", \"pause\", \"stop\", \"resume\", \"rewind\"}) do\n"
+  "  love.audio[k] = function(src, ...)\n"
+  "    src[k](src, ...)\n"
+  "  end\n"
+  "end\n";
+
+static int registerFreeFunctionAdaptors(lua_State *state) {
+  return luaL_dostring(state, bootScript);
+}
 
 int l_audio_register(lua_State *state) {
   l_tools_registerModule(state, "audio", regFuncs);
   moduleData.staticMT = l_tools_makeTypeMetatable(state, StaticSourceMetatableFuncs);
   moduleData.streamMT = l_tools_makeTypeMetatable(state, StreamSourceMetatableFuncs);
+
+  if(registerFreeFunctionAdaptors(state)) {
+    return 0;
+  }
 
   return 1;
 }
