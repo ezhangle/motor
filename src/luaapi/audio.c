@@ -139,6 +139,13 @@ static int l_audio_SourceCommon_getVolume(lua_State *state) {
   return 1;
 }
 
+
+static int l_audio_SourceCommon_clone(lua_State *state) {
+  printf("Stub: Source:clone\n");
+  return 1;
+}
+
+
 #define t_sourceMetatableFuncs(type) \
   static luaL_Reg const type ## SourceMetatableFuncs[] = { \
     {"play",       l_audio_ ## type ## Source_play}, \
@@ -153,6 +160,7 @@ static int l_audio_SourceCommon_getVolume(lua_State *state) {
     {"isStatic",   l_audio_SourceCommon_isStatic}, \
     {"setVolume",  l_audio_SourceCommon_setVolume}, \
     {"getVolume",  l_audio_SourceCommon_getVolume}, \
+    {"clone",     l_audio_SourceCommon_clone}, \
     {NULL, NULL} \
   };
 t_sourceMetatableFuncs(Stream)
