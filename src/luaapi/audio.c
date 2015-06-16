@@ -123,6 +123,22 @@ static int l_audio_SourceCommon_isStatic(lua_State *state) {
   return 1;
 }
 
+
+static int l_audio_SourceCommon_setVolume(lua_State *state) {
+  l_assertType(state, 1, isSource);
+  float gain = l_tools_toNumberOrError(state, 2);
+  audio_SourceCommon *source = (audio_SourceCommon*)lua_touserdata(state, 1);
+  audio_SourceCommon_setVolume(source, gain);
+  return 0;
+}
+
+static int l_audio_SourceCommon_getVolume(lua_State *state) {
+  l_assertType(state, 1, isSource);
+  audio_SourceCommon *source = (audio_SourceCommon*)lua_touserdata(state, 1);
+  lua_pushnumber(state, audio_SourceCommon_getVolume(source));
+  return 1;
+}
+
 #define t_sourceMetatableFuncs(type) \
   static luaL_Reg const type ## SourceMetatableFuncs[] = { \
     {"play",       l_audio_ ## type ## Source_play}, \
@@ -135,6 +151,8 @@ static int l_audio_SourceCommon_isStatic(lua_State *state) {
     {"isStopped",  l_audio_SourceCommon_isStopped}, \
     {"isPaused",   l_audio_SourceCommon_isPaused}, \
     {"isStatic",   l_audio_SourceCommon_isStatic}, \
+    {"setVolume",  l_audio_SourceCommon_setVolume}, \
+    {"getVolume",  l_audio_SourceCommon_getVolume}, \
     {NULL, NULL} \
   };
 t_sourceMetatableFuncs(Stream)

@@ -60,3 +60,15 @@ bool audio_SourceCommon_isStopped(audio_SourceCommon const* source) {
 bool audio_SourceCommon_isPaused(audio_SourceCommon const* source) {
   return source->state == audio_SourceState_paused;
 }
+
+
+void audio_SourceCommon_setVolume(audio_SourceCommon const* source, float gain) {
+  alSourcef(source->source, AL_GAIN, gain);
+}
+
+
+float audio_SourceCommon_getVolume(audio_SourceCommon const* source) {
+  float gain;
+  alGetSourcef(source->source, AL_GAIN, &gain);
+  return gain;
+}

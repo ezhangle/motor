@@ -24,3 +24,5 @@ audio_SourceState audio_SourceCommon_getState(audio_SourceCommon const *source);
 bool audio_SourceCommon_isPlaying(audio_SourceCommon const* source);
 bool audio_SourceCommon_isStopped(audio_SourceCommon const* source);
 bool audio_SourceCommon_isPaused(audio_SourceCommon const* source);
+void audio_SourceCommon_setVolume(audio_SourceCommon const* source, float gain);
+float audio_SourceCommon_getVolume(audio_SourceCommon const* source);
