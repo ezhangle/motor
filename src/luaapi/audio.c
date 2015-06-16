@@ -87,10 +87,18 @@ t_l_audio_source_setLooping(Static)
 t_l_audio_source_setLooping(Stream)
 #undef t_l_audio_source_setLooping
 
+
 static bool isSource(lua_State * state, int index) {
   return l_audio_isStaticSource(state, index) || l_audio_isStreamSource(state,index);
 }
 
+
+// Yes I know it is not very beautiful to assume knowledge of the structure
+// of audio_StreamSource and audio_StaticSource. I am using this hack to
+// avoid duplication of the code for each of these functions (and for the
+// actual backends).
+// But since I'm aiming to minimize the download size of the compiled
+// engine, I think it is legitimate to do so.
 #define t_l_audio_SourceCommon_getBool(fun) \
   static int l_audio_SourceCommon_ ## fun(lua_State* state) { \
     l_assertType(state, 1, isSource); \
@@ -98,11 +106,22 @@ static bool isSource(lua_State * state, int index) {
     lua_pushboolean(state, audio_SourceCommon_ ## fun(src)); \
     return 1; \
   }
-
 t_l_audio_SourceCommon_getBool(isPlaying)
 t_l_audio_SourceCommon_getBool(isStopped)
 t_l_audio_SourceCommon_getBool(isPaused)
+#undef t_l_audio_SourceCommon_getBool
 
+static int l_audio_SourceCommon_isStatic(lua_State *state) {
+  if(l_audio_isStaticSource(state, 1)) {
+    lua_pushboolean(state, true);
+  } else if(l_audio_isStreamSource(state, 1)) {
+    lua_pushboolean(state, false);
+  } else {
+    lua_pushstring(state, "Expected Source");
+    return lua_error(state);
+  }
+  return 1;
+}
 
 #define t_sourceMetatableFuncs(type) \
   static luaL_Reg const type ## SourceMetatableFuncs[] = { \
@@ -115,11 +134,14 @@ t_l_audio_SourceCommon_getBool(isPaused)
     {"isPlaying",  l_audio_SourceCommon_isPlaying}, \
     {"isStopped",  l_audio_SourceCommon_isStopped}, \
     {"isPaused",   l_audio_SourceCommon_isPaused}, \
+    {"isStatic",   l_audio_SourceCommon_isStatic}, \
     {NULL, NULL} \
   };
 t_sourceMetatableFuncs(Stream)
 t_sourceMetatableFuncs(Static)
 #undef t_sourceMetatableFuncs
+
+
 
 
 static luaL_Reg const regFuncs[] = {
