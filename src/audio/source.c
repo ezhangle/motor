@@ -45,3 +45,18 @@ void audio_SourceCommon_resume(audio_SourceCommon *source) {
     source->state = audio_SourceState_playing;
   }
 }
+
+
+bool audio_SourceCommon_isPlaying(audio_SourceCommon const* source) {
+  return source->state == audio_SourceState_playing;
+}
+
+
+bool audio_SourceCommon_isStopped(audio_SourceCommon const* source) {
+  return source->state == audio_SourceState_stopped;
+}
+
+
+bool audio_SourceCommon_isPaused(audio_SourceCommon const* source) {
+  return source->state == audio_SourceState_paused;
+}

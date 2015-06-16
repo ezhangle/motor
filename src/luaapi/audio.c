@@ -60,6 +60,7 @@ l_checkTypeFn(l_audio_isStreamSource, moduleData.streamMT)
     return 0; \
   }
 
+
 t_l_audio_source_generic(Static, play)
 t_l_audio_source_generic(Stream, play)
 t_l_audio_source_generic(Static, stop)
@@ -86,6 +87,22 @@ t_l_audio_source_setLooping(Static)
 t_l_audio_source_setLooping(Stream)
 #undef t_l_audio_source_setLooping
 
+static bool isSource(lua_State * state, int index) {
+  return l_audio_isStaticSource(state, index) || l_audio_isStreamSource(state,index);
+}
+
+#define t_l_audio_SourceCommon_getBool(fun) \
+  static int l_audio_SourceCommon_ ## fun(lua_State* state) { \
+    l_assertType(state, 1, isSource); \
+    audio_SourceCommon const* src = (audio_SourceCommon const*)lua_touserdata(state, 1); \
+    lua_pushboolean(state, audio_SourceCommon_ ## fun(src)); \
+    return 1; \
+  }
+
+t_l_audio_SourceCommon_getBool(isPlaying)
+t_l_audio_SourceCommon_getBool(isStopped)
+t_l_audio_SourceCommon_getBool(isPaused)
+
 
 #define t_sourceMetatableFuncs(type) \
   static luaL_Reg const type ## SourceMetatableFuncs[] = { \
@@ -95,40 +112,18 @@ t_l_audio_source_setLooping(Stream)
     {"pause",      l_audio_ ## type ## Source_pause}, \
     {"resume",     l_audio_ ## type ## Source_resume}, \
     {"setLooping", l_audio_ ## type ## Source_setLooping}, \
+    {"isPlaying",  l_audio_SourceCommon_isPlaying}, \
+    {"isStopped",  l_audio_SourceCommon_isStopped}, \
+    {"isPaused",   l_audio_SourceCommon_isPaused}, \
     {NULL, NULL} \
   };
 t_sourceMetatableFuncs(Stream)
 t_sourceMetatableFuncs(Static)
 #undef t_sourceMetatableFuncs
 
-#if 0
-#define t_freeFunctionAdaptor(fun, args, rets) \
-  static int l_audio_ ## fun (lua_State *state) { \
-    lua_getmetatable(state, 1); \
-    lua_pushstring(state, #fun); \
-    lua_rawget(state, -2); \
-    lua_insert(state, 1); \
-    lua_pop(state, 2); \
-    lua_call(state, args, rets); \
-    return rets; \
-  }
-
-t_freeFunctionAdaptor(pause,  1, 0)
-t_freeFunctionAdaptor(resume, 1, 0)
-t_freeFunctionAdaptor(stop,   1, 0)
-t_freeFunctionAdaptor(play,   1, 0)
-t_freeFunctionAdaptor(rewind, 1, 0)
-#endif
 
 static luaL_Reg const regFuncs[] = {
   {"newSource", l_audio_newSource},
-  #if 0
-  {"pause",     l_audio_pause},
-  {"play",      l_audio_play},
-  {"stop",      l_audio_stop},
-  {"resume",    l_audio_resume},
-  {"rewind",    l_audio_rewind},
-  #endif
   {NULL, NULL}
 };
 
