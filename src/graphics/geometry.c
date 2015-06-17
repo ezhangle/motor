@@ -213,10 +213,31 @@ static void mkNormal(float px1, float py1, float px2, float py2, float *nx, floa
   *ny = -dx * l;
 }
 
+static inline void makeNoneVertex(float *output, float px1, float py1, float px2, float py2) {
+    float nx, ny;
+    mkNormal(px1, py1, px2, py2, &nx, &ny);
+
+    output[0]  = px1 - nx;
+    output[1]  = py1 - ny;
+    output[6]  = px1 + nx;
+    output[7]  = py1 + ny;
+    output[12] = px2 - nx;
+    output[13] = py2 - ny;
+    output[18] = px2 + nx;
+    output[19] = py2 + ny;
+    
+
+    for(int j = 0; j < 4; ++j) {
+      for(int k = 0; k < 4; ++k) {
+        output[6*j + 2 + k] = 1.0f;
+      }
+    }
+}
+
 
 static void drawLineJoinNone(int vertexCount, float const* vertices, bool polygon) {
-  int verts = 4*(vertexCount-1);
-  int indices = 6*(vertexCount-1);
+  int verts = 4*(vertexCount-(polygon?0:1));
+  int indices = 6*(vertexCount-(polygon?0:1));
   growBuffers(verts, indices);
 
   for(int i = 0; i < vertexCount - 1; ++i) {
@@ -224,28 +245,16 @@ static void drawLineJoinNone(int vertexCount, float const* vertices, bool polygo
     float py1 = vertices[2*i+1];
     float px2 = vertices[2*i+2];
     float py2 = vertices[2*i+3];
-    float nx, ny;
-    mkNormal(px1, py1, px2, py2, &nx, &ny);
 
     float * base = moduleData.data + 24 * i;
-    base[0]  = px1 - nx;
-    base[1]  = py1 - ny;
-    base[6]  = px1 + nx;
-    base[7]  = py1 + ny;
-    base[12] = px2 - nx;
-    base[13] = py2 - ny;
-    base[18] = px2 + nx;
-    base[19] = py2 + ny;
-    
-
-    for(int j = 0; j < 4; ++j) {
-      for(int k = 0; k < 4; ++k) {
-        base[6*j + 2 + k] = 1.0f;
-      }
-    }
+    makeNoneVertex(base, px1, py1, px2, py2);
   }
 
-  for(int i = 0; i < vertexCount-1; ++i) {
+  if(polygon) {
+    makeNoneVertex(moduleData.data + (vertexCount-1) * 24, vertices[2*vertexCount-2], vertices[2*vertexCount-1], vertices[0], vertices[1]);
+  }
+
+  for(int i = 0; i < vertexCount-(polygon?0:1); ++i) {
     uint16_t * base = moduleData.index + i * 6;
 
     base[0] = 4*i;
@@ -360,6 +369,7 @@ static void drawLineJoinMiter(int vertexCount, float const* vertices, bool polyg
 
     makeMiterVertex(&state, base, px2, py2);
 
+    // Add indices for last segment (from last back to first vertex)
     moduleData.index[vertexCount * 2 ] = 0;
     moduleData.index[vertexCount * 2 + 1] = 1;
   }
@@ -394,7 +404,19 @@ void graphics_geometry_drawLines(int vertexCount, float const* vertices) {
 
 
 void graphics_geometry_drawPolygon(int count, float const* vertices) {
-  drawLineJoinMiter(count, vertices, true);
+  switch(moduleData.join) {
+  case graphics_LineJoin_none:
+    drawLineJoinNone(count, vertices, true);
+    break;
+
+  case graphics_LineJoin_miter:
+    drawLineJoinMiter(count, vertices, true);
+    break;
+
+  case graphics_LineJoin_bevel:
+    //makeLineJoinBevel(vertexCount, vertices, true);
+    break;
+  }
 }
 
 
