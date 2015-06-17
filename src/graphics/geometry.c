@@ -19,6 +19,7 @@ static struct {
   graphics_LineJoin join;
 } moduleData;
 
+
 void graphics_geometry_init(void) {
   glGenVertexArrays(1, &moduleData.dataVAO);
   glBindVertexArray(moduleData.dataVAO);
@@ -41,6 +42,7 @@ void graphics_geometry_init(void) {
   moduleData.join = graphics_LineJoin_none;
 }
 
+
 static void growBuffers(int vertices, int indices) {
   int datasize = vertices * 6 * sizeof(float);
   if(moduleData.currentDataSize < datasize) {
@@ -56,6 +58,7 @@ static void growBuffers(int vertices, int indices) {
     moduleData.currentIndexSize = indexsize;
   }
 }
+
 
 static void drawBuffer(int vertices, int indices, GLenum type) {
   glBindBuffer(GL_ARRAY_BUFFER, moduleData.dataVBO);
@@ -110,6 +113,7 @@ void graphics_geometry_drawCircle(float x, float y, float radius, int segments) 
   drawBuffer(segments*2, segments*2+2, GL_TRIANGLE_STRIP);
 }
 
+
 void graphics_geometry_fillCircle(float x, float y, float radius, int segments) {
   growBuffers(segments+1, segments+2);
 
@@ -149,6 +153,7 @@ void graphics_geometry_fillRectangle(float x, float y, float w, float h) {
 
   graphics_setShader(shader);
 }
+
 
 void graphics_geometry_drawRectangle(float x, float y, float w, float h) {
   growBuffers(8, 10);
@@ -199,6 +204,7 @@ void graphics_geometry_drawRectangle(float x, float y, float w, float h) {
   drawBuffer(8, 10, GL_TRIANGLE_STRIP);
 }
 
+
 static void mkNormal(float px1, float py1, float px2, float py2, float *nx, float *ny) {
   float dx = px2 - px1;
   float dy = py2 - py1;
@@ -207,7 +213,8 @@ static void mkNormal(float px1, float py1, float px2, float py2, float *nx, floa
   *ny = -dx * l;
 }
 
-static void drawLineJoinNone(int vertexCount, float const* vertices) {
+
+static void drawLineJoinNone(int vertexCount, float const* vertices, bool polygon) {
   int verts = 4*(vertexCount-1);
   int indices = 6*(vertexCount-1);
   growBuffers(verts, indices);
@@ -252,77 +259,110 @@ static void drawLineJoinNone(int vertexCount, float const* vertices) {
   drawBuffer(verts, indices, GL_TRIANGLES);
 }
 
-static void drawLineJoinMiter(int vertexCount, float const* vertices) {
-  growBuffers(vertexCount * 2, vertexCount * 2);
 
+typedef struct {
   float nx, ny;
+  float px, py;
+} MiterLinesState;
+ 
+
+static void makeMiterVertex(MiterLinesState *state, float* output, float px2, float py2) {
+  // Compute offset from centerline for the current vertex.
+  // It works like this: Take angle bisector of the normal vectors
+  // for the adjacent line segments and scale it to the required length.
+  // The bisector is the sum of the unit length normal vectors and renormalized.
+  // The normal vector, line segment and the bisector form a right triangle,
+  // of which we know the length of one cathetus, and the angle between this leg
+  // and the hypothenuse.
+  // The known cathetus is half the line width, the length of the hypothenuse is
+  // the length which we have to scale the bisector to.
+  // The cosine of the angle between the two can be obtained by forming the
+  // dot product between the unit normal vector and the normalized bisector.
+  float nx2, ny2;
+  mkNormal(state->px, state->py, px2, py2, &nx2, &ny2);
+
+  float sx = state->nx + nx2;
+  float sy = state->ny + ny2;
+  float s = 1.0f / sqrt(sx*sx+sy*sy);
+  // sx,sy is unit length bisector
+  sx *= s;
+  sy *= s;
+
+  // c is length of hypothenuse in our triangle
+  float c = moduleData.lineWidth * moduleData.lineWidth / (4*(state->nx*sx + state->ny*sy));
+
+  // sx,sy is bisector scaled to the required length, i.e. the offset from the
+  // vertex for both sides
+  sx *= c;
+  sy *= c;
+
+  // Add the vertices
+  output[0] = state->px - sx;
+  output[1] = state->py - sy;
+  output[6] = state->px + sx;
+  output[7] = state->py + sy;
+
+  // Needed for next iteration
+  state->px = px2;
+  state->py = py2;
+  state->nx = nx2;
+  state->ny = ny2;
+}
+
+static void drawLineJoinMiter(int vertexCount, float const* vertices, bool polygon) {
+  growBuffers(vertexCount * 2, (vertexCount + (polygon ? 1 : 0)) * 2);
+
+  MiterLinesState state;
 
   // First vertex
   // Note: reversed order to avoid having to swap them before entering the loop
-  float px = vertices[2];
-  float py = vertices[3];
-  float px2 = vertices[0];
-  float py2 = vertices[1];
-  mkNormal(px2, py2, px, py, &nx, &ny);
 
-  moduleData.data[0] = px2 - nx;
-  moduleData.data[1] = py2 - ny;
-  moduleData.data[6] = px2 + nx;
-  moduleData.data[7] = py2 + ny;
+  if(!polygon) {
+    state.px = vertices[2];
+    state.py = vertices[3];
+    float px2 = vertices[0];
+    float py2 = vertices[1];
+    mkNormal(px2, py2, state.px, state.py, &state.nx, &state.ny);
+    // First vertex
+    moduleData.data[0] = px2 - state.nx;
+    moduleData.data[1] = py2 - state.ny;
+    moduleData.data[6] = px2 + state.nx;
+    moduleData.data[7] = py2 + state.ny;
+  } else {
+    float px2 = vertices[0];
+    float py2 = vertices[1];
+    state.px = vertices[2*vertexCount-2];
+    state.py = vertices[2*vertexCount-1];
+    mkNormal(px2, py2, state.px, state.py, &state.nx, &state.ny);
+    makeMiterVertex(&state, moduleData.data, px2, py2);
+  }
+
 
   // Inner vertices
-  for(int i = 1; i < vertexCount - 1; ++i) {
-    px2 = vertices[(i+1) * 2];
-    py2 = vertices[(i+1) * 2 + 1];
-
-    // Compute offset from centerline for the current vertex.
-    // It works like this: Take angle bisector of the normal vectors
-    // for the adjacent line segments and scale it to the required length.
-    // The bisector is the sum of the unit length normal vectors and renormalized.
-    // The normal vector, line segment and the bisector form a right triangle,
-    // of which we know the length of one cathetus, and the angle between this leg
-    // and the hypothenuse.
-    // The known cathetus is half the line width, the length of the hypothenuse is
-    // the length which we have to scale the bisector to.
-    // The cosine of the angle between the two can be obtained by forming the
-    // dot product between the unit normal vector and the normalized bisector.
-    float nx2, ny2;
-    mkNormal(px, py, px2, py2, &nx2, &ny2);
-
-    float sx = nx + nx2;
-    float sy = ny + ny2;
-    float s = 1.0f / sqrt(sx*sx+sy*sy);
-    // sx,sy is unit length bisector
-    sx *= s;
-    sy *= s;
-
-    // c is length of hypothenuse in our triangle
-    float c = moduleData.lineWidth * moduleData.lineWidth / (4*(nx*sx + ny*sy));
-
-    // sx,sy is bisector scaled to the required length, i.e. the offset from the
-    // vertex for both sides
-    sx *= c;
-    sy *= c;
-
-    // Add the vertices
+  for(int i = polygon ? 0 : 1; i < vertexCount - 1; ++i) {
+    float px2 = vertices[(i+1) * 2];
+    float py2 = vertices[(i+1) * 2 + 1];
     float *base = moduleData.data + i * 12;
-    base[0] = px - sx;
-    base[1] = py - sy;
-    base[6] = px + sx;
-    base[7] = py + sy;
 
-    // Needed for next iteration
-    px = px2;
-    py = py2;
-    nx = nx2;
-    ny = ny2;
+    makeMiterVertex(&state, base, px2, py2);
   }
 
   // Last vertex
-  moduleData.data[(vertexCount - 1) * 12] = px - nx;
-  moduleData.data[(vertexCount - 1) * 12+1] = py - ny;
-  moduleData.data[(vertexCount - 1) * 12+6] = px + nx;
-  moduleData.data[(vertexCount - 1) * 12+7] = py + ny;
+  if(!polygon) {
+    moduleData.data[(vertexCount - 1) * 12    ] = state.px - state.nx;
+    moduleData.data[(vertexCount - 1) * 12 + 1] = state.py - state.ny;
+    moduleData.data[(vertexCount - 1) * 12 + 6] = state.px + state.nx;
+    moduleData.data[(vertexCount - 1) * 12 + 7] = state.py + state.ny;
+  } else {
+    float px2 = vertices[0];
+    float py2 = vertices[1];
+    float *base = moduleData.data + (vertexCount - 1) * 12;
+
+    makeMiterVertex(&state, base, px2, py2);
+
+    moduleData.index[vertexCount * 2 ] = 0;
+    moduleData.index[vertexCount * 2 + 1] = 1;
+  }
 
   for(int i = 0; i < vertexCount * 2; ++i) {
     for(int j = 0; j < 4; ++j) {
@@ -331,17 +371,18 @@ static void drawLineJoinMiter(int vertexCount, float const* vertices) {
     moduleData.index[i] = i;
   }
 
-  drawBuffer(vertexCount * 2, vertexCount * 2, GL_TRIANGLE_STRIP);
+
+  drawBuffer(vertexCount * 2, (vertexCount + (polygon ? 1 : 0)) * 2, GL_TRIANGLE_STRIP);
 }
 
 void graphics_geometry_drawLines(int vertexCount, float const* vertices) {
   switch(moduleData.join) {
   case graphics_LineJoin_none:
-    drawLineJoinNone(vertexCount, vertices);
+    drawLineJoinNone(vertexCount, vertices, false);
     break;
 
   case graphics_LineJoin_miter:
-    drawLineJoinMiter(vertexCount, vertices);
+    drawLineJoinMiter(vertexCount, vertices, false);
     break;
 
   case graphics_LineJoin_bevel:
@@ -351,17 +392,31 @@ void graphics_geometry_drawLines(int vertexCount, float const* vertices) {
 
 }
 
+
+void graphics_geometry_drawPolygon(int count, float const* vertices) {
+  drawLineJoinMiter(count, vertices, true);
+}
+
+
+void graphics_geometry_fillPolygon(int count, float const* vertices) {
+
+}
+
+
 float graphics_geometry_getLineWidth(void) {
   return moduleData.lineWidth;
 }
+
 
 void graphics_geometry_setLineWidth(float width) {
   moduleData.lineWidth = width;
 }
 
+
 void graphics_geometry_setLineJoin(graphics_LineJoin join) {
   moduleData.join = join;
 }
+
 
 graphics_LineJoin graphics_geometry_getLineJoin() {
   return moduleData.join;

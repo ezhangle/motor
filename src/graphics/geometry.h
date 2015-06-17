@@ -28,3 +28,6 @@ graphics_LineJoin graphics_geometry_getLineJoin();
 
 float graphics_geometry_getLineWidth(void);
 void  graphics_geometry_setLineWidth(float width);
+
+void graphics_geometry_drawPolygon(int count, float const* vertices);
+void graphics_geometry_fillPolygon(int count, float const* vertices);
