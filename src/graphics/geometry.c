@@ -421,7 +421,20 @@ void graphics_geometry_drawPolygon(int count, float const* vertices) {
 
 
 void graphics_geometry_fillPolygon(int count, float const* vertices) {
+  growBuffers(count, count);
 
+  for(int i = 0; i < count; ++i) {
+    moduleData.data[i*6] = vertices[2*i];
+    moduleData.data[i*6+1] = vertices[2*i+1];
+    moduleData.data[i*6+2] = 1.0f;
+    moduleData.data[i*6+3] = 1.0f;
+    moduleData.data[i*6+4] = 1.0f;
+    moduleData.data[i*6+5] = 1.0f;
+
+    moduleData.index[i] = i;
+  }
+
+  drawBuffer(count, count, GL_TRIANGLE_FAN);
 }
 
 
