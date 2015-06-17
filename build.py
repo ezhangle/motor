@@ -6,7 +6,7 @@ import re
 import shutil
 
 optimize = 3
-link_time_optimize = 3
+link_time_optimize = 0
 
 sources = [
   'audio/audio.c',
@@ -48,7 +48,6 @@ sources = [
   'luaapi/tools.c',
   'math/vector.c',
   'math/minmax.c',
-  'math/random.c',
   'math/randomgenerator.c',
   'main.c',
   'motor.c',

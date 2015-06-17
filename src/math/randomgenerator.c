@@ -18,69 +18,55 @@ static uint64_t wangHash64(uint64_t key) {
 }
 
 
-void RandomGenerator_init(RandomGenerator *r) {
-  RandomGenerator_Seed s;
-  s.b32.low = 0xCBBF7A44;
-  s.b32.high = 0x0139408D;
-  RandomGenerator_setSeed(r, s);
+void math_RandomGenerator_init(math_RandomGenerator *r) {
+  math_RandomGenerator_setSeed(r, 0x0139408DCBBF7A44ULL);
   r->lastRandomNormal = INFINITY;
 }
 
 
-void RandomGenerator_setSeed(RandomGenerator *r, RandomGenerator_Seed s) {
+void math_RandomGenerator_setSeed(math_RandomGenerator *r, uint64_t s) {
   r->seed = s;
   do {
-    s.b64 = wangHash64(s.b64);
-  } while (s.b64 == 0);
+    s = wangHash64(s);
+  } while (s == 0);
   r->state = s;
 }
 
 
-RandomGenerator_Seed RandomGenerator_getSeed(RandomGenerator *r) {
+uint64_t math_RandomGenerator_getSeed(math_RandomGenerator *r) {
   return r->seed;
 }
 
 
-void RandomGenerator_getState(RandomGenerator *r, char *dst) {
-  sprintf(dst, "0x%016" PRIx64, r->state.b64);
+uint64_t math_RandomGenerator_getState(math_RandomGenerator const *r) {
+  return r->state;
 }
 
 
-int RandomGenerator_setState(RandomGenerator *r, const char *src) {
-  uint64_t n;
-  int res = sscanf(src, "0x%" PRIx64, &n);
-  if (res != 1) {
-    return -1;
-  }
-  r->state.b64 = n;
-  return 0;
+void math_RandomGenerator_setState(math_RandomGenerator *r, uint64_t state) {
+  r->state = state;
 }
 
 
-uint64_t RandomGenerator_rand(RandomGenerator *r) {
-  r->state.b64 ^= (r->state.b64 << 13);
-  r->state.b64 ^= (r->state.b64 >> 7);
-  r->state.b64 ^= (r->state.b64 << 17);
-  return r->state.b64;
+uint64_t math_RandomGenerator_rand(math_RandomGenerator *r) {
+  r->state ^= (r->state << 13);
+  r->state ^= (r->state >> 7);
+  r->state ^= (r->state << 17);
+  return r->state;
 }
 
 
-double RandomGenerator_random(RandomGenerator *r) {
-  return RandomGenerator_rand(r) / ((double) (UINT64_MAX) + 1.0);
+double math_RandomGenerator_random(math_RandomGenerator *r) {
+  return math_RandomGenerator_rand(r) / ((double) (UINT64_MAX) + 1.0);
 }
 
 
-double RandomGenerator_random1(RandomGenerator *r, double max) {
-  return RandomGenerator_random(r) * max;
+double math_RandomGenerator_random2(math_RandomGenerator *r, double min, double max) {
+  return math_RandomGenerator_random(r) * (max - min) + min;
 }
 
 
-double RandomGenerator_random2(RandomGenerator *r, double min, double max) {
-  return RandomGenerator_random(r) * (max - min) + min;
-}
-
-
-double RandomGenerator_randomNormal(RandomGenerator *r, double stddev) {
+double math_RandomGenerator_randomNormal(math_RandomGenerator *r, double stddev) {
 
   if (r->lastRandomNormal != INFINITY) {
     double n = r->lastRandomNormal;
@@ -88,14 +74,14 @@ double RandomGenerator_randomNormal(RandomGenerator *r, double stddev) {
     return n * stddev;
   }
 
-  double n = sqrt(-2.0 * log(1. - RandomGenerator_random(r)));
-  double phi = 2.0 * PI * (1. - RandomGenerator_random(r));
+  double n = sqrt(-2.0 * log(1. - math_RandomGenerator_random(r)));
+  double phi = 2.0 * PI * (1. - math_RandomGenerator_random(r));
   
   r->lastRandomNormal = n * cos(phi);
   return n * sin(phi) * stddev;
 }
 
 
-double RandomGenerator_randomNormal2(RandomGenerator *r, double stddev, double mean) {
-  return RandomGenerator_randomNormal(r, stddev) + mean;
+double math_RandomGenerator_randomNormal2(math_RandomGenerator *r, double stddev, double mean) {
+  return math_RandomGenerator_randomNormal(r, stddev) + mean;
 }
