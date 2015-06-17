@@ -9,6 +9,12 @@ static struct {
 } moduleData;
 
 
+l_checkTypeFn(l_audio_isStaticSource, moduleData.staticMT)
+l_checkTypeFn(l_audio_isStreamSource, moduleData.streamMT)
+l_toTypeFn(l_audio_toStaticSource, audio_StaticSource)
+l_toTypeFn(l_audio_toStreamSource, audio_StreamSource)
+
+
 static const l_tools_Enum l_audio_SourceType[] = {
   {"static", audio_SourceType_static},
   {"stream", audio_SourceType_stream},
@@ -47,9 +53,6 @@ static int l_audio_newSource(lua_State *state) {
 
   return 1;
 }
-
-l_checkTypeFn(l_audio_isStaticSource, moduleData.staticMT)
-l_checkTypeFn(l_audio_isStreamSource, moduleData.streamMT)
 
 
 #define t_l_audio_source_generic(type, fun) \
@@ -140,10 +143,27 @@ static int l_audio_SourceCommon_getVolume(lua_State *state) {
 }
 
 
-static int l_audio_SourceCommon_clone(lua_State *state) {
-  printf("Stub: Source:clone\n");
+static int l_audio_StreamSource_clone(lua_State *state) {
+  l_assertType(state, 1, l_audio_isStreamSource);
+  audio_StreamSource *oldSrc = l_audio_toStreamSource(state, 1);
+  audio_StreamSource *newSrc = lua_newuserdata(state, sizeof(audio_StreamSource));
+  audio_StreamSource_clone(oldSrc, newSrc);
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.streamMT);
+  lua_setmetatable(state, -2);
   return 1;
 }
+
+
+static int l_audio_StaticSource_clone(lua_State *state) {
+  l_assertType(state, 1, l_audio_isStaticSource);
+  audio_StaticSource *oldSrc = l_audio_toStaticSource(state, 1);
+  audio_StaticSource *newSrc = lua_newuserdata(state, sizeof(audio_StaticSource));
+  audio_StaticSource_clone(oldSrc, newSrc);
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.staticMT);
+  lua_setmetatable(state, -2);
+  return 1;
+}
+
 
 
 #define t_sourceMetatableFuncs(type) \
@@ -160,7 +180,7 @@ static int l_audio_SourceCommon_clone(lua_State *state) {
     {"isStatic",   l_audio_SourceCommon_isStatic}, \
     {"setVolume",  l_audio_SourceCommon_setVolume}, \
     {"getVolume",  l_audio_SourceCommon_getVolume}, \
-    {"clone",     l_audio_SourceCommon_clone}, \
+    {"clone",      l_audio_ ## type ## Source_clone}, \
     {NULL, NULL} \
   };
 t_sourceMetatableFuncs(Stream)

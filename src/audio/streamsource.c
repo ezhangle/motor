@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdlib.h>
 #include "streamsource.h"
 #include "decoder.h"
@@ -39,6 +40,9 @@ bool audio_loadStream(audio_StreamSource *source, char const * filename) {
   initialPreload(source);
 
   source->looping = false;
+
+  source->filename = malloc(sizeof(char) * (strlen(filename) + 1));
+  strcpy(source->filename, filename);
 
   return good;
 }
@@ -181,6 +185,12 @@ void audio_StreamSource_pause(audio_StreamSource *source) {
   audio_SourceCommon_pause(&source->common);
 }
 
+
 void audio_StreamSource_resume(audio_StreamSource *source) {
   audio_SourceCommon_resume(&source->common);
+}
+
+
+void audio_StreamSource_clone(audio_StreamSource const* oldSrc, audio_StreamSource * newSrc) {
+  audio_loadStream(newSrc, oldSrc->filename);
 }

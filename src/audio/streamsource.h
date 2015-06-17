@@ -12,6 +12,7 @@ typedef struct {
   void*  decoderData;
   ALuint buffers[2];
   bool   looping;
+  char  *filename;
 } audio_StreamSource;
 
 bool audio_loadStream(audio_StreamSource *source, char const * filename);
@@ -23,3 +24,4 @@ void audio_StreamSource_stop(audio_StreamSource *source);
 void audio_StreamSource_rewind(audio_StreamSource *source);
 void audio_StreamSource_pause(audio_StreamSource *source);
 void audio_StreamSource_resume(audio_StreamSource *source);
+void audio_StreamSource_clone(audio_StreamSource const* oldSrc, audio_StreamSource * newSrc);
