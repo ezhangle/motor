@@ -2,11 +2,7 @@
 #include "graphics_geometry.h"
 #include "../graphics/geometry.h"
 #include "tools.h"
-
-static struct {
-  float * vertices;
-  int vertSize;
-} moduleData;
+#include "polygon.h"
 
 static const l_tools_Enum l_graphics_DrawMode[] = {
   {"fill", graphics_DrawMode_fill},
@@ -67,64 +63,25 @@ static int l_geometry_rectangle(lua_State* state) {
 }
 
 
-static int l_geometry_read_vertices(lua_State* state, int offset) {
-  bool table = lua_istable(state, 1 + offset);
-
-  int count;
-  if(table) {
-    count = lua_objlen(state, 1 + offset);
-  } else {
-    count = lua_gettop(state) - offset;
-  }
-
-  if(count % 2) {
-    lua_pushstring(state, "Need even number of values");
-    return lua_error(state);
-  }
-
-  if(count < 4) {
-    lua_pushstring(state, "Need at least two points for drawing lines");
-    return lua_error(state);
-  }
-
-  if(count > moduleData.vertSize) {
-    moduleData.vertices = realloc(moduleData.vertices, count * sizeof(float));
-    moduleData.vertSize = count;
-  }
-
-  if(table) {
-    for(int i = 0; i < count; ++i) {
-      lua_rawgeti(state, -1, i);
-      moduleData.vertices[i] = l_tools_toNumberOrError(state, -1);
-      lua_pop(state, 1);
-    }
-  } else {
-    for(int i = 0; i < count; ++i) {
-      moduleData.vertices[i] = l_tools_toNumberOrError(state, 1 + i + offset);
-    }
-  }
-
-  return count / 2;
-}
-
-
 static int l_geometry_line(lua_State* state) {
-  int count = l_geometry_read_vertices(state, 0);
-  graphics_geometry_drawLines(count, moduleData.vertices);
+  float * vertices;
+  int count = l_geometry_read_vertices(state, 0, &vertices);
+  graphics_geometry_drawLines(count, vertices);
   return 0;
 }
 
 
 static int l_geometry_polygon(lua_State* state) {
-  int count = l_geometry_read_vertices(state, 1);
+  float * vertices;
+  int count = l_geometry_read_vertices(state, 1, &vertices);
   graphics_DrawMode mode = l_tools_toEnumOrError(state, 1, l_graphics_DrawMode);
   switch(mode) {
   case graphics_DrawMode_fill:
-    graphics_geometry_fillPolygon(count, moduleData.vertices);
+    graphics_geometry_fillPolygon(count, vertices);
     break;
 
   case graphics_DrawMode_line:
-    graphics_geometry_drawPolygon(count, moduleData.vertices);
+    graphics_geometry_drawPolygon(count, vertices);
     break;
   }
   return 0;

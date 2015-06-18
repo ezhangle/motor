@@ -1,12 +1,16 @@
+#include "polygon.h"
 #include "tools.h"
 #include "math.h"
 #include "../math/randomgenerator.h"
+#include "../math/triangulate.h"
 #include <math.h>
 #include <inttypes.h>
 
 static struct {
   math_RandomGenerator defaultRandomGenerator;
   int randomGeneratorMT;
+  int polygonDatSize;
+  float *polygonData;
 
 } moduleData;
 
@@ -171,12 +175,32 @@ static int l_math_RandomGenerator_setState(lua_State* state) {
 }
 
 
+static int l_math_triangulate(lua_State* state) {
+  float *vertices;
+  int count = l_geometry_read_vertices(state, 0, &vertices);
+  int *indices;
+  int triangles = math_triangulation_triangulate(vertices, count, &indices);
+
+  lua_createtable(state, triangles, 0);
+  for(int i = 0; i < triangles; ++i) {
+    lua_createtable(state, 3, 0);
+    for(int j = 0; j < 3; ++j) {
+      lua_pushnumber(state, indices[3*i+j]);
+      lua_rawseti(state, -2, j+1);
+    }
+    lua_rawseti(state, -2, i+1);
+  }
+  return 1;
+}
+
+
 static luaL_Reg const mathFreeFuncs[] = {
   {"random", l_math_random_free},
   {"randomNormal", l_math_randomNormal_free},
   {"newRandomGenerator", l_math_newRandomGenerator},
   {"setRandomSeed", l_math_setRandomSeed_free},
   {"getRandomSeed", l_math_getRandomSeed},
+  {"triangulate", l_math_triangulate},
   {NULL, NULL}
 };
 

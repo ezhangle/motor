@@ -26,6 +26,7 @@
 #include "keyboard.h"
 #include "mouse.h"
 #include "timer/timer.h"
+#include "math/math.h"
 
 
 
@@ -156,6 +157,7 @@ int main() {
   keyboard_init();
   graphics_init(config.window.width, config.window.height);
   audio_init();
+  math_init();
 
 
   if(luaL_dofile(lua, "main.lua")) {
