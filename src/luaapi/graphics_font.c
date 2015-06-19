@@ -98,8 +98,27 @@ static int l_graphics_print(lua_State* state) {
 
 int l_graphics_newFont(lua_State* state) {
   // TODO: alternative signatures for newFont
-  char const * filename = l_tools_toStringOrError(state, 1);
-  int ptsize = l_tools_toNumberOrError(state, 2);
+
+  char const * filename = NULL;
+  int ptsize;
+
+  if(lua_isstring(state, 1)) {
+    filename = lua_tostring(state, 1);
+    if(lua_isnumber(state, 2)) {
+      ptsize = lua_tonumber(state, 2);
+    } else {
+      ptsize = 12;
+      lua_settop(state, 1);
+      lua_pushnumber(state, ptsize);
+    }
+    lua_settop(state, 2);
+  } else if(lua_isnumber(state, 1)) {
+    ptsize = l_tools_toNumberOrError(state, 1);
+    lua_settop(state, 1);
+    lua_pushstring(state, "(default)");
+    lua_insert(state, 1);
+  }
+
   
   // Create string font:size
   // Stack: ... fontname

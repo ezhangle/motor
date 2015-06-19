@@ -17,6 +17,12 @@ static const l_tools_Enum l_graphics_LineJoin[] = {
   {NULL, 0}
 };
 
+static const l_tools_Enum l_graphics_DrawStyle[] = {
+  {"rough",  graphics_DrawStyle_rough},
+  {"smooth", graphics_DrawStyle_smooth},
+  {NULL, 0}
+};
+
 int l_geometry_circle(lua_State* state) {
   graphics_DrawMode mode = l_tools_toEnumOrError(state, 1, l_graphics_DrawMode);
   float x = l_tools_toNumberOrError(state, 2);
@@ -119,15 +125,72 @@ static int l_geometry_getLineJoin(lua_State* state) {
 }
 
 
+static int l_geometry_setPointStyle(lua_State* state) {
+  graphics_DrawStyle style = l_tools_toEnumOrError(state, 1, l_graphics_DrawStyle);
+  graphics_geometry_setPointStyle(style);
+  return 0;
+}
+
+
+static int l_geometry_getPointStyle(lua_State* state) {
+  l_tools_pushEnum(state, graphics_geometry_getPointStyle(), l_graphics_DrawStyle);
+  return 1;
+}
+
+
+static int l_geometry_setPointSize(lua_State* state) {
+  float size = l_tools_toNumberOrError(state, 1);
+  graphics_geometry_setPointSize(size);
+  return 0;
+}
+
+
+static int l_geometry_getPointSize(lua_State* state) {
+  lua_pushnumber(state, graphics_geometry_getPointSize());
+  return 1;
+}
+
+
+static int l_geometry_point(lua_State* state) {
+  float x = l_tools_toNumberOrError(state, 1);
+  float y = l_tools_toNumberOrError(state, 2);
+
+  graphics_geometry_point(x,y);
+  return 0;
+}
+
+
+static int l_geometry_setLineStyle(lua_State* state) {
+  graphics_DrawStyle style = l_tools_toEnumOrError(state, 1, l_graphics_DrawStyle);
+  printf("love.graphics.setLineStyle is a stub\n");
+  return 0;
+}
+
+
+static int l_geometry_getLineStyle(lua_State* state) {
+  printf("love.graphics.setLineStyle is a stub\n");
+  lua_pushstring(state, "rough");
+
+  return 1;
+}
+
+
 static luaL_Reg const geometryFreeFuncs[] = {
-  {"circle",       l_geometry_circle},
-  {"rectangle",    l_geometry_rectangle},
-  {"line",         l_geometry_line},
-  {"polygon",      l_geometry_polygon},
-  {"setLineWidth", l_geometry_setLineWidth},
-  {"getLineWidth", l_geometry_getLineWidth},
-  {"setLineJoin",  l_geometry_setLineJoin},
-  {"getLineJoin",  l_geometry_getLineJoin},
+  {"circle",        l_geometry_circle},
+  {"rectangle",     l_geometry_rectangle},
+  {"line",          l_geometry_line},
+  {"point",         l_geometry_point},
+  {"polygon",       l_geometry_polygon},
+  {"setLineWidth",  l_geometry_setLineWidth},
+  {"getLineWidth",  l_geometry_getLineWidth},
+  {"setLineJoin",   l_geometry_setLineJoin},
+  {"getLineJoin",   l_geometry_getLineJoin},
+  {"setLineStyle",  l_geometry_setLineStyle},
+  {"getLineStyle",  l_geometry_getLineStyle},
+  {"setPointStyle", l_geometry_setPointStyle},
+  {"getPointStyle", l_geometry_getPointStyle},
+  {"setPointSize",  l_geometry_setPointSize},
+  {"getPointSize",  l_geometry_getPointSize},
   {NULL, NULL}
 };
 

@@ -13,6 +13,11 @@ typedef enum {
   graphics_LineJoin_bevel
 } graphics_LineJoin;
 
+typedef enum {
+  graphics_DrawStyle_rough,
+  graphics_DrawStyle_smooth
+} graphics_DrawStyle;
+
 void graphics_geometry_init(void);
 
 void graphics_geometry_fillRectangle(float x, float y, float w, float h);
@@ -31,3 +36,9 @@ void  graphics_geometry_setLineWidth(float width);
 
 void graphics_geometry_drawPolygon(int count, float const* vertices);
 void graphics_geometry_fillPolygon(int count, float const* vertices);
+
+void graphics_geometry_point(float x, float y);
+void graphics_geometry_setPointStyle(graphics_DrawStyle style);
+void graphics_geometry_setPointSize(float size);
+graphics_DrawStyle graphics_geometry_getPointStyle();
+float graphics_geometry_getPointSize();

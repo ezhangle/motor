@@ -60,7 +60,7 @@
   }
 
   var Module = {
-    preRun: [memoryprofiler_add_hooks, loadGame],
+    preRun: [loadGame],
     postRun: [],
     print: (function() {
       return function(text) {
@@ -72,7 +72,7 @@
       text = Array.prototype.slice.call(arguments).join(' ');
       console.error(text);
     },
-    TOTAL_MEMORY:67108864*4
+    TOTAL_MEMORY:67108864*8
   };
 
 
@@ -165,13 +165,13 @@
           Module.canvas = canvas;
           canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
           layer2.appendChild(canvas);
-          eval.call(window, engineReq.response);
-          /*
+          //eval.call(window, engineReq.response);
+          
           var scriptTag = document.createElement("script");
           scriptTag.type = "text/javascript";
           scriptTag.src = "motor2d.js";
           document.body.appendChild(scriptTag);
-          */
+          
         } else if(engineReq.status != 200) {
           loadError("Could not load engine: " + engineReq.statusText);
         } else if(gameReq.status != 200) {

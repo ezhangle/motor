@@ -20,23 +20,23 @@ GLchar const *defaultVertexSource =
   "}\n";
 
 static GLchar const vertexHeader[] =
-  "uniform   mat4 transform;\n"  
-  "uniform   mat4 projection;\n"
-  "uniform   mat2 textureRect;\n"
-  "uniform   vec2 size;\n"
+  "uniform   mat4 motor2d_transform;\n"  
+  "uniform   mat4 motor2d_projection;\n"
+  "uniform   mat2 motor2d_textureRect;\n"
+  "uniform   vec2 motor2d_size;\n"
   "#define extern uniform\n"
-  "attribute vec2 vPos;\n"
-  "attribute vec2 vUV;\n"
-  "attribute vec4 vColor;\n"
-  "varying   vec2 fUV;\n"
-  "varying   vec4 fColor;\n"
+  "attribute vec2 motor2d_vPos;\n"
+  "attribute vec2 motor2d_vUV;\n"
+  "attribute vec4 motor2d_vColor;\n"
+  "varying   vec2 motor2d_fUV;\n"
+  "varying   vec4 motor2d_fColor;\n"
   "#line 0\n";
 
 static GLchar const vertexFooter[] =
   "void main() {\n"
-  "  gl_Position = position(projection * transform, vec4(vPos * size, 1.0, 1.0));\n"
-  "  fUV = vUV * textureRect[1] + textureRect[0];\n"
-  "  fColor = vColor;\n"
+  "  gl_Position = position(motor2d_projection * motor2d_transform, vec4(motor2d_vPos * motor2d_size, 1.0, 1.0));\n"
+  "  motor2d_fUV = motor2d_vUV * motor2d_textureRect[1] + motor2d_textureRect[0];\n"
+  "  motor2d_fColor = motor2d_vColor;\n"
   "}\n";
 
 static GLchar const *defaultFragmentSource =
@@ -44,22 +44,22 @@ static GLchar const *defaultFragmentSource =
   "  return Texel(texture, texture_coords) * color;\n"
   "}\n";
 
-#define DEFAULT_SAMPLER "tex"
+#define DEFAULT_SAMPLER "motor2d_tex"
 
 static GLchar const fragmentHeader[] = 
   "precision mediump float;\n"
   "#define Image sampler2D\n"
   "#define Texel texture2D\n"
   "#define extern uniform\n"
-  "varying vec2 fUV;\n"
-  "varying vec4 fColor;\n"
+  "varying vec2 motor2d_fUV;\n"
+  "varying vec4 motor2d_fColor;\n"
   "uniform sampler2D " DEFAULT_SAMPLER ";\n"
-  "uniform vec4 color;\n"
+  "uniform vec4 motor2d_color;\n"
   "#line 0\n";
 
 static GLchar const fragmentFooter[] =
   "void main() {\n"
-  "  gl_FragColor = effect(color * fColor, tex, fUV, vec2(0.0, 0.0));\n"
+  "  gl_FragColor = effect(motor2d_color * motor2d_fColor, " DEFAULT_SAMPLER ", motor2d_fUV, vec2(0.0, 0.0));\n"
   "}\n";
 
 bool graphics_Shader_compileAndAttachShaderRaw(graphics_Shader *program, GLenum shaderType, char const* code) {
@@ -191,12 +191,12 @@ graphics_ShaderUniformType graphics_shader_toMotorType(GLenum type) {
 }
 
 static void readShaderUniforms(graphics_Shader *shader) {
-  shader->uniformLocations.transform   = glGetUniformLocation(shader->program, "transform");
-  shader->uniformLocations.projection  = glGetUniformLocation(shader->program, "projection");
-  shader->uniformLocations.textureRect = glGetUniformLocation(shader->program, "textureRect");
+  shader->uniformLocations.transform   = glGetUniformLocation(shader->program, "motor2d_transform");
+  shader->uniformLocations.projection  = glGetUniformLocation(shader->program, "motor2d_projection");
+  shader->uniformLocations.textureRect = glGetUniformLocation(shader->program, "motor2d_textureRect");
   shader->uniformLocations.tex         = glGetUniformLocation(shader->program, DEFAULT_SAMPLER);
-  shader->uniformLocations.color       = glGetUniformLocation(shader->program, "color");
-  shader->uniformLocations.size        = glGetUniformLocation(shader->program, "size");
+  shader->uniformLocations.color       = glGetUniformLocation(shader->program, "motor2d_color");
+  shader->uniformLocations.size        = glGetUniformLocation(shader->program, "motor2d_size");
 
   int maxLength;
   glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, &shader->uniformCount);
@@ -276,9 +276,9 @@ graphics_ShaderCompileStatus graphics_Shader_new(graphics_Shader *shader, char c
     return graphics_ShaderCompileStatus_fragmentError;
   }
 
-  glBindAttribLocation(shader->program, 0, "vPos");
-  glBindAttribLocation(shader->program, 1, "vUV");
-  glBindAttribLocation(shader->program, 2, "vColor");
+  glBindAttribLocation(shader->program, 0, "motor2d_vPos");
+  glBindAttribLocation(shader->program, 1, "motor2d_vUV");
+  glBindAttribLocation(shader->program, 2, "motor2d_vColor");
   glLinkProgram(shader->program);
 
   int linkState;

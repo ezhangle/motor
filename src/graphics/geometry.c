@@ -17,6 +17,8 @@ static struct {
   graphics_Shader plainColorShader;
   float lineWidth;
   graphics_LineJoin join;
+  graphics_DrawStyle pointStyle;
+  float pointSize;
 } moduleData;
 
 
@@ -438,6 +440,19 @@ void graphics_geometry_fillPolygon(int count, float const* vertices) {
 }
 
 
+void graphics_geometry_point(float x, float y) {
+  switch(moduleData.pointStyle) {
+  case graphics_DrawStyle_rough:
+    graphics_geometry_fillRectangle(x - moduleData.pointSize / 2.0f, y - moduleData.pointSize / 2.0f, moduleData.pointSize, moduleData.pointSize);
+    break;
+      
+  case graphics_DrawStyle_smooth:
+    graphics_geometry_fillCircle(x, y, moduleData.pointSize / 2.0f, moduleData.pointSize > 20.0f ? (int)(moduleData.pointSize / 2.0f): 20);
+    break;
+  }
+}
+
+
 float graphics_geometry_getLineWidth(void) {
   return moduleData.lineWidth;
 }
@@ -455,4 +470,20 @@ void graphics_geometry_setLineJoin(graphics_LineJoin join) {
 
 graphics_LineJoin graphics_geometry_getLineJoin() {
   return moduleData.join;
+}
+
+void graphics_geometry_setPointStyle(graphics_DrawStyle style) {
+  moduleData.pointStyle = style;
+}
+
+void graphics_geometry_setPointSize(float size) {
+  moduleData.pointSize = size;
+}
+
+graphics_DrawStyle graphics_geometry_getPointStyle() {
+  return moduleData.pointStyle;
+}
+
+float graphics_geometry_getPointSize() {
+  return moduleData.pointSize;
 }
