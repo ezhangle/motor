@@ -6,6 +6,7 @@ static struct {
   int vertSize;
 } moduleData;
 
+
 int l_geometry_read_vertices(lua_State* state, int offset, float **vertices) {
   bool table = lua_istable(state, 1 + offset);
 
@@ -33,7 +34,8 @@ int l_geometry_read_vertices(lua_State* state, int offset, float **vertices) {
 
   if(table) {
     for(int i = 0; i < count; ++i) {
-      lua_rawgeti(state, -1, i);
+      lua_rawgeti(state, 1+offset, i+1);
+      printf("%s\n", lua_typename(state, lua_type(state, -1)));
       moduleData.vertices[i] = l_tools_toNumberOrError(state, -1);
       lua_pop(state, 1);
     }

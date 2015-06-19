@@ -184,8 +184,8 @@ static int l_math_triangulate(lua_State* state) {
   lua_createtable(state, triangles, 0);
   for(int i = 0; i < triangles; ++i) {
     lua_createtable(state, 3, 0);
-    for(int j = 0; j < 3; ++j) {
-      lua_pushnumber(state, indices[3*i+j]);
+    for(int j = 0; j < 6; ++j) {
+      lua_pushnumber(state, indices[6*i+j]);
       lua_rawseti(state, -2, j+1);
     }
     lua_rawseti(state, -2, i+1);

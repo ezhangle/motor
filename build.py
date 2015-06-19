@@ -6,7 +6,7 @@ import re
 import shutil
 
 optimize = 3
-link_time_optimize = 0
+link_time_optimize = 3
 
 sources = [
   'audio/audio.c',
@@ -29,6 +29,7 @@ sources = [
   'image/imagedata.c',
   'luaapi/audio.c',
   'luaapi/boot.c',
+  'luaapi/event.c',
   'luaapi/math.c',
   'luaapi/filesystem.c',
   'luaapi/keyboard.c',

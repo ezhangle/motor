@@ -18,6 +18,7 @@
 #include "luaapi/filesystem.h"
 #include "luaapi/timer.h"
 #include "luaapi/math.h"
+#include "luaapi/event.h"
 
 #include "graphics/graphics.h"
 
@@ -151,6 +152,7 @@ int main() {
   l_filesystem_register(lua);
   l_timer_register(lua);
   l_math_register(lua);
+  l_event_register(lua);
 
   l_boot(lua, &config);
 
