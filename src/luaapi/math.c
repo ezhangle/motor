@@ -184,9 +184,12 @@ static int l_math_triangulate(lua_State* state) {
   lua_createtable(state, triangles, 0);
   for(int i = 0; i < triangles; ++i) {
     lua_createtable(state, 3, 0);
-    for(int j = 0; j < 6; ++j) {
-      lua_pushnumber(state, indices[6*i+j]);
-      lua_rawseti(state, -2, j+1);
+    for(int j = 0; j < 3; ++j) {
+      int vIdx = indices[3*i+j];
+      lua_pushnumber(state, vertices[2*vIdx]);
+      lua_rawseti(state, -2, 2*j+1);
+      lua_pushnumber(state, vertices[2*vIdx+1]);
+      lua_rawseti(state, -2, 2*j+2);
     }
     lua_rawseti(state, -2, i+1);
   }
