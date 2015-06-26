@@ -53,7 +53,11 @@ static int l_graphics_printf(lua_State* state) {
     l_graphics_loadDefaultFont();
   }
 
-  char const* text = l_tools_toStringOrError(state, 1);
+  char const* text = lua_tostring(state, 1);
+  if(!text) {
+    lua_pushstring(state, "string or number required");
+    return lua_error(state);
+  }
   int x = l_tools_toNumberOrError(state, 2);
   int y = l_tools_toNumberOrError(state, 3);
   int limit = l_tools_toNumberOrError(state, 4);
@@ -80,7 +84,11 @@ static int l_graphics_print(lua_State* state) {
   if(!moduleData.currentFont) {
     l_graphics_loadDefaultFont();
   }
-  char const* text = l_tools_toStringOrError(state, 1);
+  char const* text = lua_tostring(state, 1);
+  if(!text) {
+    lua_pushstring(state, "need string");
+    return lua_error(state);
+  }
   int x = l_tools_toNumberOrError(state, 2);
   int y = l_tools_toNumberOrError(state, 3);
 
@@ -102,17 +110,22 @@ int l_graphics_newFont(lua_State* state) {
   char const * filename = NULL;
   int ptsize;
 
-  if(lua_isstring(state, 1)) {
+  const int type = lua_type(state, 1);
+  if(type == LUA_TSTRING) {
+    printf("a\n");
     filename = lua_tostring(state, 1);
     if(lua_isnumber(state, 2)) {
+      printf("b\n");
       ptsize = lua_tonumber(state, 2);
     } else {
+      printf("c\n");
       ptsize = 12;
       lua_settop(state, 1);
       lua_pushnumber(state, ptsize);
     }
     lua_settop(state, 2);
-  } else if(lua_isnumber(state, 1)) {
+  } else if(type == LUA_TNUMBER) {
+    printf("d\n");
     ptsize = l_tools_toNumberOrError(state, 1);
     lua_settop(state, 1);
     lua_pushstring(state, "(default)");
@@ -125,6 +138,8 @@ int l_graphics_newFont(lua_State* state) {
   lua_pushstring(state, ":");
   lua_insert(state, -2);
   lua_concat(state, 3);
+
+  printf("font: %s\n", lua_tostring(state, -1));
 
   // Load font table to -2
   // Stack: ... fonts fontname

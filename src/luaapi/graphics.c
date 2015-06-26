@@ -148,8 +148,10 @@ static int l_graphics_translate(lua_State* state) {
 }
 
 static int l_graphics_scale(lua_State* state) {
-  float x = l_tools_toNumberOrError(state, 1);
-  float y = l_tools_toNumberOrError(state, 2);
+  // According to love's wiki, the first argument must be present, but
+  // it actually accepts none and nil
+  float x = luaL_optnumber(state, 1, 1.0f);
+  float y = luaL_optnumber(state, 2, x);
 
 
   matrixstack_scale(x, y);

@@ -5,8 +5,8 @@ import os
 import re
 import shutil
 
-optimize = 0
-link_time_optimize = 0
+optimize = 3
+link_time_optimize = 3
 
 sources = [
   'audio/audio.c',
@@ -198,13 +198,13 @@ def build():
   global output, CFLAGS, LDFLAGS, CC, LD
   if '--native' in sys.argv:
     output = 'motor2d'
-    CFLAGS = '-g -O{optimize} -I/usr/include/SDL2 -DFT2_BUILD_LIBRARY -Wall -g -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+    CFLAGS = '-g -Wall -O{optimize} -I/usr/include/SDL2 -DFT2_BUILD_LIBRARY -Wall -g -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
     LDFLAGS = '-lm -lSDL2 -lGLESv2 -lopenal -lSDL2_image -g'.format(optimize=optimize, link_time_optimize=link_time_optimize)
     CC = 'clang'
     LD = 'clang'
   else:
     output = 'motor2d.js'
-    CFLAGS = '-O{optimize} --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+    CFLAGS = '-O{optimize} -Wall --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
     LDFLAGS = '-O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
     CC = 'emcc'
     LD = 'emcc'

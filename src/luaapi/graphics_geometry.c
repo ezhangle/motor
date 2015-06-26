@@ -162,13 +162,21 @@ static int l_geometry_point(lua_State* state) {
 
 static int l_geometry_setLineStyle(lua_State* state) {
   graphics_DrawStyle style = l_tools_toEnumOrError(state, 1, l_graphics_DrawStyle);
-  printf("love.graphics.setLineStyle is a stub\n");
+  static bool warned = false;
+  if(!warned) {
+    printf("love.graphics.setLineStyle is a stub\n");
+    warned = true;
+  }
   return 0;
 }
 
 
 static int l_geometry_getLineStyle(lua_State* state) {
-  printf("love.graphics.setLineStyle is a stub\n");
+  static bool warned = false;
+  if(!warned) {
+    printf("love.graphics.getLineStyle is a stub\n");
+    warned = true;
+  }
   lua_pushstring(state, "rough");
 
   return 1;
