@@ -28,27 +28,8 @@
 #include "mouse.h"
 #include "timer/timer.h"
 #include "math/math.h"
+#include "errorhandler.h"
 
-
-
-
-
-int lua_errorhandler(lua_State *state) {
-  // TODO
-  //const char* msg = lua_tostring(state, 1);
-  lua_Debug debug;
-  int level = 0;
-  while(lua_getstack(state, level, &debug)) {
-    lua_getinfo(state, "Sl", &debug);
-    lua_pushstring(state, debug.short_src);
-    lua_pushstring(state, ":");
-    lua_pushnumber(state, debug.currentline);
-    lua_pushstring(state, "\n");
-    ++level;
-  }
-  lua_concat(state, 4*level+1);
-  return 1;
-}
 
 typedef struct {
 //  double lastTime;
@@ -61,47 +42,24 @@ void main_loop(void *data) {
 
   // TODO use registry to get love.update and love.draw?
 
- /* double newTime = curtime();
-  double deltaTime = newTime - loopData->lastTime;
-  */
-
   timer_step();
   lua_rawgeti(loopData->luaState, LUA_REGISTRYINDEX, loopData->errhand);
   lua_getglobal(loopData->luaState, "love");
   lua_pushstring(loopData->luaState, "update");
 
-  // TODO use pcall, add error handling
   lua_rawget(loopData->luaState, -2);
   lua_pushnumber(loopData->luaState, timer_getDelta());
-  //if(lua_pcall(loopData->luaState, 1, 0, 1)) {
-  if(lua_pcall(loopData->luaState, 1, 0, 1)) {
-    printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
-    #ifdef EMSCRIPTEN
-      emscripten_force_exit(1);
-    #else
-      exit(1);
-    #endif
-  }
+  pcall(loopData->luaState, 1);
 
   lua_pushstring(loopData->luaState, "draw");
   lua_rawget(loopData->luaState, -2);
 
-  // TODO use pcall, add error handling
-  //if(lua_pcall(loopData->luaState, 0, 0, 1)) {
-  if(lua_pcall(loopData->luaState, 0, 0, 1)) {
-    printf("Lua error: %s\n", lua_tostring(loopData->luaState, -1));
-    #ifdef EMSCRIPTEN
-      emscripten_force_exit(1);
-    #else
-      exit(1);
-    #endif
-  }
+  pcall(loopData->luaState, 0);
 
   graphics_swap();
 
   lua_pop(loopData->luaState, 1);
 
-  //loopData->lastTime = newTime;
 
   SDL_Event event;
   while(SDL_PollEvent(&event)) {
@@ -166,7 +124,7 @@ int main() {
     printf("Error: %s\n", lua_tostring(lua, -1));
   }
 
-  lua_pushcfunction(lua, lua_errorhandler);
+  lua_pushcfunction(lua, errorhandler);
   lua_getglobal(lua, "love");
   lua_pushstring(lua, "load");
   lua_rawget(lua, -2);
@@ -175,7 +133,7 @@ int main() {
   }
   lua_pop(lua, 1);
 
-  lua_pushcfunction(lua, lua_errorhandler);
+  lua_pushcfunction(lua, errorhandler);
   MainLoopData mainLoopData = {
     .luaState = lua,
     .errhand = luaL_ref(lua, LUA_REGISTRYINDEX)

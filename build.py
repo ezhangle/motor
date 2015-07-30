@@ -53,6 +53,7 @@ sources = [
   'math/minmax.c',
   'math/randomgenerator.c',
   'math/triangulate.c',
+  'errorhandler.c',
   'main.c',
   'motor.c',
   'mouse.c',

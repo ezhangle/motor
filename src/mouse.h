@@ -8,7 +8,6 @@ int mouse_isVisible(void);
 void mouse_getPosition(int *x, int *y);
 int mouse_getX(void);
 int mouse_getY(void);
-void mouse_setPosition(int x, int y);
 void mouse_setVisible(int b);
 void mouse_setX(int x);
 void mouse_setY(int y);

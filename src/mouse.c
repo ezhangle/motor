@@ -151,15 +151,6 @@ int mouse_getY(void) {
 }
 
 
-void mouse_setPosition(int x, int y) {
-#ifdef EMSCRIPTEN
-  SDL_WarpMouse(x, y);
-#else
-  SDL_WarpMouseInWindow(graphics_getWindow(), x, y);
-#endif
-}
-
-
 void mouse_setVisible(int b) {
   moduleData.visible = !!b;
   SDL_ShowCursor(b ? SDL_ENABLE : SDL_DISABLE);

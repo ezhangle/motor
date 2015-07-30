@@ -50,7 +50,7 @@ love.audio.getPosition()	no
 love.audio.getSourceCount()	no	
 love.audio.getVelocity()	no	
 love.audio.getVolume()	no	
-love.audio.newSource()	yes	
+love.audio.newSource()	partial	Currently only Vorbis files supported.
 love.audio.pause()	yes	
 love.audio.play()	yes	
 love.audio.resume()	yes	
