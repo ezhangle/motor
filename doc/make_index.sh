@@ -10,7 +10,9 @@ cat <<'EOF'
   <style>
     body {
       font-family: sans-serif;
-      width: 50%;
+      width: 100%;
+      max-width: 60%;
+      margin: 0 auto;
     }
     .yes {
       background-color: #A4C75C;
@@ -26,28 +28,28 @@ cat <<'EOF'
     }
   </style>
   <title>
-  Motor2D - Bringing Löve2D to the Web
+  Motor2D - Finally Bringing LÖVE to the Web
   </title>
 </head>
 <body>
 
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAAA0BAMAAAC5oI3hAAAAMFBMVEWjQ0JoaWdwcm9/gX6MjovCgX+dn5y3ubbfurvNz8vX2dbz3uHq5+Xw8u/2+PT9//wYI7m7AAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB98BEBEAH9IpvscAAAORSURBVEjHxdZNaBNBFAfwuRSEEkoVWlpqexD0pvTSnrQg4kloLoWASOgHQk+h4sWL7aXnUA96DNFbqTQXQYhlaW+KMfUk1IbFevBmgv1KNjsZZ9682XmTrBoVcQ/Z+bs7v8y+zL7K8ueFOYL+qviDg+UHovFJV0Q9yXqyLjHrm/H2rEN8iAWbLFVcZZ5D7GTMeD7vTMrHEit35Mdxr0N8GcFhONQFwXvglPQp8fWiKcVUF8RxH5x2s5SoLpWxFLkuiFpaS2mHOMBizIsuiIL++nqfQzRGsBR6Uuvx+IVFIPr7cyQGo637E6LgGaLGWM9MygNCTGApNPFscuP13C1FlCpVEoPRR4vvxAs/IuA84wGxtqlLAURjUNV9rowPYmMwNET2FxKi3gvE4bQKC3rSzjIs6RoSNgZnc05Va1gcXxHBsCrFsJ50Ay60JpGwMRigGyxriHqamWkn0zApwI22VgWCxIA8R1NuMCR4Aoi8LMb7TSBkUeE40JUhMbCvtNhNRIRIAaFWsKB3wuEybtUMECQGo5ZIepZYBULWgQ9r4hPW7FT/xCQSAt4yQxSAkEtQC1GTtnG3N64AQSIhkllC7GpiO6dKoSbl8RVsjAFBoiWOzwhC1DRxMnVXuIScQAkZLbGSjiH44Ihoe5Ax90HIKuq6ZbQRYimDBDyQqp+uBYkRUUg7BJZTfC4j8Q1/AlledYVEQzSZcIhVRruCHB9h85AbQl0h0RCFhEuk2onTy9jCNoEgEQluurchetuJ1iXTwoAgEYmoebuvGW1196Aq6p2CKzYikcy6RMHrII6uqtHTDBI2akJvK0tgy3GI1vWH8g/ZgGm/Nmpi5XYRDk8TL7HxuT37dPzm/Llc1MGjCESd4ZFQ7ZcxaL+dfT548qD84xjzl1389RFD8P3ST2IMsUcCjMP1jTfrvkk2cvW68GLRlLOpTluxhLo/3IiIKAIhPkZ1acISizFECHfulc2aoqiJcMshBPc6CZ35cxzZqAlRdAl56iCe6+FbnG0jEk3PJXi5neD4rIEPBIlIRMtAQnhsnxByHOKc0FeJRqOZZRiiwkJ9i/kMfbM++DcShfktXrkER2LfN4RwCdFJNP1YolTunhAlsvCI4H6ljRAuISjByaciuI54ii4IH4YkCvtfTT+GqMh1/AbBYwi8oVvC3IxvKtzoCzOB2y+iBBcO4b7s5kbnO90F/Yr4J13rPxDfAew1TNBhkvCaAAAAAElFTkSuQmCC">
-<h1>Bringing Löve2D to the Web</h1>
+<h1>Bringing LÖVE to the Web</h1>
 <h2>What is this?</h2>
 
 <p>
-<a href="http://love2d.org">Löve2D</a> is an awesome framework that provides an OpenGL backed 2D game engine programmable in the <a href="http://lua.org">Lua</a> scripting language.
+<a href="http://love2d.org">LÖVE</a> is an awesome framework that provides an OpenGL backed 2D game engine programmable in the <a href="http://lua.org">Lua</a> scripting language.
 </p>
 
-<p> A lot of great games have been made using Löve2D and the number is steadily
-growing. The only downside of Löve2D is that it cannot be embedded in websites
+<p> A lot of great games have been made using LÖVE and the number is steadily
+growing. The only downside of LÖVE is that it cannot be embedded in websites
 for people to play.  This is what Motor2D is trying to solve: A version of
-Löve2D that can run on any modern WebGL-enabled browser.  </p>
+LÖVE that can run on any modern WebGL-enabled browser.  </p>
 
 <h2>How is it done?</h2>
 
 <p>
-Motor2D is a reimplementation of Löve2D's Lua interface in C, which is then
+Motor2D is a reimplementation of LÖVE's Lua interface in C, which is then
 compiled to JavaScript using the unbelievable <a href="http://kripken.github.io/emscripten-site">emscripten</a> toolset.  </p>
 
 <h2>Why a Reimplementation Instead of a Port?</h2>
@@ -58,10 +60,10 @@ In fact, there are several reasons for this. The most important one is that I ju
 
 <ul>
 <li>
-  <strong>Löve2D is written in C++ and makes extensive use of exceptions.</strong> While there is absolutely no problem with this on real computers, exceptions are very costly to implement in asm.js (the highly optimizable subset of JavaScript that emscripten compiles to), even if no exception is thrown at all. So all error handling would either have to be slowing down the whole framework, rewritten or stripped out, neither of which was an option.
+  <strong>LÖVE is written in C++ and makes extensive use of exceptions.</strong> While there is absolutely no problem with this on real computers, exceptions are very costly to implement in asm.js (the highly optimizable subset of JavaScript that emscripten compiles to), even if no exception is thrown at all. So all error handling would either have to be slowing down the whole framework, rewritten or stripped out, neither of which was an option.
 </li>
 <li>
-  <strong>Löve2D requires some external libraries that are not readily available on emscripten.</strong> Löve2D is built around SDL2, which in itself is a great library, but is not included in emscripten (only through emscripten ports) and adds a bit of extra weight to the final executable. I also couldn't find information an how much browser functionality is reused by SDL2, while emscripten's SDL1 implementation tries to use the browsers built in functionality for as much stuff as possible (image loading for example). The same goes for PhysicsFS.
+  <strong>LÖVE requires some external libraries that are not readily available on emscripten.</strong> LÖVE is built around SDL2, which in itself is a great library, but is not included in emscripten (only through emscripten ports) and adds a bit of extra weight to the final executable. I also couldn't find information an how much browser functionality is reused by SDL2, while emscripten's SDL1 implementation tries to use the browsers built in functionality for as much stuff as possible (image loading for example). The same goes for PhysicsFS.
 </li>
 <li>
   <strong>Emscripten brings its own virtual filesystem</strong>, so using Löve's integrated PhysicsFS is not only unnecessary, it also cannot provide preloading of image data.
@@ -70,7 +72,7 @@ In fact, there are several reasons for this. The most important one is that I ju
   <strong>I feel much more comfortable using "dirty" hacks or shortcuts in C than in C++.</strong> Code size and execution speed are very important when running on the browser, and C++ code usually tends to ask for a much cleaner design than C. I admit that this may just be my personal opinion, but in C++ I tend to "feel bad" about every typecast in the code, especially if it's from one type to another, technically unrelated type. In C, this is often the only way to achieve certain things, so I feel much more comfortable doing it.
 </li>
 <li>
-  <strong>Löve2D aims to be compatible to old hardware</strong> and therefore uses a lot of runtime polymorphy to select the correct implementation of certain things for several different OpenGL versions. While this is fine and a good thing on real hardware, on the web there is really only WebGL 1.0 to care about at the moment. So all runtime selectable implementation stuff is just useless overhead for a system that is only going to support one single target platform.
+  <strong>LÖVE aims to be compatible to old hardware</strong> and therefore uses a lot of runtime polymorphy to select the correct implementation of certain things for several different OpenGL versions. While this is fine and a good thing on real hardware, on the web there is really only WebGL 1.0 to care about at the moment. So all runtime selectable implementation stuff is just useless overhead for a system that is only going to support one single target platform.
 </li>
 </ul>
 
@@ -78,7 +80,7 @@ In fact, there are several reasons for this. The most important one is that I ju
 and reimplement everything. When developing for a "real computer" instead of a
 browser, I wouldn't care too much about the slight overhead of a virtual
 function call to the graphics system, but even though emscripten generates
-incredibly fast JavaScript, it is still JavaScript. Also, Löve2D uses LuaJIT,
+incredibly fast JavaScript, it is still JavaScript. Also, LÖVE uses LuaJIT,
 an equally incredibly fast Lua VM. But we can't use it in the browser, so we
 are stuck with plain old vanilla Lua, which is still a pretty fast scripting
 language and VM, but several times slower than LuaJIT. Therefore, every bit of
@@ -91,12 +93,12 @@ There are two ways to use the framework: Either with the development server incl
 
 <h3>Direct Usage on Webserver</h3>
 
-Copy the files mentionen in section Building to your webserver.
-The file motor2d.html may adopted to your needs or completely replaced and renamed, as long as it has an empty <div> element with id "motor_output" and it loads motor2dloader.js.
+Download and unpack motor2d into your webserver directory.<br>
+The file motor2d.html may adopted to your needs or completely replaced and renamed, as long as it has an empty <div> element with id "motor_output" and it loads motor2dloader.js.<br>
 
-Put your .love file into the same directory and call it game.love. When opening motor2d.html in a browser, it should load and start your game.
+Put your .love file into the same directory and call it game.love. When opening motor2d.html in a browser, it should load and start your game.<br>
 
-You can use a different name for the .love file if you open the page with query option motor2d.html?love=yourfilename.love
+You can use a different name for the .love file if you open the page with query option motor2d.html?love=yourfilename.love<br>
 
 <h3>Using the Built-In Development Server</h3>
 
@@ -122,7 +124,7 @@ It is naturally quite a bit slower than the original, but many games work with a
 
 <h2>Compatibility</h2>
 <p>
-The following table gives an overview of the availability of some of Löve2D's functions and classes in Motor2D. Classes are left out if support for them is not available at all (especially if the appropriate newXY function is still missing).
+The following table gives an overview of the availability of some of LÖVE's functions and classes in Motor2D. Classes are left out if support for them is not available at all (especially if the appropriate newXY function is still missing).
 </p>
 
 <p>
@@ -130,7 +132,7 @@ Green functions are already available and should work as expected. Yellow functi
 </p>
 
 <p>
-I am aiming for 100% script compatibility between Löve2D and Motor2D, but it is still a lot of work to get there and even then some minor incompatibilities will not be avoidable.
+I am aiming for 100% script compatibility between LÖVE and Motor2D, but it is still a lot of work to get there and even then some minor incompatibilities will not be avoidable.
 </p>
 
 <p>
