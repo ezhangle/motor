@@ -21,3 +21,4 @@ void audio_StaticSource_rewind(audio_StaticSource *source);
 void audio_StaticSource_pause(audio_StaticSource *source);
 void audio_StaticSource_resume(audio_StaticSource *source);
 void audio_StaticSource_clone(audio_StaticSource const* oldSrc, audio_StaticSource * newSrc);
+bool audio_StaticSource_isLooping(audio_StaticSource const* source);

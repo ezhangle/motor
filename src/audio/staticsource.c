@@ -32,6 +32,13 @@ void audio_StaticSource_setLooping(audio_StaticSource *source, bool loop) {
 }
 
 
+bool audio_StaticSource_isLooping(audio_StaticSource const* source) {
+  ALint loop;
+  alGetSourcei(source->common.source, AL_LOOPING, &loop);
+  return loop;
+}
+
+
 void audio_StaticSource_stop(audio_StaticSource *source) {
   audio_SourceCommon_stop(&source->common);
   audio_StaticSource_rewind(source);

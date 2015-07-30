@@ -91,6 +91,19 @@ t_l_audio_source_setLooping(Stream)
 #undef t_l_audio_source_setLooping
 
 
+#define t_l_audio_source_isLooping(type) \
+  static int l_audio_ ## type ## Source_isLooping(lua_State *state) { \
+    l_assertType(state, 1, l_audio_is ## type ## Source);  \
+    audio_ ## type ## Source *src = lua_touserdata(state, 1); \
+    lua_pushboolean(state, audio_ ## type ## Source_isLooping(src)); \
+    return 0; \
+  }
+
+t_l_audio_source_isLooping(Static)
+t_l_audio_source_isLooping(Stream)
+#undef t_l_audio_source_isLooping
+
+
 static bool isSource(lua_State * state, int index) {
   return l_audio_isStaticSource(state, index) || l_audio_isStreamSource(state,index);
 }
@@ -178,6 +191,7 @@ static int l_audio_StaticSource_clone(lua_State *state) {
     {"isStopped",  l_audio_SourceCommon_isStopped}, \
     {"isPaused",   l_audio_SourceCommon_isPaused}, \
     {"isStatic",   l_audio_SourceCommon_isStatic}, \
+    {"isLooping",  l_audio_ ## type ## Source_isLooping}, \
     {"setVolume",  l_audio_SourceCommon_setVolume}, \
     {"getVolume",  l_audio_SourceCommon_getVolume}, \
     {"clone",      l_audio_ ## type ## Source_clone}, \

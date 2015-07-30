@@ -18,6 +18,7 @@ typedef struct {
 bool audio_loadStream(audio_StreamSource *source, char const * filename);
 void audio_StreamSource_play(audio_StreamSource *source);
 void audio_StreamSource_setLooping(audio_StreamSource *source, bool loop);
+bool audio_StreamSource_isLooping(audio_StreamSource const* source);
 void audio_updateStreams(void);
 void audio_streamsource_init(void);
 void audio_StreamSource_stop(audio_StreamSource *source);

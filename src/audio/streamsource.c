@@ -131,6 +131,11 @@ void audio_StreamSource_setLooping(audio_StreamSource *source, bool loop) {
 }
 
 
+bool audio_StreamSource_isLooping(audio_StreamSource const* source) {
+  return source->looping;
+}
+
+
 void audio_streamsource_init(void) {
   moduleData.playingStreamCount = 0;
   moduleData.playingStreamSize  = 16;
