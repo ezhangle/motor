@@ -41,7 +41,7 @@ static int l_mouse_getY(lua_State *state) {
 
 
 static int l_mouse_setPosition(lua_State *state) {
-  lua_pushstring(state, "love.mouse.setPosition not supported in Motor2D. There is no HTML5 API to do that. Sorry");
+  lua_pushstring(state, "love.mouse.setPosition not supported in Motor2D. There is no HTML5 API to do that. Sorry.");
   return lua_error(state);
 } 
 
@@ -53,16 +53,14 @@ static int l_mouse_setVisible(lua_State *state) {
 
 
 static int l_mouse_setX(lua_State *state) {
-  int x = luaL_checknumber(state, 1);
-  mouse_setX(x);
-  return 0;
+  lua_pushstring(state, "love.mouse.setX not supported in Motor2D. There is no HTML5 API to do that. Sorry.");
+  return lua_error(state);
 } 
 
 
 static int l_mouse_setY(lua_State *state) {
-  int y = luaL_checknumber(state, 1);
-  mouse_setY(y);
-  return 0;
+  lua_pushstring(state, "love.mouse.setY not supported in Motor2D. There is no HTML5 API to do that. Sorry.");
+  return lua_error(state);
 } 
 
 
