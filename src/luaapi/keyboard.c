@@ -3,7 +3,6 @@
 #include "tools.h"
 
 static struct {
-  lua_State *luaState;
   bool keyRepeat;
 
 } moduleData;
@@ -59,37 +58,50 @@ static luaL_Reg const regFuncs[] = {
   {NULL, NULL}
 };
 
-void l_keyboard_register(lua_State* state) {
-  moduleData.luaState = state;
-  moduleData.keyRepeat = false;
 
-  l_tools_registerModule(state, "keyboard", regFuncs);
-}
-
-void l_keyboard_keypressed(SDL_Keycode key, bool isrepeat) {
+static void l_keyboard_keypressed(lua_State* state, SDL_Keycode key, bool isrepeat) {
   if(isrepeat && !moduleData.keyRepeat) {
     return;
   }
-  lua_getglobal(moduleData.luaState, "love");
-  lua_pushstring(moduleData.luaState, "keypressed");
-  lua_rawget(moduleData.luaState, -2);
-  lua_pushstring(moduleData.luaState, keyboard_getKeyName(key));
-  lua_pushboolean(moduleData.luaState, isrepeat);
-  lua_call(moduleData.luaState, 2, 0);
+  lua_getglobal(state, "love");
+  lua_pushstring(state, "keypressed");
+  lua_rawget(state, -2);
+  lua_pushstring(state, keyboard_getKeyName(key));
+  lua_pushboolean(state, isrepeat);
+  lua_call(state, 2, 0);
 }
 
-void l_keyboard_keyreleased(SDL_Keycode key) {
-  lua_getglobal(moduleData.luaState, "love");
-  lua_pushstring(moduleData.luaState, "keyreleased");
-  lua_rawget(moduleData.luaState, -2);
-  lua_pushstring(moduleData.luaState, keyboard_getKeyName(key));
-  lua_call(moduleData.luaState, 1, 0);
+
+static void l_keyboard_keyreleased(lua_State * state, SDL_Keycode key) {
+  lua_getglobal(state, "love");
+  lua_pushstring(state, "keyreleased");
+  lua_rawget(state, -2);
+  lua_pushstring(state, keyboard_getKeyName(key));
+  lua_call(state, 1, 0);
 }
 
-void l_keyboard_textInput(char const* text) {
-  lua_getglobal(moduleData.luaState, "love");
-  lua_pushstring(moduleData.luaState, "textinput");
-  lua_rawget(moduleData.luaState, -2);
-  lua_pushstring(moduleData.luaState, text);
-  lua_call(moduleData.luaState, 1, 0);
+
+static void l_keyboard_textInput(lua_State * state, char const* text) {
+  lua_getglobal(state, "love");
+  lua_pushstring(state, "textinput");
+  lua_rawget(state, -2);
+  lua_pushstring(state, text);
+  lua_call(state, 1, 0);
 }
+
+
+void l_keyboard_register(lua_State* state) {
+  moduleData.keyRepeat = false;
+
+  l_tools_registerModule(state, "keyboard", regFuncs);
+
+  keyboard_EventCallbacks callbacks = {
+    .pressed = l_keyboard_keypressed,
+    .released = l_keyboard_keyreleased,
+    .textInput = l_keyboard_textInput,
+    .userData = state
+  };
+
+  keyboard_setEventCallbacks(&callbacks);
+}
+

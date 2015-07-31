@@ -4,6 +4,8 @@
 #include "keyboard.h"
 #include "luaapi/keyboard.h"
 
+
+
 typedef struct {
   SDL_Keycode keycode;
   char const * name;
@@ -171,12 +173,24 @@ static const KeyName keynames[] = {
   {SDLK_AC_BOOKMARKS, "appbookmarks"},
 };
 
+
+static void dummyPress(void * ud, int key, bool repeat) {}
+static void dummyRelease(void * ud, int key) {}
+static void dummyTextInput(void * ud, char const* text) {}
+
 static struct {
   char const **keynames;
   bool *keystate;
   bool textActive;
   int numKeys;
-} moduleData;
+  keyboard_EventCallbacks callbacks;
+} moduleData = {
+  .callbacks = {
+    .pressed   = dummyPress,
+    .released  = dummyRelease,
+    .textInput = dummyTextInput
+  }
+};
 
 void keyboard_startText(void);
 
@@ -232,7 +246,7 @@ void keyboard_keypressed(SDL_Keycode key) {
   if(nk < moduleData.numKeys) {
     bool repeat = moduleData.keystate[nk];
     moduleData.keystate[nk] = true;
-    l_keyboard_keypressed(nk, repeat);
+    moduleData.callbacks.pressed(moduleData.callbacks.userData, nk, repeat);
   }
 }
 
@@ -240,7 +254,7 @@ void keyboard_keyreleased(SDL_Keycode key) {
   int nk = normalizeKeyCode(key);
   if(nk < moduleData.numKeys) {
     moduleData.keystate[nk] = false;
-    l_keyboard_keyreleased(nk);
+    moduleData.callbacks.released(moduleData.callbacks.userData, nk);
   }
 }
 
@@ -263,6 +277,12 @@ bool keyboard_isTextEnabled(void) {
   return moduleData.textActive;
 }
 
+
 void keyboard_textInput(char const* text) {
-  l_keyboard_textInput(text);
+  moduleData.callbacks.textInput(moduleData.callbacks.userData, text);
+}
+
+
+void keyboard_setEventCallbacks(keyboard_EventCallbacks const *callbacks) {
+  moduleData.callbacks = *callbacks;
 }
