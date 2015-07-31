@@ -59,7 +59,8 @@ static luaL_Reg const regFuncs[] = {
 };
 
 
-static void l_keyboard_keypressed(lua_State* state, SDL_Keycode key, bool isrepeat) {
+static void l_keyboard_keypressed(void *ud, SDL_Keycode key, bool isrepeat) {
+  lua_State * state = (lua_State*)ud;
   if(isrepeat && !moduleData.keyRepeat) {
     return;
   }
@@ -72,7 +73,8 @@ static void l_keyboard_keypressed(lua_State* state, SDL_Keycode key, bool isrepe
 }
 
 
-static void l_keyboard_keyreleased(lua_State * state, SDL_Keycode key) {
+static void l_keyboard_keyreleased(void *ud, SDL_Keycode key) {
+  lua_State * state = (lua_State*)ud;
   lua_getglobal(state, "love");
   lua_pushstring(state, "keyreleased");
   lua_rawget(state, -2);
@@ -81,7 +83,8 @@ static void l_keyboard_keyreleased(lua_State * state, SDL_Keycode key) {
 }
 
 
-static void l_keyboard_textInput(lua_State * state, char const* text) {
+static void l_keyboard_textInput(void *ud, char const* text) {
+  lua_State * state = (lua_State*)ud;
   lua_getglobal(state, "love");
   lua_pushstring(state, "textinput");
   lua_rawget(state, -2);
