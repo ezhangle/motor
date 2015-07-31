@@ -2,11 +2,6 @@
 #include "tools.h"
 
 
-static struct {
-  lua_State *luaState;
-} moduleData;
-
-
 static int l_mouse_isVisible(lua_State *state) {
   lua_pushboolean(state, mouse_isVisible());
   return 1;
@@ -70,6 +65,44 @@ static int l_mouse_setY(lua_State *state) {
   return 0;
 } 
 
+
+static void l_mouse_pressed(void *ud, int x, int y, int button) {
+  lua_State * state = (lua_State*)ud;
+  lua_getglobal(state, "love");
+  lua_pushstring(state, "mousepressed");
+  lua_rawget(state, -2);
+  lua_pushnumber(state, x);
+  lua_pushnumber(state, y);
+  lua_pushstring(state, mouse_getButtonName(button));
+  lua_call(state, 3, 0);
+}
+
+
+static void l_mouse_released(void *ud, int x, int y, int button) {
+  lua_State * state = (lua_State*)ud;
+  lua_getglobal(state, "love");
+  lua_pushstring(state, "mousereleased");
+  lua_rawget(state, -2);
+  lua_pushnumber(state, x);
+  lua_pushnumber(state, y);
+  lua_pushstring(state, mouse_getButtonName(button));
+  lua_call(state, 3, 0);
+}
+
+
+static void l_mouse_moved(void *ud, int x, int y, int dx, int dy) {
+  lua_State * state = (lua_State*)ud;
+  lua_getglobal(state, "love");
+  lua_pushstring(state, "mousemoved");
+  lua_rawget(state, -2);
+  lua_pushnumber(state, x);
+  lua_pushnumber(state, y);
+  lua_pushnumber(state, dx);
+  lua_pushnumber(state, dy);
+  lua_call(state, 4, 0);
+}
+
+
 static luaL_Reg const regFuncs[] = {
   { "isDown",         l_mouse_isDown        },
   { "isVisible",      l_mouse_isVisible     },
@@ -85,6 +118,14 @@ static luaL_Reg const regFuncs[] = {
 
 
 void l_mouse_register(lua_State* state) {
-  moduleData.luaState = state;
   l_tools_registerModule(state, "mouse", regFuncs);
+
+  mouse_EventCallbacks callbacks = {
+    .pressed  = l_mouse_pressed,
+    .released = l_mouse_released,
+    .moved    = l_mouse_moved,
+    .userData = state
+  };
+
+  mouse_setEventCallbacks(&callbacks);
 }

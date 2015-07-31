@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <SDL.h>
+#include "mouse.h"
 
 // TODO:
 // moduleData.getRelativeMode()
@@ -16,16 +17,27 @@
 extern SDL_Window* graphics_getWindow(void);
 #endif
 
+static void dummyPressed(void* ud, int x, int y, int button) {}
+static void dummyReleased(void* ud, int x, int y, int button) {}
+static void dummyMoved(void* ud, int x, int y, int dx, int dy) {}
+
 static struct {
   int x, y;
   int dx, dy;
   int visible;
   int buttons[256];
-} moduleData;
+  mouse_EventCallbacks callbacks;
+} moduleData = {
+  .callbacks = {
+    .pressed  = dummyPressed,
+    .released = dummyReleased,
+    .moved    = dummyMoved
+  }
+};
 
 
-static const char *buttonStr(int x) {
-  switch (x) {
+char const *mouse_getButtonName(int button) {
+  switch (button) {
     case SDL_BUTTON_LEFT:
       return "l";
 
@@ -34,6 +46,12 @@ static const char *buttonStr(int x) {
 
     case SDL_BUTTON_MIDDLE:
       return "m";
+
+    case SDL_BUTTON_X1:
+      return "x1";
+
+    case SDL_BUTTON_X2:
+      return "x2";
 
 /*
     case SDL_BUTTON_WHEELDOWN:
@@ -99,24 +117,22 @@ void mouse_mousemoved(int x, int y) {
   moduleData.dy = y - moduleData.y;
   moduleData.x = x;
   moduleData.y = y;
-  // TODO : Do lua callback
+  moduleData.callbacks.moved(moduleData.callbacks.userData, x, y, moduleData.dx, moduleData.dy);
 }
-
 
 
 void mouse_mousepressed(int x, int y, int button) {
   mouse_mousemoved(x, y);
   moduleData.buttons[button] = 1;
-  printf("%s: %d, %d, %s\n", __func__, x, y, buttonStr(button)); // TODO: remove me
-  // TODO : Do lua callback
+  moduleData.callbacks.pressed(moduleData.callbacks.userData, x, y, button);
 }
 
 
 void mouse_mousereleased(int x, int y, int button) {
   mouse_mousemoved(x, y);
   moduleData.buttons[button] = 0;
-  printf("%s: %d, %d, %s\n", __func__, x, y, buttonStr(button)); // TODO: remove me
-  // TODO : Do lua callback
+
+  moduleData.callbacks.released(moduleData.callbacks.userData, x, y, button);
 }
 
 
@@ -172,4 +188,8 @@ void mouse_setY(int y) {
 #else
   SDL_WarpMouseInWindow(graphics_getWindow(), moduleData.x, y);
 #endif
+}
+
+void mouse_setEventCallbacks(mouse_EventCallbacks const *callbacks) {
+  moduleData.callbacks = *callbacks;
 }
