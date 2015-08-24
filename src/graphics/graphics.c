@@ -48,13 +48,19 @@ void graphics_init(int width, int height) {
   #ifdef EMSCRIPTEN
     moduleData.surface = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
   #else
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
     moduleData.window = SDL_CreateWindow("motor2d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
     moduleData.context = SDL_GL_CreateContext(moduleData.window);
+    SDL_GL_MakeCurrent(moduleData.window, moduleData.context);
 
     moduleData.surface = SDL_GetWindowSurface(moduleData.window);
+    SDL_GL_SetSwapInterval(1);
+
   #endif
 
   glViewport(0,0,width,height);
@@ -271,6 +277,7 @@ void graphics_discardStencil() {
 
 
 void graphics_reset(void) {
+  // TODO point and line drawing modes
   matrixstack_origin();
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);
   graphics_setBackgroundColor(0.0f, 0.0f, 0.0f, 1.0f);
