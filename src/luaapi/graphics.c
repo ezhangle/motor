@@ -36,30 +36,38 @@ static int l_graphics_getColor(lua_State* state) {
   return 4;
 }
 
-static int l_graphics_setBackgroundColor(lua_State* state) {
-  int red   = lua_tointeger(state, 1);
-  int green = lua_tointeger(state, 2);
-  int blue  = lua_tointeger(state, 3);
-  int alpha = luaL_optinteger(state, 4, 255);
+static int l_graphics_setColorGeneric(lua_State* state, void(*setColor)(float,float,float,float)) {
+  int offset = 0;
 
-  float scale = 1.0f / 255.0f;
-
-  graphics_setBackgroundColor(red * scale, green * scale, blue * scale, alpha * scale);
-  return 0;
-}
-
-static int l_graphics_setColor(lua_State* state) {
-  int red   = lua_tointeger(state, 1);
-  int green = lua_tointeger(state, 2);
-  int blue  = lua_tointeger(state, 3);
-  //int alpha = lua_tointeger(state, 4);
-  int alpha = luaL_optinteger(state, 4, 255);
+  if(lua_istable(state, 1)) {
+    lua_settop(state, 1);
+    lua_rawgeti(state, 1, 1);
+    lua_rawgeti(state, 1, 2);
+    lua_rawgeti(state, 1, 3);
+    lua_rawgeti(state, 1, 4);
+    offset = 1;
+  }
+  int red   = lua_tointeger(state, 1 + offset);
+  int green = lua_tointeger(state, 2 + offset);
+  int blue  = lua_tointeger(state, 3 + offset);
+  int alpha = luaL_optinteger(state, 4 + offset, 255);
 
   float scale = 1.0f / 255.0f;
 
   graphics_setColor(red * scale, green * scale, blue * scale, alpha * scale);
   return 0;
 }
+
+
+static int l_graphics_setBackgroundColor(lua_State* state) {
+  return l_graphics_setColorGeneric(state, graphics_setBackgroundColor);
+}
+
+
+static int l_graphics_setColor(lua_State* state) {
+  return l_graphics_setColorGeneric(state, graphics_setColor);
+}
+
 
 static int l_graphics_clear(lua_State* state) {
   graphics_clear();
