@@ -12,6 +12,7 @@ typedef struct {
   graphics_Image image;
 
   GLuint fbo;
+  GLuint stencilBuf;
   mat4x4 projectionMatrix;
 
 } graphics_Canvas;
@@ -24,3 +25,4 @@ void graphics_Canvas_draw(graphics_Canvas const* canvas, graphics_Quad const* qu
 void graphics_setCanvas(graphics_Canvas const* canvas);
 graphics_Canvas const* graphics_getCanvas(void);
 void graphics_canvas_init(int width, int height);
+void graphics_Canvas_createStencilBuffer(graphics_Canvas *canvas);

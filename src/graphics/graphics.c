@@ -246,6 +246,30 @@ bool graphics_getScissor(int *x, int *y, int *w, int *h) {
   return true;
 }
 
+void graphics_defineStencil() {
+  graphics_Canvas_createStencilBuffer(graphics_getCanvas());
+  
+  // Disable color writes but don't save the mask values.
+  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+  glClear(GL_STENCIL_BUFFER_BIT);
+  glEnable(GL_STENCIL_TEST);
+  glStencilFunc(GL_ALWAYS, 1, 1);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+}
+
+void graphics_useStencil(bool invert) {
+  glStencilFunc(GL_EQUAL, (GLint)(!invert), 1); // invert ? 0 : 1
+  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+  glColorMask(moduleData.colorMask[0],moduleData.colorMask[1],moduleData.colorMask[2],moduleData.colorMask[3]);
+}
+
+void graphics_discardStencil() {
+  glColorMask(moduleData.colorMask[0],moduleData.colorMask[1],moduleData.colorMask[2],moduleData.colorMask[3]);
+  glDisable(GL_STENCIL_TEST);
+}
+
+
 void graphics_reset(void) {
   matrixstack_origin();
   graphics_setColor(1.0f, 1.0f, 1.0f, 1.0f);

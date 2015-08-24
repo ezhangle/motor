@@ -28,12 +28,32 @@ void graphics_Canvas_new(graphics_Canvas *canvas, int width, int height) {
   m4x4_scale(&canvas->projectionMatrix, 2.0f / width, 2.0f / height, 0.0f);
   canvas->image.width = width;
   canvas->image.height = height;
+  canvas->stencilBuf = 0;
 }
 
 void graphics_Canvas_free(graphics_Canvas *canvas) {
   graphics_Image_free(&canvas->image);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDeleteFramebuffers(1, &canvas->fbo);
+}
+
+
+void graphics_Canvas_createStencilBuffer(graphics_Canvas *canvas) {
+  if(canvas->stencilBuf > 0) {
+    return;
+  }
+
+  GLuint oldFBO;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint*)&oldFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
+  glGenRenderbuffers(1, &canvas->stencilBuf);
+  glBindRenderbuffer(GL_RENDERBUFFER, canvas->stencilBuf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, canvas->image.width, canvas->image.height);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, canvas->stencilBuf);
+
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
+
 }
 
 void graphics_Canvas_draw(graphics_Canvas const* canvas, graphics_Quad const* quad,
@@ -60,6 +80,7 @@ void graphics_canvas_init(int width, int height) {
   moduleData.defaultCanvas.image.width = width;
   moduleData.defaultCanvas.image.height = height;
   moduleData.canvas = &moduleData.defaultCanvas;
+  moduleData.defaultCanvas.stencilBuf = 1;
 }
 
 graphics_Canvas const* graphics_getCanvas(void) {

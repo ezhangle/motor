@@ -287,6 +287,29 @@ static int l_graphics_reset(lua_State* state) {
 }
 
 
+static int l_graphics_setStencilGeneric(lua_State* state, bool invert) {
+  if(lua_isfunction(state, 1)) {
+    lua_settop(state, 1);
+    graphics_defineStencil();
+    lua_call(state, 0, 0);
+    graphics_useStencil(invert);
+  } else {
+    graphics_discardStencil();
+  }
+  return 0;
+}
+
+
+static int l_graphics_setStencil(lua_State* state) {
+  return l_graphics_setStencilGeneric(state, false);
+}
+
+
+static int l_graphics_setInvertedStencil(lua_State* state) {
+  return l_graphics_setStencilGeneric(state, true);
+}
+
+
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
   {"getBackgroundColor", l_graphics_getBackgroundColor},
@@ -310,6 +333,8 @@ static luaL_Reg const regFuncs[] = {
   {"getWidth",           l_graphics_getWidth},
   {"getHeight",          l_graphics_getHeight},
   {"reset",              l_graphics_reset},
+  {"setStencil",         l_graphics_setStencil},
+  {"setInvertedStencil", l_graphics_setInvertedStencil},
   {NULL, NULL}
 };
 
