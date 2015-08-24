@@ -122,16 +122,14 @@ void mouse_mousemoved(int x, int y) {
 
 
 void mouse_mousepressed(int x, int y, int button) {
-  mouse_mousemoved(x, y);
   moduleData.buttons[button] = 1;
   moduleData.callbacks.pressed(moduleData.callbacks.userData, x, y, button);
 }
 
 
-void mouse_mousereleased(int x, int y, int button) {
-  mouse_mousemoved(x, y);
-  moduleData.buttons[button] = 0;
 
+void mouse_mousereleased(int x, int y, int button) {
+  moduleData.buttons[button] = 0;
   moduleData.callbacks.released(moduleData.callbacks.userData, x, y, button);
 }
 
