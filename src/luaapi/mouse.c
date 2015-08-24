@@ -66,6 +66,7 @@ static int l_mouse_setY(lua_State *state) {
 
 static void l_mouse_pressed(void *ud, int x, int y, int button) {
   lua_State * state = (lua_State*)ud;
+  int top = lua_gettop(state);
   lua_getglobal(state, "love");
   lua_pushstring(state, "mousepressed");
   lua_rawget(state, -2);
@@ -73,11 +74,13 @@ static void l_mouse_pressed(void *ud, int x, int y, int button) {
   lua_pushnumber(state, y);
   lua_pushstring(state, mouse_getButtonName(button));
   lua_call(state, 3, 0);
+  lua_settop(state, top);
 }
 
 
 static void l_mouse_released(void *ud, int x, int y, int button) {
   lua_State * state = (lua_State*)ud;
+  int top = lua_gettop(state);
   lua_getglobal(state, "love");
   lua_pushstring(state, "mousereleased");
   lua_rawget(state, -2);
@@ -85,11 +88,15 @@ static void l_mouse_released(void *ud, int x, int y, int button) {
   lua_pushnumber(state, y);
   lua_pushstring(state, mouse_getButtonName(button));
   lua_call(state, 3, 0);
+  lua_settop(state, top);
 }
 
 
 static void l_mouse_moved(void *ud, int x, int y, int dx, int dy) {
   lua_State * state = (lua_State*)ud;
+
+  int top = lua_gettop(state);
+  //lua_rawgeti(loopData->luaState, LUA_REGISTRYINDEX, loopData->errhand);
   lua_getglobal(state, "love");
   lua_pushstring(state, "mousemoved");
   lua_rawget(state, -2);
@@ -98,6 +105,8 @@ static void l_mouse_moved(void *ud, int x, int y, int dx, int dy) {
   lua_pushnumber(state, dx);
   lua_pushnumber(state, dy);
   lua_call(state, 4, 0);
+  //pcall(state, 4);
+  lua_settop(state, top);
 }
 
 
