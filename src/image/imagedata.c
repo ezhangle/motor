@@ -1,9 +1,17 @@
 #include <SDL_image.h>
 #include "imagedata.h"
 
+struct {
+  SDL_PixelFormat * format;
+ 
+} moduleData;
 
 void image_ImageData_new_with_filename(image_ImageData *dst, char const* filename) {
-  dst->surface = IMG_Load(filename);
+  SDL_Surface* surf = IMG_Load(filename);
+
+  dst->surface = SDL_ConvertSurface(surf, moduleData.format, 0);
+
+  SDL_FreeSurface(surf);
 }
 
 void image_ImageData_new_with_size(image_ImageData *dst, int width, int height) {
@@ -12,4 +20,8 @@ void image_ImageData_new_with_size(image_ImageData *dst, int width, int height) 
 
 void image_ImageData_free(image_ImageData *data) {
   SDL_FreeSurface(data->surface);
+}
+
+void image_init() {
+  moduleData.format = SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
 }

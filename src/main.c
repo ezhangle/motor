@@ -26,6 +26,7 @@
 
 #include "keyboard.h"
 #include "mouse.h"
+#include "image/imagedata.h"
 #include "timer/timer.h"
 #include "math/math.h"
 #include "errorhandler.h"
@@ -37,9 +38,9 @@ typedef struct {
   int errhand;
 } MainLoopData;
 
+
 void main_loop(void *data) {
   MainLoopData* loopData = (MainLoopData*)data;
-
   // TODO use registry to get love.update and love.draw?
 
   timer_step();
@@ -59,7 +60,6 @@ void main_loop(void *data) {
   graphics_swap();
 
   lua_pop(loopData->luaState, 1);
-
 
   SDL_Event event;
   while(SDL_PollEvent(&event)) {
@@ -114,6 +114,7 @@ int main() {
 
   l_boot(lua, &config);
 
+  image_init();
   keyboard_init();
   graphics_init(config.window.width, config.window.height);
   audio_init();
