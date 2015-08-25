@@ -95,6 +95,8 @@ void main_loop(void *data) {
   //lua_gc(loopData->luaState, LUA_GCCOLLECT, 0);
 }
 
+MainLoopData mainLoopData;
+
 int main() {
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
@@ -135,10 +137,14 @@ int main() {
   lua_pop(lua, 1);
 
   lua_pushcfunction(lua, errorhandler);
+  /*
   MainLoopData mainLoopData = {
     .luaState = lua,
     .errhand = luaL_ref(lua, LUA_REGISTRYINDEX)
   };
+  */
+  mainLoopData.luaState = lua;
+  mainLoopData.errhand = luaL_ref(lua, LUA_REGISTRYINDEX);
 
   timer_init();
 #ifdef EMSCRIPTEN
