@@ -21,7 +21,7 @@ void audio_loadStatic(audio_StaticSource *source, char const * filename) {
 
 
 void audio_StaticSource_play(audio_StaticSource *source) {
-  if(source->common.state != audio_SourceState_playing) {
+  if(audio_SourceCommon_getState(&source->common) != audio_SourceState_playing) {
     audio_SourceCommon_play(&source->common);
   }
 }
