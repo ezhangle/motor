@@ -205,8 +205,8 @@ def build():
     LD = 'clang'
   else:
     output = 'motor2d.js'
-    CFLAGS = '-O{optimize} -Wall --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-    LDFLAGS = '-O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
+    CFLAGS = '-s USE_SDL=2 -s FULL_ES2=1 -O{optimize} -Wall --memory-init-file 0 --llvm-lto {link_time_optimize} -DFT2_BUILD_LIBRARY -Wall -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
+    LDFLAGS = '-s USE_SDL=2 -O{optimize} --llvm-lto {link_time_optimize} --memory-init-file 0'.format(optimize=optimize, link_time_optimize=link_time_optimize)
     CC = 'emcc'
     LD = 'emcc'
 
