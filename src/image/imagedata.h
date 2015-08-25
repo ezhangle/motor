@@ -1,9 +1,11 @@
 #pragma once
 
-#include <SDL.h>
+#include <stdint.h>
 
 typedef struct {
-  SDL_Surface *surface;
+  int w;
+  int h;
+  uint8_t *surface;
 } image_ImageData;
 
 void image_ImageData_new_with_size(image_ImageData *dst, int width, int height);

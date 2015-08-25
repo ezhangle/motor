@@ -64,9 +64,9 @@ void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData *dat
 
 void graphics_Image_refresh(graphics_Image *img, image_ImageData const *data) {
   glBindTexture(GL_TEXTURE_2D, img->texID);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->surface->w, data->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data->surface->pixels);
-  img->width = data->surface->w;
-  img->height = data->surface->h;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->w, data->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data->surface);
+  img->width = data->w;
+  img->height = data->h;
 }
 
 void graphics_Image_free(graphics_Image *obj) {
