@@ -1,9 +1,6 @@
 #pragma once
 
-#include <SDL_opengl.h>
-#ifndef EMSCRIPTEN
-#include <GLES3/gl3.h>
-#endif
+#include "gl.h"
 #include "../math/vector.h"
 #include "quad.h"
 #include "image.h"

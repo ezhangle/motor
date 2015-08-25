@@ -70,7 +70,7 @@ void graphics_setCanvas(graphics_Canvas const* canvas) {
   moduleData.canvas = canvas;
   glBindFramebuffer(GL_FRAMEBUFFER, canvas->fbo);
 
-  glViewport(0,0,canvas->image.width, canvas->image.height);
+  //glViewport(0,0,canvas->image.width, canvas->image.height);
 }
 
 void graphics_canvas_init(int width, int height) {

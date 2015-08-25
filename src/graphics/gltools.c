@@ -1,7 +1,4 @@
 #include "gltools.h"
-#ifndef EMSCRIPTEN
-# include <SDL_opengles2.h>
-#endif
 
 
 void graphics_Texture_setFilter(GLuint texID, graphics_Filter const* filter) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL_opengl.h>
+#include "gl.h"
 #include "../math/vector.h"
 #include "quad.h"
 

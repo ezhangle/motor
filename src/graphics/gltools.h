@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL_opengl.h>
+#include "gl.h"
 
 typedef enum {
   graphics_FilterMode_none = 0,

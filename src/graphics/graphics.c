@@ -1,7 +1,8 @@
+#include <stdio.h>
 #include <stdint.h>
 #include <SDL.h>
 #include "graphics.h"
-#include <SDL_opengl.h>
+#include "gl.h"
 #include "../math/vector.h"
 #include "matrixstack.h"
 #include "font.h"
@@ -19,10 +20,10 @@ typedef struct {
 } graphics_Color;
 
 static struct {
-#ifndef EMSCRIPTEN
+//#ifndef EMSCRIPTEN
   SDL_Window* window;
   SDL_GLContext context;
-#endif
+//#endif
   SDL_Surface* surface;
   graphics_Color backgroundColor;
   graphics_Color foregroundColor;
@@ -37,20 +38,26 @@ static struct {
   GLuint polygonVAO;
 } moduleData;
 
-#ifndef EMSCRIPTEN
+//#ifndef EMSCRIPTEN
   SDL_Window* graphics_getWindow(void) {
     return moduleData.window;
   }
-#endif
+//#endif
 
 void graphics_init(int width, int height) {
   SDL_Init(SDL_INIT_VIDEO);
-  #ifdef EMSCRIPTEN
-    moduleData.surface = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
-  #else
+  //#ifdef EMSCRIPTEN
+  //  moduleData.surface = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+  //#else
+  #ifndef EMSCRIPTEN
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  #else
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  #endif
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -59,11 +66,16 @@ void graphics_init(int width, int height) {
     SDL_GL_MakeCurrent(moduleData.window, moduleData.context);
 
     moduleData.surface = SDL_GetWindowSurface(moduleData.window);
-    SDL_GL_SetSwapInterval(1);
+    glewExperimental = GL_TRUE;
 
+    printf("%d\n", glewInit());
+  #ifndef EMSCRIPTEN
+    SDL_GL_SetSwapInterval(1);
   #endif
 
-  glViewport(0,0,width,height);
+  //#endif
+
+//  glViewport(0,0,width,height);
 
   matrixstack_init();
 
@@ -111,11 +123,11 @@ void graphics_clear(void) {
 }
 
 void graphics_swap(void) {
-#ifdef EMSCRIPTEN
-  SDL_GL_SwapBuffers();
-#else
+//#ifdef EMSCRIPTEN
+//  SDL_GL_SwapBuffers();
+//#else
   SDL_GL_SwapWindow(moduleData.window);
-#endif
+//#endif
 }
 
 void graphics_drawArray(graphics_Quad const* quad, mat4x4 const* tr2d, GLuint vao, GLuint ibo, GLuint count, GLenum type, GLenum indexType, float const* useColor, float ws, float hs) {
