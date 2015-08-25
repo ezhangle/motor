@@ -172,20 +172,10 @@ void mouse_setVisible(int b) {
 
 
 void mouse_setX(int x) {
-#ifdef EMSCRIPTEN
-  SDL_WarpMouse(x, moduleData.y);
-#else
-  SDL_WarpMouseInWindow(graphics_getWindow(), x, moduleData.y);
-#endif
 }
 
 
 void mouse_setY(int y) {
-#ifdef EMSCRIPTEN
-  SDL_WarpMouse(moduleData.x, y);
-#else
-  SDL_WarpMouseInWindow(graphics_getWindow(), moduleData.x, y);
-#endif
 }
 
 void mouse_setEventCallbacks(mouse_EventCallbacks const *callbacks) {
