@@ -25,7 +25,6 @@
       reader.getEntries(function(entries) {
         var i;
         for(i=0; i < entries.length; ++i) {
-          console.log("Entry: " + entries[i].filename);
           if(entries[i].directory) {
             Module['FS_createPath']("/", entries[i].filename, 1, 1);
           } else {
@@ -72,7 +71,7 @@
       text = Array.prototype.slice.call(arguments).join(' ');
       console.error(text);
     },
-    TOTAL_MEMORY:67108864*8
+    TOTAL_MEMORY:67108864
   };
 
 
