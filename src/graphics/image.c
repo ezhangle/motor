@@ -52,7 +52,7 @@ static const graphics_Filter defaultFilter = {
   .mipmapMode = graphics_FilterMode_none
 };
 
-void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData *data) {
+void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData const *data) {
   glGenTextures(1, &dst->texID);
   glBindTexture(GL_TEXTURE_2D, dst->texID);
   graphics_Image_setFilter(dst, &defaultFilter);

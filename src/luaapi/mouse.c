@@ -1,5 +1,61 @@
+#include "mouse.h"
 #include "../mouse.h"
 #include "tools.h"
+#include "image.h"
+
+static struct {
+  int cursorMT;
+  int cursorRef;
+} moduleData;
+
+static int l_mouse_newCursor(lua_State *state) {
+  int hotx = luaL_optinteger(state, 2, 0);
+  int hoty = luaL_optinteger(state, 3, 0);
+  
+  mouse_Cursor *cursor = (mouse_Cursor*)lua_newuserdata(state, sizeof(mouse_Cursor));
+
+  if(lua_isstring(state, 1)) {
+    char const* filename = lua_tostring(state, 1);
+    image_ImageData data;
+    image_ImageData_new_with_filename(&data, filename);
+
+    mouse_Cursor_new(cursor, &data, hotx, hoty);
+    image_ImageData_free(&data);
+  } else if(l_image_isImageData(state, 1)) {
+    image_ImageData const *data = l_image_toImageData(state, 1);
+    mouse_Cursor_new(cursor, data, hotx, hoty);
+  }
+
+  lua_rawgeti(state, LUA_REGISTRYINDEX, moduleData.cursorMT);
+  lua_setmetatable(state, -2);
+
+  return 1;
+}
+
+
+static int l_mouse_setCursor(lua_State *state) {
+  if(lua_isuserdata(state, 1)) {
+    mouse_Cursor *cursor = l_mouse_toCursor(state, 1);
+    mouse_setCursor(cursor);
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.cursorRef);
+    moduleData.cursorRef = luaL_ref(state, LUA_REGISTRYINDEX);
+  } else {
+    luaL_unref(state, LUA_REGISTRYINDEX, moduleData.cursorRef);
+    moduleData.cursorRef = LUA_NOREF;
+    mouse_setCursor(0);
+  }
+  return 0;
+}
+
+
+static int l_mouse_gcCursor(lua_State *state) {
+  mouse_Cursor * cursor = l_mouse_toCursor(state, 1);
+  mouse_Cursor_free(cursor);
+  return 0;
+}
+
+l_checkTypeFn(l_mouse_isCursor, moduleData.cursorMT)
+l_toTypeFn(l_mouse_toCursor, mouse_Cursor)
 
 
 static int l_mouse_isVisible(lua_State *state) {
@@ -111,21 +167,31 @@ static void l_mouse_moved(void *ud, int x, int y, int dx, int dy) {
 
 
 static luaL_Reg const regFuncs[] = {
-  { "isDown",         l_mouse_isDown        },
-  { "isVisible",      l_mouse_isVisible     },
-  { "getPosition",    l_mouse_getPosition   },
-  { "getX",           l_mouse_getX          },
-  { "getY",           l_mouse_getY          },
-  { "setPosition",    l_mouse_setPosition   },
-  { "setVisible",     l_mouse_setVisible    },
-  { "setX",           l_mouse_setX          },
-  { "setY",           l_mouse_setY          },
-  { NULL, NULL }
+  {"isDown",         l_mouse_isDown        },
+  {"isVisible",      l_mouse_isVisible     },
+  {"getPosition",    l_mouse_getPosition   },
+  {"getX",           l_mouse_getX          },
+  {"getY",           l_mouse_getY          },
+  {"setPosition",    l_mouse_setPosition   },
+  {"setVisible",     l_mouse_setVisible    },
+  {"setX",           l_mouse_setX          },
+  {"setY",           l_mouse_setY          },
+  {"newCursor",      l_mouse_newCursor     },
+  {"setCursor",      l_mouse_setCursor     },
+  {NULL, NULL }
 };
+
+static luaL_Reg const cursorMetatableFuncs[] = {
+  {"__gc",           l_mouse_gcCursor},
+  {NULL, NULL}
+};
+
 
 
 void l_mouse_register(lua_State* state) {
   l_tools_registerModule(state, "mouse", regFuncs);
+  moduleData.cursorMT  = l_tools_makeTypeMetatable(state, cursorMetatableFuncs);
+  moduleData.cursorRef = LUA_NOREF;
 
   mouse_EventCallbacks callbacks = {
     .pressed  = l_mouse_pressed,
@@ -135,4 +201,5 @@ void l_mouse_register(lua_State* state) {
   };
 
   mouse_setEventCallbacks(&callbacks);
+
 }

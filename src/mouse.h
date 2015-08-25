@@ -1,5 +1,21 @@
 #pragma once
 
+#include <stdbool.h>
+#include "graphics/image.h"
+
+typedef struct {
+  graphics_Image image;
+  int hotx;
+  int hoty;
+} mouse_Cursor;
+
+void mouse_Cursor_new(mouse_Cursor* cursor, image_ImageData const* data, int hotx, int hoty);
+void mouse_setCursor(mouse_Cursor const * cursor);
+mouse_Cursor const*  mouse_getCursor();
+void mouse_cursor_draw();
+void mouse_Cursor_free(mouse_Cursor* cursor);
+
+
 typedef struct {
   void (*pressed)(void * userData, int x, int y, int button);
   void (*released)(void * userData, int x, int y, int button);
@@ -15,7 +31,7 @@ int mouse_isVisible(void);
 void mouse_getPosition(int *x, int *y);
 int mouse_getX(void);
 int mouse_getY(void);
-void mouse_setVisible(int b);
+void mouse_setVisible(bool b);
 void mouse_setX(int x);
 void mouse_setY(int y);
 char const *mouse_getButtonName(int button);

@@ -3,6 +3,8 @@
 #include <string.h>
 #include <SDL.h>
 #include "mouse.h"
+#include "image/imagedata.h"
+#include "graphics/image.h"
 
 // TODO:
 // moduleData.getRelativeMode()
@@ -26,6 +28,9 @@ static struct {
   int dx, dy;
   int visible;
   int buttons[256];
+  mouse_Cursor const *cursor;
+  int posX;
+  int posY;
   mouse_EventCallbacks callbacks;
 } moduleData = {
   .callbacks = {
@@ -34,6 +39,12 @@ static struct {
     .moved    = dummyMoved
   }
 };
+
+
+static void setSystemCursorVisibility() {
+  SDL_ShowCursor((moduleData.visible && (moduleData.cursor == 0))
+    ? SDL_ENABLE : SDL_DISABLE);
+}
 
 
 char const *mouse_getButtonName(int button) {
@@ -109,6 +120,9 @@ static int buttonEnum(const char *str) {
 
 
 void mouse_mousemoved(int x, int y) {
+  moduleData.posX = x;
+  moduleData.posY = y;
+
   if(moduleData.x == x && moduleData.y == y) {
     return;
   }
@@ -165,10 +179,12 @@ int mouse_getY(void) {
 }
 
 
-void mouse_setVisible(int b) {
-  moduleData.visible = !!b;
-  SDL_ShowCursor(b ? SDL_ENABLE : SDL_DISABLE);
+void mouse_setVisible(bool b) {
+  moduleData.visible = b;
+  setSystemCursorVisibility();
 }
+
+
 
 
 void mouse_setX(int x) {
@@ -180,4 +196,30 @@ void mouse_setY(int y) {
 
 void mouse_setEventCallbacks(mouse_EventCallbacks const *callbacks) {
   moduleData.callbacks = *callbacks;
+}
+
+void mouse_Cursor_new(mouse_Cursor* cursor, image_ImageData const *data, int hotx, int hoty) {
+  graphics_Image_new_with_ImageData(&cursor->image, data);
+  cursor->hotx = hotx;
+  cursor->hoty = hoty;
+}
+
+void mouse_Cursor_free(mouse_Cursor* cursor) {
+  graphics_Image_free(&cursor->image);
+}
+
+void mouse_setCursor(mouse_Cursor const * cursor) {
+  moduleData.cursor = cursor;
+  setSystemCursorVisibility();
+}
+
+
+static graphics_Quad const cursorQuad = {.x=0.0f, .y=0.0f, .w=1.0f, .h=1.0f};
+void mouse_cursor_draw() {
+  if(moduleData.cursor && mouse_isVisible()) {
+    graphics_Image_draw(&moduleData.cursor->image, &cursorQuad,
+      moduleData.posX - moduleData.cursor->hotx, 
+      moduleData.posY - moduleData.cursor->hoty,
+      0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  }
 }

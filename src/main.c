@@ -30,6 +30,7 @@
 #include "timer/timer.h"
 #include "math/math.h"
 #include "errorhandler.h"
+#include "cursor.h"
 
 
 typedef struct {
@@ -56,6 +57,9 @@ void main_loop(void *data) {
   lua_rawget(loopData->luaState, -2);
 
   pcall(loopData->luaState, 0);
+
+  graphics_reset();
+  mouse_cursor_draw();
 
   graphics_swap();
 
