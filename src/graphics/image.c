@@ -44,18 +44,11 @@ static const graphics_Wrap defaultWrap = {
   .horMode = graphics_WrapMode_clamp
 };
 
-static const graphics_Filter defaultFilter = {
-  .maxAnisotropy = 1.0f,
-  .mipmapLodBias = 1.0f,
-  .minMode = graphics_FilterMode_linear,
-  .magMode = graphics_FilterMode_linear,
-  .mipmapMode = graphics_FilterMode_none
-};
 
 void graphics_Image_new_with_ImageData(graphics_Image *dst, image_ImageData const *data) {
   glGenTextures(1, &dst->texID);
   glBindTexture(GL_TEXTURE_2D, dst->texID);
-  graphics_Image_setFilter(dst, &defaultFilter);
+  graphics_Image_setFilter(dst, graphics_getDefaultFilter());
 
   graphics_Image_setWrap(dst, &defaultWrap);
 

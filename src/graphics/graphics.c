@@ -36,7 +36,16 @@ static struct {
   GLuint polygonVBO;
   GLuint polygonIBO;
   GLuint polygonVAO;
-} moduleData;
+  graphics_Filter defaultFilter;
+} moduleData = {
+  .defaultFilter = {
+    .maxAnisotropy = 1.0f,
+    .mipmapLodBias = 1.0f,
+    .minMode = graphics_FilterMode_linear,
+    .magMode = graphics_FilterMode_linear,
+    .mipmapMode = graphics_FilterMode_none
+  }
+};
 
 //#ifndef EMSCRIPTEN
   SDL_Window* graphics_getWindow(void) {
@@ -287,6 +296,9 @@ void graphics_discardStencil() {
   glDisable(GL_STENCIL_TEST);
 }
 
+graphics_Filter* graphics_getDefaultFilter() {
+  return &moduleData.defaultFilter;
+}
 
 void graphics_reset(void) {
   // TODO point and line drawing modes

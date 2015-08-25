@@ -39,3 +39,4 @@ void graphics_reset(void);
 void graphics_defineStencil();
 void graphics_useStencil(bool invert);
 void graphics_discardStencil();
+graphics_Filter* graphics_getDefaultFilter();

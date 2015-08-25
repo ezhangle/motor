@@ -317,6 +317,15 @@ static int l_graphics_setInvertedStencil(lua_State* state) {
   return l_graphics_setStencilGeneric(state, true);
 }
 
+static int l_graphics_setDefaultFilter(lua_State* state) {
+  graphics_Filter *defaultFilter = graphics_getDefaultFilter();
+  defaultFilter->minMode = l_tools_toEnumOrError(state, 1, l_graphics_FilterMode);
+  defaultFilter->magMode = l_tools_toEnumOrError(state, 2, l_graphics_FilterMode);
+  defaultFilter->maxAnisotropy = luaL_optnumber(state, 3, 1.0f);
+
+  return 0;
+}
+
 
 static luaL_Reg const regFuncs[] = {
   {"setBackgroundColor", l_graphics_setBackgroundColor},
@@ -343,6 +352,7 @@ static luaL_Reg const regFuncs[] = {
   {"reset",              l_graphics_reset},
   {"setStencil",         l_graphics_setStencil},
   {"setInvertedStencil", l_graphics_setInvertedStencil},
+  {"setDefaultFilter",   l_graphics_setDefaultFilter},
   {NULL, NULL}
 };
 
