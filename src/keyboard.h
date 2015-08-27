@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL_keyboard.h>
+#include <SDL2/SDL_keyboard.h>
 #include <stdbool.h>
 
 typedef struct {
