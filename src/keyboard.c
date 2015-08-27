@@ -195,11 +195,9 @@ static struct {
 void keyboard_startText(void);
 
 static int normalizeKeyCode(int key) {
-  printf("BEFORE: %d\n", key);
   if(key & 0x40000000) {
     key = (key & 0x3ff) | 0x200;
   }
-  printf("AFTER: %d\n", key);
   return key;
 }
 
