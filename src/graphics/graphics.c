@@ -11,6 +11,9 @@
 #include "canvas.h"
 #include "shader.h"
 #include "geometry.h"
+#ifdef EMSCRIPTEN
+# include <emscripten.h>
+#endif
 
 typedef struct {
   float red;
@@ -70,7 +73,14 @@ void graphics_init(int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    moduleData.window = SDL_CreateWindow("motor2d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+    #if EMSCRIPTEN
+      char const * title = emscripten_run_script_string("document.title");
+    #else
+      char const * title = "Motor2D";
+    #endif
+
+    moduleData.window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+
     moduleData.context = SDL_GL_CreateContext(moduleData.window);
     SDL_GL_MakeCurrent(moduleData.window, moduleData.context);
 
