@@ -9,6 +9,7 @@
 
 #include "luaapi/audio.h"
 #include "luaapi/graphics.h"
+#include "luaapi/joystick.h"
 #include "luaapi/graphics_font.h"
 #include "luaapi/image.h"
 #include "luaapi/motor.h"
@@ -116,6 +117,7 @@ int main() {
   l_timer_register(lua);
   l_math_register(lua);
   l_event_register(lua);
+  l_joystick_register(lua);
 
   l_boot(lua, &config);
 
