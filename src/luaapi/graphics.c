@@ -54,7 +54,7 @@ static int l_graphics_setColorGeneric(lua_State* state, void(*setColor)(float,fl
 
   float scale = 1.0f / 255.0f;
 
-  graphics_setColor(red * scale, green * scale, blue * scale, alpha * scale);
+  setColor(red * scale, green * scale, blue * scale, alpha * scale);
   return 0;
 }
 
