@@ -37,6 +37,7 @@ void graphics_Batch_set(graphics_Batch* batch, int id, graphics_Quad const* q, f
 void graphics_Batch_draw(graphics_Batch const* batch, float x, float y, float r, float sx, float sy, float ox, float oy, float kx, float ky);
 void graphics_Batch_bind(graphics_Batch *batch);
 void graphics_Batch_unbind(graphics_Batch *batch);
+void graphics_Batch_flush(graphics_Batch *batch);
 void graphics_Batch_clear(graphics_Batch *batch);
 void graphics_Batch_setBufferSize(graphics_Batch* batch, int newsize);
 void graphics_Batch_setBufferSizeClearing(graphics_Batch* batch, int newsize);

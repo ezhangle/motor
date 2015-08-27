@@ -203,20 +203,21 @@ void graphics_Batch_bind(graphics_Batch *batch) {
   batch->bound = true;
 }
 
+
+void graphics_Batch_flush(graphics_Batch *batch) {
+  glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+  glBufferData(GL_ARRAY_BUFFER, 4*batch->maxCount*sizeof(graphics_Vertex), NULL, batch->usage);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, 4*batch->insertPos*sizeof(graphics_Vertex), batch->vertexData);
+}
+
+
 void graphics_Batch_unbind(graphics_Batch *batch) {
   if(!batch->bound) {
     return;
   }
 
-  if(batch->dirty) {
-    batch->dirty = false;
+  graphics_Batch_flush(batch);
 
-    // TODO use BufferSubData to only upload actually used data?
-    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
-    glBufferData(GL_ARRAY_BUFFER, 4*batch->maxCount*sizeof(graphics_Vertex), NULL, batch->usage);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, 4*batch->insertPos*sizeof(graphics_Vertex), batch->vertexData);
-    
-  }
   batch->bound = false;
 }
 

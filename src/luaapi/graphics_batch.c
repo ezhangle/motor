@@ -63,6 +63,16 @@ static int l_graphics_SpriteBatch_unbind(lua_State* state) {
   return 0;
 }
 
+static int l_graphics_SpriteBatch_flush(lua_State* state) {
+  l_assertType(state, 1, l_graphics_isBatch);
+
+  l_graphics_Batch * batch = l_graphics_toBatch(state, 1);
+
+  graphics_Batch_flush(&batch->batch);
+
+  return 0;
+}
+
 static int l_graphics_SpriteBatch_add(lua_State* state) {
   l_assertType(state, 1, l_graphics_isBatch);
 
@@ -234,6 +244,7 @@ static luaL_Reg const batchMetatableFuncs[] = {
   {"set",                l_graphics_SpriteBatch_set},
   {"bind",               l_graphics_SpriteBatch_bind},
   {"unbind",             l_graphics_SpriteBatch_unbind},
+  {"flush",              l_graphics_SpriteBatch_flush},
   {"clear",              l_graphics_SpriteBatch_clear},
   {"getBufferSize",      l_graphics_SpriteBatch_getBufferSize},
   {"setBufferSize",      l_graphics_SpriteBatch_setBufferSize},
