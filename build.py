@@ -32,6 +32,7 @@ sources = [
   'luaapi/event.c',
   'luaapi/math.c',
   'luaapi/filesystem.c',
+  'luaapi/joystick.c',
   'luaapi/keyboard.c',
   'luaapi/motor.c',
   'luaapi/mouse.c',
