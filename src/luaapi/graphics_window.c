@@ -9,14 +9,71 @@ static int l_graphics_window_getWidth(lua_State* state) {
   return 1;
 }
 
+
 static int l_graphics_window_getHeight(lua_State* state) {
   lua_pushnumber(state, graphics_getHeight());
   return 1;
 }
 
+
+static int l_graphics_window_getMode(lua_State* state) {
+  lua_pushnumber(state, graphics_getWidth());
+  lua_pushnumber(state, graphics_getHeight());
+
+  lua_newtable(state);
+
+  lua_pushstring(state, "fullscreen");
+  lua_pushboolean(state, false);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "fullscreentype");
+  lua_pushstring(state, "normal");
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "vsync");
+  lua_pushboolean(state, true);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "fsaa");
+  lua_pushnumber(state, 0);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "resizable");
+  lua_pushboolean(state, false);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "centered");
+  lua_pushboolean(state, false);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "highdpi");
+  lua_pushboolean(state, false);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "srgb");
+  lua_pushboolean(state, false);
+  lua_settable(state, 3);
+  
+  lua_pushstring(state, "refreshrate");
+  lua_pushnumber(state, 0);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "x");
+  lua_pushnumber(state, 0);
+  lua_settable(state, 3);
+
+  lua_pushstring(state, "y");
+  lua_pushnumber(state, 0);
+  lua_settable(state, 3);
+
+  return 3;
+}
+
+
 static luaL_Reg const windowFreeFuncs[] = {
-  {"getWidth", l_graphics_window_getWidth},
+  {"getWidth",  l_graphics_window_getWidth},
   {"getHeight", l_graphics_window_getHeight},
+  {"getMode",   l_graphics_window_getMode},
   {NULL, NULL}
 };
 
