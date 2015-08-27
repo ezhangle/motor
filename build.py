@@ -61,6 +61,9 @@ sources = [
   'tools/utf8.c',
   'timer/timer.c',
 
+  # simplexnoise1234
+  '3rdparty/noise1234/simplexnoise1234.c',
+
   # SLRE
   '3rdparty/slre/slre.c',
 

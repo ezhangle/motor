@@ -3,6 +3,8 @@
 #include "math.h"
 #include "../math/randomgenerator.h"
 #include "../math/triangulate.h"
+#include "../math/minmax.h"
+#include "../3rdparty/noise1234/simplexnoise1234.h"
 #include <math.h>
 #include <inttypes.h>
 
@@ -197,24 +199,62 @@ static int l_math_triangulate(lua_State* state) {
 }
 
 
+static int l_math_noise(lua_State* state) {
+  float a[4];
+  float r;
+
+  int t = min(lua_gettop(state), 4);
+
+  for(int i = 0; i < t; ++i) {
+    a[i] = l_tools_toNumberOrError(state, i+1);
+  }
+
+  switch(t) {
+  case 1:
+    r = simplexnoise1234_noise1(a[0]);
+    break;
+
+  case 2:
+    r = simplexnoise1234_noise2(a[0], a[1]);
+    break;
+
+  case 3:
+    r = simplexnoise1234_noise3(a[0], a[1], a[2]);
+    break;
+
+  case 4:
+    r = simplexnoise1234_noise4(a[0], a[1], a[2], a[3]);
+    break;
+
+  default:
+    lua_pushstring(state, "need at least one dimension");
+    return lua_error(state);
+  }
+  
+  lua_pushnumber(state, r);
+  return 1;
+}
+
+
 static luaL_Reg const mathFreeFuncs[] = {
-  {"random", l_math_random_free},
-  {"randomNormal", l_math_randomNormal_free},
+  {"random",             l_math_random_free},
+  {"randomNormal",       l_math_randomNormal_free},
   {"newRandomGenerator", l_math_newRandomGenerator},
-  {"setRandomSeed", l_math_setRandomSeed_free},
-  {"getRandomSeed", l_math_getRandomSeed},
-  {"triangulate", l_math_triangulate},
+  {"setRandomSeed",      l_math_setRandomSeed_free},
+  {"getRandomSeed",      l_math_getRandomSeed},
+  {"triangulate",        l_math_triangulate},
+  {"noise",              l_math_noise},
   {NULL, NULL}
 };
 
 
 static luaL_Reg const randomGeneratorMetatableFuncs[] = {
-  {"random", l_math_RandomGenerator_random},
+  {"random",       l_math_RandomGenerator_random},
   {"randomNormal", l_math_RandomGenerator_randomNormal},
-  {"setSeed", l_math_RandomGenerator_setRandomSeed},
-  {"getSeed", l_math_getRandomSeed},
-  {"getState", l_math_RandomGenerator_getState},
-  {"setState", l_math_RandomGenerator_setState},
+  {"setSeed",      l_math_RandomGenerator_setRandomSeed},
+  {"getSeed",      l_math_getRandomSeed},
+  {"getState",     l_math_RandomGenerator_getState},
+  {"setState",     l_math_RandomGenerator_setState},
   {NULL, NULL}
 };
 
