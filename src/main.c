@@ -30,7 +30,6 @@
 #include "timer/timer.h"
 #include "math/math.h"
 #include "errorhandler.h"
-#include "cursor.h"
 
 
 typedef struct {
