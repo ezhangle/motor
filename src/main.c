@@ -22,6 +22,7 @@
 #include "luaapi/event.h"
 
 #include "graphics/graphics.h"
+#include "graphics/matrixstack.h"
 
 #include "audio/audio.h"
 
@@ -45,6 +46,8 @@ void main_loop(void *data) {
   // TODO use registry to get love.update and love.draw?
 
   timer_step();
+  graphics_clear();
+  matrixstack_origin();
   lua_rawgeti(loopData->luaState, LUA_REGISTRYINDEX, loopData->errhand);
   lua_getglobal(loopData->luaState, "love");
   lua_pushstring(loopData->luaState, "update");
@@ -58,8 +61,13 @@ void main_loop(void *data) {
 
   pcall(loopData->luaState, 0);
 
-  graphics_reset();
+  graphics_DisplayState curState = *graphics_getState();
+  matrixstack_push();
+
   mouse_cursor_draw();
+
+  matrixstack_pop();
+  graphics_setState(&curState);
 
   graphics_swap();
 

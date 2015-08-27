@@ -15,12 +15,6 @@
 # include <emscripten.h>
 #endif
 
-typedef struct {
-  float red;
-  float green;
-  float blue;
-  float alpha;
-} graphics_Color;
 
 static struct {
 //#ifndef EMSCRIPTEN
@@ -28,6 +22,8 @@ static struct {
   SDL_GLContext context;
 //#endif
   SDL_Surface* surface;
+
+  /*
   graphics_Color backgroundColor;
   graphics_Color foregroundColor;
 
@@ -35,6 +31,9 @@ static struct {
   graphics_BlendMode blendMode;
   int scissorBox[4];
   bool scissorSet;
+*/
+
+  graphics_DisplayState state;
 
   GLuint polygonVBO;
   GLuint polygonIBO;
@@ -123,18 +122,18 @@ void graphics_init(int width, int height) {
 }
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha) {
-  moduleData.backgroundColor.red   = red;
-  moduleData.backgroundColor.green = green;
-  moduleData.backgroundColor.blue  = blue;
-  moduleData.backgroundColor.alpha = alpha;
+  moduleData.state.backgroundColor.red   = red;
+  moduleData.state.backgroundColor.green = green;
+  moduleData.state.backgroundColor.blue  = blue;
+  moduleData.state.backgroundColor.alpha = alpha;
   glClearColor(red, green, blue, alpha);
 }
 
 void graphics_setColor(float red, float green, float blue, float alpha) {
-  moduleData.foregroundColor.red   = red;
-  moduleData.foregroundColor.green = green;
-  moduleData.foregroundColor.blue  = blue;
-  moduleData.foregroundColor.alpha = alpha;
+  moduleData.state.foregroundColor.red   = red;
+  moduleData.state.foregroundColor.green = green;
+  moduleData.state.foregroundColor.blue  = blue;
+  moduleData.state.foregroundColor.alpha = alpha;
 }
 
 void graphics_clear(void) {
@@ -178,35 +177,35 @@ int graphics_getHeight(void) {
 }
 
 float* graphics_getColor(void) {
-  return (float*)(&moduleData.foregroundColor);
+  return (float*)(&moduleData.state.foregroundColor);
 }
 
 float* graphics_getBackgroundColor(void) {
-  return (float*)(&moduleData.backgroundColor);
+  return (float*)(&moduleData.state.backgroundColor);
 }
 
 void graphics_setColorMask(bool r, bool g, bool b, bool a) {
-  moduleData.colorMask[0] = r;
-  moduleData.colorMask[1] = g;
-  moduleData.colorMask[2] = b;
-  moduleData.colorMask[3] = a;
+  moduleData.state.colorMask[0] = r;
+  moduleData.state.colorMask[1] = g;
+  moduleData.state.colorMask[2] = b;
+  moduleData.state.colorMask[3] = a;
 
   glColorMask(r,g,b,a);
 }
 
 void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a) {
-  *r = moduleData.colorMask[0];
-  *g = moduleData.colorMask[1];
-  *b = moduleData.colorMask[2];
-  *a = moduleData.colorMask[3];
+  *r = moduleData.state.colorMask[0];
+  *g = moduleData.state.colorMask[1];
+  *b = moduleData.state.colorMask[2];
+  *a = moduleData.state.colorMask[3];
 }
 
 graphics_BlendMode graphics_getBlendMode(void) {
-  return moduleData.blendMode;
+  return moduleData.state.blendMode;
 }
 
 void graphics_setBlendMode(graphics_BlendMode mode) {
-  moduleData.blendMode = mode;
+  moduleData.state.blendMode = mode;
 
   GLenum sfRGB = GL_ONE;
   GLenum dfRGB = GL_ZERO;
@@ -256,34 +255,34 @@ void graphics_setBlendMode(graphics_BlendMode mode) {
 }
 
 void graphics_clearScissor(void) {
-  moduleData.scissorSet = false;
+  moduleData.state.scissorSet = false;
   glDisable(GL_SCISSOR_TEST);
 }
 
 void graphics_setScissor(int x, int y, int w, int h) {
-  moduleData.scissorBox[0] = x;
-  moduleData.scissorBox[1] = y;
-  moduleData.scissorBox[2] = w;
-  moduleData.scissorBox[3] = h;
-  moduleData.scissorSet = true;
+  moduleData.state.scissorBox[0] = x;
+  moduleData.state.scissorBox[1] = y;
+  moduleData.state.scissorBox[2] = w;
+  moduleData.state.scissorBox[3] = h;
+  moduleData.state.scissorSet = true;
   glScissor(x,y,w,h);
   glEnable(GL_SCISSOR_TEST);
 }
 
 bool graphics_getScissor(int *x, int *y, int *w, int *h) {
-  if(!moduleData.scissorSet) {
+  if(!moduleData.state.scissorSet) {
     return false;
   }
 
-  *x = moduleData.scissorBox[0];
-  *y = moduleData.scissorBox[1];
-  *w = moduleData.scissorBox[2];
-  *h = moduleData.scissorBox[3];
+  *x = moduleData.state.scissorBox[0];
+  *y = moduleData.state.scissorBox[1];
+  *w = moduleData.state.scissorBox[2];
+  *h = moduleData.state.scissorBox[3];
 
   return true;
 }
 
-void graphics_defineStencil() {
+void graphics_defineStencil(void) {
   graphics_Canvas_createStencilBuffer(graphics_getCanvas());
   
   // Disable color writes but don't save the mask values.
@@ -298,15 +297,15 @@ void graphics_defineStencil() {
 void graphics_useStencil(bool invert) {
   glStencilFunc(GL_EQUAL, (GLint)(!invert), 1); // invert ? 0 : 1
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-  glColorMask(moduleData.colorMask[0],moduleData.colorMask[1],moduleData.colorMask[2],moduleData.colorMask[3]);
+  glColorMask(moduleData.state.colorMask[0],moduleData.state.colorMask[1],moduleData.state.colorMask[2],moduleData.state.colorMask[3]);
 }
 
-void graphics_discardStencil() {
-  glColorMask(moduleData.colorMask[0],moduleData.colorMask[1],moduleData.colorMask[2],moduleData.colorMask[3]);
+void graphics_discardStencil(void) {
+  glColorMask(moduleData.state.colorMask[0],moduleData.state.colorMask[1],moduleData.state.colorMask[2],moduleData.state.colorMask[3]);
   glDisable(GL_STENCIL_TEST);
 }
 
-graphics_Filter* graphics_getDefaultFilter() {
+graphics_Filter* graphics_getDefaultFilter(void) {
   return &moduleData.defaultFilter;
 }
 
@@ -320,4 +319,14 @@ void graphics_reset(void) {
   graphics_setColorMask(true, true, true, true);
   graphics_clearScissor();
   graphics_setCanvas(NULL);
+}
+
+
+graphics_DisplayState const* graphics_getState(void) {
+  return &moduleData.state;
+}
+
+
+void graphics_setState(graphics_DisplayState const* state) {
+  memcpy(&moduleData.state, state, sizeof(*state));
 }

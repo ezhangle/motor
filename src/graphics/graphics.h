@@ -18,6 +18,23 @@ typedef enum {
   graphics_BlendMode_screen
 } graphics_BlendMode;
 
+typedef struct {
+  float red;
+  float green;
+  float blue;
+  float alpha;
+} graphics_Color;
+
+typedef struct {
+  graphics_Color foregroundColor;
+  graphics_Color backgroundColor;
+
+  bool colorMask[4];
+  graphics_BlendMode blendMode;
+  int scissorBox[4];
+  bool scissorSet;
+
+} graphics_DisplayState;
 
 void graphics_setBackgroundColor(float red, float green, float blue, float alpha);
 void graphics_setColor(float red, float green, float blue, float alpha);
@@ -30,13 +47,15 @@ int graphics_getWidth(void);
 int graphics_getHeight(void);
 void graphics_setColorMask(bool r, bool g, bool b, bool a);
 void graphics_getColorMask(bool *r, bool *g, bool *b, bool *a);
-graphics_BlendMode graphics_getBlendMode();
+graphics_BlendMode graphics_getBlendMode(void);
 void graphics_setBlendMode(graphics_BlendMode mode);
 void graphics_clearScissor(void);
 void graphics_setScissor(int x, int y, int w, int h);
 bool graphics_getScissor(int *x, int *y, int *w, int *h);
 void graphics_reset(void);
-void graphics_defineStencil();
+void graphics_defineStencil(void);
 void graphics_useStencil(bool invert);
-void graphics_discardStencil();
-graphics_Filter* graphics_getDefaultFilter();
+void graphics_discardStencil(void);
+graphics_Filter* graphics_getDefaultFilter(void);
+graphics_DisplayState const* graphics_getState(void);
+void graphics_setState(graphics_DisplayState const* state);
