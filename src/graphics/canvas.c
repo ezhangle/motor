@@ -2,7 +2,7 @@
 #include "image.h"
 
 static struct {
-  graphics_Canvas const * canvas;
+  graphics_Canvas * canvas;
   graphics_Canvas defaultCanvas;
 } moduleData;
 
@@ -63,7 +63,7 @@ void graphics_Canvas_draw(graphics_Canvas const* canvas, graphics_Quad const* qu
   graphics_Image_draw(&canvas->image, quad, x, y, r, sx, sy, ox, oy, kx, ky);
 }
 
-void graphics_setCanvas(graphics_Canvas const* canvas) {
+void graphics_setCanvas(graphics_Canvas * canvas) {
   if(!canvas) {
     canvas = &moduleData.defaultCanvas;
   }
@@ -83,6 +83,6 @@ void graphics_canvas_init(int width, int height) {
   moduleData.defaultCanvas.stencilBuf = 1;
 }
 
-graphics_Canvas const* graphics_getCanvas(void) {
+graphics_Canvas * graphics_getCanvas(void) {
   return moduleData.canvas;
 }
