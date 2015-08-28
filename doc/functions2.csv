@@ -67,7 +67,7 @@ love.event.clear()	no
 love.event.poll()	no	
 love.event.pump()	no	
 love.event.push()	no	
-love.event.quit()	no	
+love.event.quit()	partial	Stub doesn't do anything
 love.event.wait()	no	
 love.filesystem.append()	no	
 love.filesystem.isSymLink()	no	
@@ -104,7 +104,7 @@ love.filesystem.unmount()	no
 love.filesystem.write()	no	
 love.font.newGlyphData()	no	
 love.font.newRasterizer()	no	
-love.getVersion()	yes	
+love.getVersion()	yes	An additional 5th return value exists, the string „motor“
 love.graphics.getStats()	no	
 love.graphics.getCanvasFormats()	no	
 love.graphics.getCompressedImageFormats()	no	
@@ -165,19 +165,19 @@ love.graphics.setBlendMode()	yes
 love.graphics.setCanvas()	yes	
 love.graphics.setColor()	yes	
 love.graphics.setColorMask()	yes	
-love.graphics.setDefaultFilter()	no	
+love.graphics.setDefaultFilter()	yes	
 love.graphics.setDefaultMipmapFilter()	no	
 love.graphics.setFont()	yes	
-love.graphics.setInvertedStencil()	no	
+love.graphics.setInvertedStencil()	yes	
 love.graphics.setLineJoin()	partial	
-love.graphics.setLineStyle()	no	
+love.graphics.setLineStyle()	partial	Stub
 love.graphics.setLineWidth()	yes	
 love.graphics.setNewFont()	no	
 love.graphics.setPointSize()	yes	
 love.graphics.setPointStyle()	yes	
 love.graphics.setScissor()	yes	
 love.graphics.setShader()	yes	
-love.graphics.setStencil()	no	
+love.graphics.setStencil()	yes	
 love.graphics.setWireframe()	no	
 love.graphics.shear()	yes	
 love.graphics.translate()	yes	
@@ -186,8 +186,8 @@ love.image.newCompressedData()	no
 love.image.newImageData()	yes	
 love.init()	no	
 love.joystick.getGamepadMapping()	no	
-love.joystick.getJoystickCount()	no	
-love.joystick.getJoysticks()	no	
+love.joystick.getJoystickCount()	partial	Always returns 0
+love.joystick.getJoysticks()	partial	Always returns {}
 love.joystick.setGamepadMapping()	no	
 love.keyboard.getKeyFromScancode()	no	
 love.keyboard.getScancodeFromKey()	no	
@@ -206,7 +206,7 @@ love.math.isConvex()	no
 love.math.linearToGamma()	no	
 love.math.newBezierCurve()	no	
 love.math.newRandomGenerator()	yes	
-love.math.noise()	no	
+love.math.noise()	yes	
 love.math.random()	yes	
 love.math.randomNormal()	yes	
 love.math.setRandomSeed()	yes	
@@ -222,13 +222,13 @@ love.mouse.getY	partial
 love.mouse.isDown()	partial	
 love.mouse.isGrabbed()	no	
 love.mouse.isVisible()	partial	
-love.mouse.newCursor()	no	
-love.mouse.setCursor()	no	
+love.mouse.newCursor()	yes	
+love.mouse.setCursor()	yes	
 love.mouse.setGrabbed()	no	
-love.mouse.setPosition()	partial	
+love.mouse.setPosition()	no	Not possible with current HTML5
 love.mouse.setVisible()	partial	
-love.mouse.setX	partial	
-love.mouse.setY	partial	
+love.mouse.setX	no	Not possible with current HTML5
+love.mouse.setY	no	Not possible with current HTML5
 love.path.abs()	no	
 love.path.endslash()	no	
 love.path.getfull()	no	
@@ -301,7 +301,7 @@ love.window.isCreated()	no
 love.window.isVisible()	no	
 love.window.setFullscreen()	no	
 love.window.setIcon()	no	
-love.window.setMode()	no	
+love.window.setMode()	yes	
 love.window.setTitle()	no	
 Quad.getViewport()	yes	
 Quad.setViewport()	yes	
@@ -312,8 +312,8 @@ Shader.send()	yes
 Shader.type()	no	
 Shader.typeOf()	no	
 SpriteBatch.add()	yes	
-SpriteBatch:flush()	no	
-* SpriteBatch.bind()	yes	Deprecated in LÃ¶ve2D 0.9.2 
+SpriteBatch:flush()	yes	
+* SpriteBatch.bind()	yes	Deprecated in LOVE 0.9.2 
 SpriteBatch.clear()	yes	
 SpriteBatch.getBufferSize()	yes	 
 SpriteBatch.getColor()	yes	
@@ -327,7 +327,7 @@ SpriteBatch.setImage()	yes
 SpriteBatch.setTexture()	yes	
 SpriteBatch.type()	no	
 SpriteBatch.typeOf()	no	
-* SpriteBatch.unbind()	yes	Deprecated in LÃ¶ve2D 0.9.2
+* SpriteBatch.unbind()	yes	Deprecated in LOVE 0.9.2
 Source:type	no	
 Source:typeOf	no	
 Source:clone 	yes	
@@ -342,7 +342,7 @@ Source:getRolloff 	no
 Source:getVelocity 	no	
 Source:getVolume 	yes	
 Source:getVolumeLimits 	no	
-Source:isLooping 	yes
+Source:isLooping 	yes	
 Source:isPaused 	yes	
 Source:isPlaying 	yes	
 Source:isRelative 	no	
