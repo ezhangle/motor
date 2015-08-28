@@ -204,7 +204,7 @@ def build():
   if '--native' in sys.argv:
     output = 'motor2d'
     CFLAGS = '-g -Wall -O{optimize} $(sdl2-config --cflags) -DFT2_BUILD_LIBRARY -Wall -g -std=c11 -I{ftconfig}  -I{srcdir}/3rdparty/lua/src'.format(optimize=optimize, link_time_optimize=link_time_optimize, srcdir = os.path.relpath(SRCDIR), ftconfig=".") + " " + ftinc
-    LDFLAGS = '-lm $(sdl2-config --libs) -lGL -lopenal -lSDL2_image -g'.format(optimize=optimize, link_time_optimize=link_time_optimize)
+    LDFLAGS = '-lm $(sdl2-config --libs) -lGL -lopenal -lGLEW -lSDL2_image -g'.format(optimize=optimize, link_time_optimize=link_time_optimize)
     CC = 'clang'
     LD = 'clang'
   else:
