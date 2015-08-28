@@ -161,7 +161,7 @@ static int l_geometry_point(lua_State* state) {
 
 
 static int l_geometry_setLineStyle(lua_State* state) {
-  graphics_DrawStyle style = l_tools_toEnumOrError(state, 1, l_graphics_DrawStyle);
+  // graphics_DrawStyle style = l_tools_toEnumOrError(state, 1, l_graphics_DrawStyle);
   static bool warned = false;
   if(!warned) {
     printf("love.graphics.setLineStyle is a stub\n");
