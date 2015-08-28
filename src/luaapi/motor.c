@@ -8,7 +8,8 @@ int l_motor_getVersion(lua_State* state) {
   lua_pushnumber(state, version->minor);
   lua_pushnumber(state, version->revision);
   lua_pushstring(state, version->codename);
-  return 4;
+  lua_pushstring(state, "motor");
+  return 5;
 }
 
 int l_motor_register(lua_State* state) {
