@@ -42,6 +42,5 @@ Please try to replicate the code style of the existing code, I might refuse to p
 
 * love.physics.
 * Additional sound file formats.
-* Clean up the build system (the current build.py is a real mess!). I want to add user-defined code (which can be compiled and linked into the final motor executable). This also requires configurability for the different modules. One user might not need all audio file formats, so she should be able to select the formats she wants. On second though, please contact me before you start working on that thing, I have some very specific ideas about it.
 * Additions to the development server.
 * General bug- und incompatibility-fixes
